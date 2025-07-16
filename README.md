@@ -102,14 +102,14 @@ Pour garantir que toutes les collections MongoDB du projet soient créées dans 
   default_database: ecoride_db
   ```
 
-## Validation de l’insertion NoSQL (MongoDB)
+### Validation de l’insertion NoSQL (MongoDB)
 
 Un script de commande Symfony (`src/Command/InsertStatistiqueCommand.php`) permet d’insérer un document de test dans la collection `statistique` de la base MongoDB `ecoride_db`.
 
 - Données insérées : nom, valeur, date de création
 - La réussite de cette opération valide la bonne configuration de l’intégration NoSQL dans le projet
 
-## Listing des Statistiques MongoDB
+### Listing des Statistiques MongoDB
 
 Une commande Symfony permet de lister toutes les statistiques présentes dans la base MongoDB (`ecoride_db`), prouvant la bonne lecture des données NoSQL depuis le projet :
 
@@ -118,7 +118,7 @@ php bin/console stats:list
 
 ```
 
-## Suppression de Statistiques MongoDB
+### Suppression de Statistiques MongoDB
 
 Une commande Symfony permet de supprimer une statistique spécifique de la base MongoDB en fonction de son nom :
 
@@ -169,4 +169,69 @@ L’API REST de gestion des utilisateurs propose les endpoints suivants :
   {
     "ville": "Toulon"
   }
+  ```
+
+## API Covoiturage (CRUD)
+
+L’API REST de gestion des trajets propose les endpoints suivants :
+
+| Méthode | Route                    | Description                                       |
+| ------- | ------------------------ | ------------------------------------------------- |
+| GET     | `/api/covoiturages`      | Liste et recherche de covoiturages (avec filtres) |
+| POST    | `/api/covoiturages`      | Création d’un trajet (chauffeur connecté)         |
+| GET     | `/api/covoiturages/{id}` | Détail d’un trajet                                |
+| PUT     | `/api/covoiturages/{id}` | Modification (chauffeur connecté)                 |
+| DELETE  | `/api/covoiturages/{id}` | Suppression (chauffeur ou admin)                  |
+
+### Recherche et filtres
+
+- La route GET `/api/covoiturages` accepte les filtres suivants en paramètres d’URL :
+  - `depart` : ville de départ
+  - `arrivee` : ville d’arrivée
+  - `date` : date du trajet au format `JJ/MM/AAAA` (ex : `20/07/2025`)
+
+### Format des dates attendu
+
+- Pour créer ou rechercher un trajet, **les dates doivent être envoyées au format français `JJ/MM/AAAA`**.
+- Exemple JSON à envoyer pour la création :
+  ```json
+  {
+    "villeDepart": "Toulon",
+    "villeArrivee": "Nice",
+    "date": "21/07/2025",
+    "heureDepart": "14:00",
+    "heureArrivee": "16:00",
+    "voiture": 3
+  }
+  ```
+
+### Sécurité
+
+- Seul l’utilisateur connecté peut créer/modifier ses propres trajets.
+- Seul le chauffeur ou un admin peut supprimer un trajet.
+- Les suppressions déclenchent une notification à tous les passagers du trajet annulé.
+
+### Groupes de serialization
+
+- L’API expose uniquement les champs utiles via les groupes `covoiturage:read` et `covoiturage:write` (pas de données sensibles).
+
+### Exemples de requêtes Postman
+
+- **Création de trajet (POST)**
+
+  ```json
+  POST /api/covoiturages
+  {
+    "villeDepart": "Toulon",
+    "villeArrivee": "Nice",
+    "date": "21/07/2025",
+    "heureDepart": "14:00",
+    "heureArrivee": "16:00",
+    "voiture": 1
+  }
+  ```
+
+- **Recherche de trajets**
+  ```
+  GET /api/covoiturages?depart=Toulon&arrivee=Nice&date=21/07/2025
   ```
