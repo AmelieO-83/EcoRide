@@ -61,3 +61,12 @@ Pour garantir un environnement reproductible, sécurisé et proche de la product
 - **Textes courants :** Open Sans, sans-serif
 
 Voir le PDF du projet pour la version complète avec exemples visuels.
+
+## 4. Wireframes et Maquettes graphiques (mockups)
+
+Toutes les maquettes fonctionnelles (wireframes) et es maquettes graphiques finales (mockups) de l’application EcoRide, en version mobile et desktop, sont présentées dans la documentation du projet à rendre (PDF joint).
+
+- **Wireframes mobiles et desktop :** Accueil, Inscription, Espace Admin
+- **Mockups mobile et desktop :** Accueil, Inscription, Espace Admin
+
+Les wireframes servent de base à la conception des interfaces graphiques et les mockups illustre le rendu visuel final attendu pour chaque page principale, dans le respect de la charte graphique définie plus haut.
