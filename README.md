@@ -92,7 +92,7 @@ Les principales étapes ont été :
 
 > Voir la section “Configuration des bases de données” ci-dessous pour les paramètres de connexion.
 
-## 7. Astuce de configuration MongoDB (Doctrine ODM)
+## Astuce de configuration MongoDB (Doctrine ODM)
 
 Pour garantir que toutes les collections MongoDB du projet soient créées dans la bonne base, il est indispensable de vérifier (et forcer si besoin) le paramètre :
 
@@ -102,9 +102,18 @@ Pour garantir que toutes les collections MongoDB du projet soient créées dans 
   default_database: ecoride_db
   ```
 
-## 8. Validation de l’insertion NoSQL (MongoDB)
+## Validation de l’insertion NoSQL (MongoDB)
 
 Un script de commande Symfony (`src/Command/InsertStatistiqueCommand.php`) permet d’insérer un document de test dans la collection `statistique` de la base MongoDB `ecoride_db`.
 
 - Données insérées : nom, valeur, date de création
 - La réussite de cette opération valide la bonne configuration de l’intégration NoSQL dans le projet
+
+## Listing des Statistiques MongoDB
+
+Une commande Symfony permet de lister toutes les statistiques présentes dans la base MongoDB (`ecoride_db`), prouvant la bonne lecture des données NoSQL depuis le projet :
+
+```bash
+php bin/console stats:list
+
+```
