@@ -79,11 +79,25 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'utilisateur')]
     private Collection $participations;
 
+    /**
+     * @var Collection<int, Avis>
+     */
+    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'auteur')]
+    private Collection $avisDonnes;
+
+    /**
+     * @var Collection<int, Avis>
+     */
+    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'destinataire')]
+    private Collection $avisRecus;
+
     public function __construct()
     {
         $this->voitures = new ArrayCollection();
         $this->covoiturages = new ArrayCollection();
         $this->participations = new ArrayCollection();
+        $this->avisDonnes = new ArrayCollection();
+        $this->avisRecus = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -348,6 +362,66 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($participation->getUtilisateur() === $this) {
                 $participation->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Avis>
+     */
+    public function getAvisDonnes(): Collection
+    {
+        return $this->avisDonnes;
+    }
+
+    public function addAvisDonne(Avis $avisDonne): static
+    {
+        if (!$this->avisDonnes->contains($avisDonne)) {
+            $this->avisDonnes->add($avisDonne);
+            $avisDonne->setAuteur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAvisDonne(Avis $avisDonne): static
+    {
+        if ($this->avisDonnes->removeElement($avisDonne)) {
+            // set the owning side to null (unless already changed)
+            if ($avisDonne->getAuteur() === $this) {
+                $avisDonne->setAuteur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Avis>
+     */
+    public function getAvisRecus(): Collection
+    {
+        return $this->avisRecus;
+    }
+
+    public function addAvisRecu(Avis $avisRecu): static
+    {
+        if (!$this->avisRecus->contains($avisRecu)) {
+            $this->avisRecus->add($avisRecu);
+            $avisRecu->setDestinataire($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAvisRecu(Avis $avisRecu): static
+    {
+        if ($this->avisRecus->removeElement($avisRecu)) {
+            // set the owning side to null (unless already changed)
+            if ($avisRecu->getDestinataire() === $this) {
+                $avisRecu->setDestinataire(null);
             }
         }
 

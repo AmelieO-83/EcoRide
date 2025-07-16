@@ -60,9 +60,16 @@ class Covoiturage
     #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'covoiturage')]
     private Collection $participations;
 
+    /**
+     * @var Collection<int, Avis>
+     */
+    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'covoiturage')]
+    private Collection $avis;
+
     public function __construct()
     {
         $this->participations = new ArrayCollection();
+        $this->avis = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -238,6 +245,36 @@ class Covoiturage
             // set the owning side to null (unless already changed)
             if ($participation->getCovoiturage() === $this) {
                 $participation->setCovoiturage(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Avis>
+     */
+    public function getAvis(): Collection
+    {
+        return $this->avis;
+    }
+
+    public function addAvi(Avis $avi): static
+    {
+        if (!$this->avis->contains($avi)) {
+            $this->avis->add($avi);
+            $avi->setCovoiturage($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAvi(Avis $avi): static
+    {
+        if ($this->avis->removeElement($avi)) {
+            // set the owning side to null (unless already changed)
+            if ($avi->getCovoiturage() === $this) {
+                $avi->setCovoiturage(null);
             }
         }
 
