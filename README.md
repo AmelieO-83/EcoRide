@@ -70,3 +70,11 @@ Toutes les maquettes fonctionnelles (wireframes) et es maquettes graphiques fina
 - **Mockups mobile et desktop :** Accueil, Inscription, Espace Admin
 
 Les wireframes servent de base à la conception des interfaces graphiques et les mockups illustre le rendu visuel final attendu pour chaque page principale, dans le respect de la charte graphique définie plus haut.
+
+## 5. Diagrammes & Modélisation
+
+- **Diagramme de cas d’usage** : présente les principales fonctionnalités et parcours utilisateur selon chaque rôle (visiteur, utilisateur, employé, admin).
+- **Diagramme de séquence** : illustre un exemple de flux utilisateur (ex : recherche de covoiturage).
+- **Modèle conceptuel de données (MCD)** : structure de la base relationnelle (tables, relations, types de données).
+
+Les diagrammes détaillés sont disponibles dans le PDF principal à rendre.
