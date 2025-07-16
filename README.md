@@ -356,3 +356,22 @@ L’API permet à chaque utilisateur de consulter les notifications reçues (con
   "lu": false
 }
 ```
+
+## API Home (point d’entrée)
+
+Le contrôleur Home fournit le point d’entrée à l’API EcoRide.
+
+| Méthode | Route | Description                |
+| ------- | ----- | -------------------------- |
+| GET     | `/`   | Message d’accueil de l’API |
+
+- Un simple GET `/` retourne un message de bienvenue et d’orientation vers la documentation.
+- Ce point d’entrée peut servir pour vérifier que l’API est en ligne (“ping”).
+
+### Exemple de réponse
+
+```json
+{
+  "message": "Bienvenue sur l'API EcoRide. Consultez la documentation pour utiliser les endpoints."
+}
+```
