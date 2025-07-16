@@ -75,8 +75,12 @@ class CovoiturageController extends AbstractController
         }
         $covoiturage->setVoiture($voiture);
 
+        dump('CHAUFFEUR AVANT ASSOC :', $utilisateur->getId(), $utilisateur->getEmail());
+
         // 4. On associe le chauffeur
         $covoiturage->setChauffeur($utilisateur);
+
+        dump('CHAUFFEUR APRÈS ASSOC :', $covoiturage->getChauffeur()?->getId());
 
         // 5. Validation
         $errors = $this->validator->validate($covoiturage);

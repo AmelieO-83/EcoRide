@@ -235,3 +235,16 @@ L’API REST de gestion des trajets propose les endpoints suivants :
   ```
   GET /api/covoiturages?depart=Toulon&arrivee=Nice&date=21/07/2025
   ```
+
+## API Participation (Réservation & gestion des places)
+
+| Méthode | Route                                | Description                                |
+| ------- | ------------------------------------ | ------------------------------------------ |
+| POST    | `/api/covoiturages/{id}/participer`  | Réserver une place sur un trajet           |
+| DELETE  | `/api/participations/{id}`           | Annuler une participation                  |
+| POST    | `/api/participations/{id}/confirmer` | Confirmer un trajet, créditer le chauffeur |
+| GET     | `/api/participations`                | Lister les participations de l’utilisateur |
+
+- **Sécurité** : seules les actions autorisées sont possibles selon le rôle et le contexte métier.
+- **Notifications** envoyées automatiquement lors des actions majeures.
+- **Crédit/débit** des utilisateurs géré en temps réel.

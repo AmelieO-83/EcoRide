@@ -1,5 +1,5 @@
 <?php
-
+// src/Entity/Utilisateur.php
 namespace App\Entity;
 
 use App\Repository\UtilisateurRepository;
@@ -7,461 +7,193 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\{
+    PasswordAuthenticatedUserInterface,
+    UserInterface
+};
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\Table(name: 'utilisateur')]
+#[ORM\UniqueConstraint(name: 'UNIQ_UTILISATEUR_EMAIL', fields: ['email'])]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column]
+    #[Groups(['utilisateur:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Assert\NotBlank, Assert\Email]
+    #[Groups(['utilisateur:read','utilisateur:write'])]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
-    #[ORM\Column]
+    /** @var array<string> */
+    #[ORM\Column(type: Types::JSON)]
+    #[Groups(['utilisateur:read'])]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
+    #[Assert\NotBlank(groups: ['utilisateur:write'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 64)]
+    #[Assert\NotBlank, Assert\Length(min:2,max:64)]
+    #[Groups(['utilisateur:read','utilisateur:write','participation:read', 'covoiturage:read','avis:read'])]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 32)]
+    #[ORM\Column(length: 64)]
+    #[Assert\NotBlank, Assert\Length(min:2,max:64)]
+    #[Groups(['utilisateur:read','utilisateur:write','participation:read', 'covoiturage:read','avis:read'])]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 10)]
+    #[Assert\NotBlank, Assert\Regex('/^\d{10}$/')]
+    #[Groups(['utilisateur:read','utilisateur:write'])]
     private ?string $telephone = null;
 
     #[ORM\Column(length: 64)]
+    #[Assert\NotBlank]
+    #[Groups(['utilisateur:read','utilisateur:write'])]
     private ?string $ville = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $dateNaissance = null;
+    #[Assert\NotBlank]
+    #[Groups(['utilisateur:read','utilisateur:write'])]
+    private ?\DateTimeInterface $dateNaissance = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Groups(['utilisateur:read'])]
     private ?float $note = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $credit = null;
+    #[ORM\Column(type: 'integer', options: ['default' => 20])]
+    #[Groups(['utilisateur:read'])]
+    private int $credit = 20;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    /**
-     * @var Collection<int, Voiture>
-     */
-    #[ORM\OneToMany(targetEntity: Voiture::class, mappedBy: 'utilisateur')]
+    #[ORM\Column(length: 64)]
+    private string $apiToken;
+
+    /** @var Collection<int, Voiture> */
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Voiture::class, orphanRemoval: true)]
     private Collection $voitures;
 
-    /**
-     * @var Collection<int, Covoiturage>
-     */
-    #[ORM\OneToMany(targetEntity: Covoiturage::class, mappedBy: 'utilisateur')]
+    /** @var Collection<int, Covoiturage> */
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Covoiturage::class)]
     private Collection $covoiturages;
 
-    /**
-     * @var Collection<int, Participation>
-     */
-    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'utilisateur')]
+    /** @var Collection<int, Participation> */
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Participation::class, orphanRemoval: true)]
     private Collection $participations;
 
-    /**
-     * @var Collection<int, Avis>
-     */
-    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'auteur')]
+    /** @var Collection<int, Avis> */
+    #[ORM\OneToMany(mappedBy: 'auteur', targetEntity: Avis::class)]
     private Collection $avisDonnes;
 
-    /**
-     * @var Collection<int, Avis>
-     */
-    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'destinataire')]
+    /** @var Collection<int, Avis> */
+    #[ORM\OneToMany(mappedBy: 'destinataire', targetEntity: Avis::class)]
     private Collection $avisRecus;
-
-    /**
-     * @var Collection<int, Notification>
-     */
-    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'utilisateur')]
-    private Collection $notifications;
 
     public function __construct()
     {
-        $this->voitures = new ArrayCollection();
-        $this->covoiturages = new ArrayCollection();
-        $this->participations = new ArrayCollection();
-        $this->avisDonnes = new ArrayCollection();
-        $this->avisRecus = new ArrayCollection();
-        $this->notifications = new ArrayCollection();
+        $this->createdAt     = new \DateTimeImmutable();
+        $this->apiToken      = bin2hex(random_bytes(16));
+        $this->voitures      = new ArrayCollection();
+        $this->covoiturages  = new ArrayCollection();
+        $this->participations= new ArrayCollection();
+        $this->avisDonnes    = new ArrayCollection();
+        $this->avisRecus     = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
+    public function getEmail(): ?string { return $this->email; }
+    public function setEmail(string $e): self { $this->email = $e; return $this; }
 
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
+    public function getUserIdentifier(): string { return (string)$this->email; }
+    public function getRoles(): array { return array_unique(array_merge($this->roles, ['ROLE_USER'])); }
+    public function setRoles(array $r): self { $this->roles = $r; return $this; }
 
-    public function setEmail(string $email): static
-    {
-        $this->email = $email;
+    public function getPassword(): ?string { return $this->password; }
+    public function setPassword(string $p): self { $this->password = $p; return $this; }
 
-        return $this;
-    }
-
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
-    public function getUserIdentifier(): string
-    {
-        return (string) $this->email;
-    }
-
-    /**
-     * @see UserInterface
-     */
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    /**
-     * @param list<string> $roles
-     */
-    public function setRoles(array $roles): static
-    {
-        $this->roles = $roles;
-
-        return $this;
-    }
-
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    #[\Deprecated]
     public function eraseCredentials(): void
     {
-        // @deprecated, to be removed when upgrading to Symfony 8
+        // This method is intentionally left empty because
+        // there are no temporary, sensitive data to clear on this user entity.
     }
 
-    public function getNom(): ?string
-    {
-        return $this->nom;
-    }
+    public function getNom(): ?string { return $this->nom; }
+    public function setNom(string $nom): self { $this->nom = $nom; return $this; }
 
-    public function setNom(string $nom): static
-    {
-        $this->nom = $nom;
+    public function getPrenom(): ?string { return $this->prenom; }
+    public function setPrenom(string $prenom): self { $this->prenom = $prenom; return $this; }
 
+    public function getTelephone(): ?string { return $this->telephone; }
+    public function setTelephone(string $telephone): self { $this->telephone = $telephone; return $this; }
+
+    public function getVille(): ?string { return $this->ville; }
+    public function setVille(string $ville): self { $this->ville = $ville; return $this; }
+
+    public function getDateNaissance(): ?\DateTimeInterface { return $this->dateNaissance; }
+    public function setDateNaissance(\DateTimeInterface $dateNaissance): self { $this->dateNaissance = $dateNaissance; return $this; }
+
+    public function getNote(): ?float { return $this->note; }
+    public function setNote(?float $note): self { $this->note = $note; return $this; }
+
+    public function getCredit(): int { return $this->credit; }
+    public function setCredit(int $credit): self { $this->credit = $credit; return $this; }
+
+    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self {$this->createdAt = $createdAt; return $this;}
+    public function getUpdatedAt(): ?\DateTimeImmutable { return $this->updatedAt; }
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): self { $this->updatedAt = $updatedAt; return $this; }
+
+    public function getApiToken(): string { return $this->apiToken; }
+    public function setApiToken(string $apiToken): self { $this->apiToken = $apiToken; return $this; }
+
+    // --- Collections ---
+    public function getVoitures(): Collection { return $this->voitures; }
+    public function addVoiture(Voiture $voitures): self {
+        if(!$this->voitures->contains($voitures)){ $this->voitures->add($voitures); $voitures->setProprietaire($this);}
         return $this;
     }
-
-    public function getPrenom(): ?string
-    {
-        return $this->prenom;
-    }
-
-    public function setPrenom(string $prenom): static
-    {
-        $this->prenom = $prenom;
-
-        return $this;
-    }
-
-    public function getTelephone(): ?string
-    {
-        return $this->telephone;
-    }
-
-    public function setTelephone(string $telephone): static
-    {
-        $this->telephone = $telephone;
-
-        return $this;
-    }
-
-    public function getVille(): ?string
-    {
-        return $this->ville;
-    }
-
-    public function setVille(string $ville): static
-    {
-        $this->ville = $ville;
-
-        return $this;
-    }
-
-    public function getDateNaissance(): ?\DateTime
-    {
-        return $this->dateNaissance;
-    }
-
-    public function setDateNaissance(\DateTime $dateNaissance): static
-    {
-        $this->dateNaissance = $dateNaissance;
-
-        return $this;
-    }
-
-    public function getNote(): ?float
-    {
-        return $this->note;
-    }
-
-    public function setNote(?float $note): static
-    {
-        $this->note = $note;
-
-        return $this;
-    }
-
-    public function getCredit(): ?int
-    {
-        return $this->credit;
-    }
-
-    public function setCredit(?int $credit): static
-    {
-        $this->credit = $credit;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Voiture>
-     */
-    public function getVoitures(): Collection
-    {
-        return $this->voitures;
-    }
-
-    public function addVoiture(Voiture $voiture): static
-    {
-        if (!$this->voitures->contains($voiture)) {
-            $this->voitures->add($voiture);
-            $voiture->setUtilisateur($this);
+    public function removeVoiture(Voiture $voitures): self {
+        if($this->voitures->removeElement($voitures) && $voitures->getProprietaire()=== $this) {
+            $voitures->setProprietaire(null);
         }
-
         return $this;
     }
 
-    public function removeVoiture(Voiture $voiture): static
-    {
-        if ($this->voitures->removeElement($voiture)) {
-            // set the owning side to null (unless already changed)
-            if ($voiture->getUtilisateur() === $this) {
-                $voiture->setUtilisateur(null);
-            }
+    public function getCovoiturages(): Collection { return $this->covoiturages; }
+    public function addCovoiturage(Covoiturage $covoiturages): self {
+        if(!$this->covoiturages->contains($covoiturages)){ $this->covoiturages->add($covoiturages); $covoiturages->setChauffeur($this);}
+        return $this;
+    }
+    public function removeCovoiturage(Covoiturage $covoiturages): self {
+        if($this->covoiturages->removeElement($covoiturages) && $covoiturages->getChauffeur()=== $this){
+            $covoiturages->setChauffeur(null);
         }
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, Covoiturage>
-     */
-    public function getCovoiturages(): Collection
-    {
-        return $this->covoiturages;
+    public function getParticipations(): Collection { return $this->participations; }
+    public function addParticipation(Participation $participations): self {
+        if(!$this->participations->contains($participations)){ $this->participations->add($participations); $participations->setPassager($this);}
+        return $this;
     }
-
-    public function addCovoiturage(Covoiturage $covoiturage): static
-    {
-        if (!$this->covoiturages->contains($covoiturage)) {
-            $this->covoiturages->add($covoiturage);
-            $covoiturage->setUtilisateur($this);
+    public function removeParticipation(Participation $participations): self {
+        if($this->participations->removeElement($participations) && $participations->getPassager()=== $this){
+            $participations->setPassager(null);
         }
-
         return $this;
     }
 
-    public function removeCovoiturage(Covoiturage $covoiturage): static
-    {
-        if ($this->covoiturages->removeElement($covoiturage)) {
-            // set the owning side to null (unless already changed)
-            if ($covoiturage->getUtilisateur() === $this) {
-                $covoiturage->setUtilisateur(null);
-            }
-        }
+    public function getAvisDonnes(): Collection { return $this->avisDonnes; }
+    public function getAvisRecus(): Collection { return $this->avisRecus; }
 
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Participation>
-     */
-    public function getParticipations(): Collection
-    {
-        return $this->participations;
-    }
-
-    public function addParticipation(Participation $participation): static
-    {
-        if (!$this->participations->contains($participation)) {
-            $this->participations->add($participation);
-            $participation->setUtilisateur($this);
-        }
-
-        return $this;
-    }
-
-    public function removeParticipation(Participation $participation): static
-    {
-        if ($this->participations->removeElement($participation)) {
-            // set the owning side to null (unless already changed)
-            if ($participation->getUtilisateur() === $this) {
-                $participation->setUtilisateur(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Avis>
-     */
-    public function getAvisDonnes(): Collection
-    {
-        return $this->avisDonnes;
-    }
-
-    public function addAvisDonne(Avis $avisDonne): static
-    {
-        if (!$this->avisDonnes->contains($avisDonne)) {
-            $this->avisDonnes->add($avisDonne);
-            $avisDonne->setAuteur($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAvisDonne(Avis $avisDonne): static
-    {
-        if ($this->avisDonnes->removeElement($avisDonne)) {
-            // set the owning side to null (unless already changed)
-            if ($avisDonne->getAuteur() === $this) {
-                $avisDonne->setAuteur(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Avis>
-     */
-    public function getAvisRecus(): Collection
-    {
-        return $this->avisRecus;
-    }
-
-    public function addAvisRecu(Avis $avisRecu): static
-    {
-        if (!$this->avisRecus->contains($avisRecu)) {
-            $this->avisRecus->add($avisRecu);
-            $avisRecu->setDestinataire($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAvisRecu(Avis $avisRecu): static
-    {
-        if ($this->avisRecus->removeElement($avisRecu)) {
-            // set the owning side to null (unless already changed)
-            if ($avisRecu->getDestinataire() === $this) {
-                $avisRecu->setDestinataire(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Notification>
-     */
-    public function getNotifications(): Collection
-    {
-        return $this->notifications;
-    }
-
-    public function addNotification(Notification $notification): static
-    {
-        if (!$this->notifications->contains($notification)) {
-            $this->notifications->add($notification);
-            $notification->setUtilisateur($this);
-        }
-
-        return $this;
-    }
-
-    public function removeNotification(Notification $notification): static
-    {
-        if ($this->notifications->removeElement($notification)) {
-            // set the owning side to null (unless already changed)
-            if ($notification->getUtilisateur() === $this) {
-                $notification->setUtilisateur(null);
-            }
-        }
-
-        return $this;
-    }
 }

@@ -1,267 +1,152 @@
 <?php
-
+// src/Entity/Covoiturage.php
 namespace App\Entity;
 
 use App\Repository\CovoiturageRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Utilisateur;
+use App\Entity\Voiture;
+use Symfony\Component\Serializer\Annotation\Context;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 #[ORM\Entity(repositoryClass: CovoiturageRepository::class)]
+#[ORM\Table(name: 'covoiturage')]
 class Covoiturage
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    public const GROUP_PARTICIPATION_READ = 'participation:read';
+    public const GROUP_COVOITURAGE_READ = 'covoiturage:read';
+    public const GROUP_COVOITURAGE_WRITE = 'covoiturage:write';
+
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column(type:"integer")]
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type:"string", length:255)]
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
     private ?string $villeDepart = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type:"string", length:255)]
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
     private ?string $villeArrivee = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'd/m/Y'])]
+    private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
-    private ?\DateTime $heureDepart = null;
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'H:i'])]
+    private ?\DateTimeInterface $heureDepart = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
-    private ?\DateTime $heureArrivee = null;
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'H:i'])]
+    private ?\DateTimeInterface $heureArrivee = null;
 
-    #[ORM\Column]
-    private ?int $placesDisponibles = null;
+    #[ORM\Column(type:"integer")]
+    #[Groups([self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
+    private int $placesDisponibles = 0;
 
-    #[ORM\Column]
-    private ?float $prix = null;
+    #[ORM\Column(type:"float")]
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
+    private float $prix = 0;
 
-    #[ORM\Column]
-    private ?bool $ecologique = null;
+    #[ORM\Column(type:"boolean")]
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
+    private bool $ecologique = false;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $updatedAt = null;
-
-    #[ORM\ManyToOne(inversedBy: 'covoiturages')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "covoiturages")]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ])]
+    #[SerializedName('chauffeur')]
     private ?Utilisateur $utilisateur = null;
 
-    #[ORM\ManyToOne(inversedBy: 'covoiturages')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Voiture::class, inversedBy: "covoiturages")]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
     private ?Voiture $voiture = null;
 
-    /**
-     * @var Collection<int, Participation>
-     */
-    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'covoiturage')]
+    #[ORM\OneToMany(mappedBy: "covoiturage", targetEntity: Participation::class, orphanRemoval: true)]
     private Collection $participations;
 
-    /**
-     * @var Collection<int, Avis>
-     */
-    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'covoiturage')]
-    private Collection $avis;
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $annule = false;
 
     /**
-     * @var Collection<int, Notification>
+     * @var \Doctrine\Common\Collections\Collection<int, Avis>
      */
-    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'covoiturage')]
-    private Collection $notifications;
+    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'covoiturage')]
+    private \Doctrine\Common\Collections\Collection $avis;
 
     public function __construct()
     {
         $this->participations = new ArrayCollection();
         $this->avis = new ArrayCollection();
-        $this->notifications = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
+    public function getVilleDepart(): ?string { return $this->villeDepart; }
+    public function setVilleDepart(string $villeDepart): self { $this->villeDepart = $villeDepart; return $this; }
+    public function getVilleArrivee(): ?string { return $this->villeArrivee; }
+    public function setVilleArrivee(string $villeArrivee): self { $this->villeArrivee = $villeArrivee; return $this; }
 
-    public function getVilleDepart(): ?string
-    {
-        return $this->villeDepart;
-    }
+    public function getDate(): ?\DateTimeInterface { return $this->date; }
+    public function setDate(\DateTimeInterface $date): self { $this->date = $date; return $this; }
+    public function getHeureDepart(): ?\DateTimeInterface { return $this->heureDepart; }
+    public function setHeureDepart(\DateTimeInterface $heureDepart): self { $this->heureDepart = $heureDepart; return $this; }
+    public function getHeureArrivee(): ?\DateTimeInterface { return $this->heureArrivee; }
+    public function setHeureArrivee(\DateTimeInterface $heureArrivee): self { $this->heureArrivee = $heureArrivee; return $this; }
 
-    public function setVilleDepart(string $villeDepart): static
-    {
-        $this->villeDepart = $villeDepart;
+    public function getPlacesDisponibles(): int { return $this->placesDisponibles; }
+    public function setPlacesDisponibles(int $placesDisponibles): self { $this->placesDisponibles = $placesDisponibles; return $this; }
 
-        return $this;
-    }
+    public function getPrix(): float { return $this->prix; }
+    public function setPrix(float $prix): self { $this->prix = $prix; return $this; }
 
-    public function getVilleArrivee(): ?string
-    {
-        return $this->villeArrivee;
-    }
+    public function isEcologique(): bool { return $this->ecologique; }
+    public function setEcologique(bool $eco): self { $this->ecologique = $eco; return $this; }
 
-    public function setVilleArrivee(string $villeArrivee): static
-    {
-        $this->villeArrivee = $villeArrivee;
+    public function getChauffeur(): ?Utilisateur { return $this->utilisateur; }
+    public function setChauffeur(?Utilisateur $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
 
-        return $this;
-    }
+    public function getVoiture(): ?Voiture { return $this->voiture; }
+    public function setVoiture(?Voiture $voiture): self { $this->voiture = $voiture; return $this; }
 
-    public function getDate(): ?\DateTime
-    {
-        return $this->date;
-    }
-
-    public function setDate(\DateTime $date): static
-    {
-        $this->date = $date;
-
-        return $this;
-    }
-
-    public function getHeureDepart(): ?\DateTime
-    {
-        return $this->heureDepart;
-    }
-
-    public function setHeureDepart(\DateTime $heureDepart): static
-    {
-        $this->heureDepart = $heureDepart;
-
-        return $this;
-    }
-
-    public function getHeureArrivee(): ?\DateTime
-    {
-        return $this->heureArrivee;
-    }
-
-    public function setHeureArrivee(\DateTime $heureArrivee): static
-    {
-        $this->heureArrivee = $heureArrivee;
-
-        return $this;
-    }
-
-    public function getPlacesDisponibles(): ?int
-    {
-        return $this->placesDisponibles;
-    }
-
-    public function setPlacesDisponibles(int $placesDisponibles): static
-    {
-        $this->placesDisponibles = $placesDisponibles;
-
-        return $this;
-    }
-
-    public function getPrix(): ?float
-    {
-        return $this->prix;
-    }
-
-    public function setPrix(float $prix): static
-    {
-        $this->prix = $prix;
-
-        return $this;
-    }
-
-    public function isEcologique(): ?bool
-    {
-        return $this->ecologique;
-    }
-
-    public function setEcologique(bool $ecologique): static
-    {
-        $this->ecologique = $ecologique;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getUtilisateur(): ?Utilisateur
-    {
-        return $this->utilisateur;
-    }
-
-    public function setUtilisateur(?Utilisateur $utilisateur): static
-    {
-        $this->utilisateur = $utilisateur;
-
-        return $this;
-    }
-
-    public function getVoiture(): ?Voiture
-    {
-        return $this->voiture;
-    }
-
-    public function setVoiture(?Voiture $voiture): static
-    {
-        $this->voiture = $voiture;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Participation>
-     */
     public function getParticipations(): Collection
     {
         return $this->participations;
     }
 
-    public function addParticipation(Participation $participation): static
+    public function addParticipation(Participation $participations): self
     {
-        if (!$this->participations->contains($participation)) {
-            $this->participations->add($participation);
-            $participation->setCovoiturage($this);
+        if (!$this->participations->contains($participations)) {
+            $this->participations->add($participations);
+            $participations->setCovoiturage($this);
         }
-
         return $this;
     }
 
-    public function removeParticipation(Participation $participation): static
+    public function removeParticipation(Participation $participations): self
     {
-        if ($this->participations->removeElement($participation)) {
-            // set the owning side to null (unless already changed)
-            if ($participation->getCovoiturage() === $this) {
-                $participation->setCovoiturage(null);
-            }
+        if ($this->participations->removeElement($participations) && $participations->getCovoiturage() === $this) {
+            $participations->setCovoiturage(null);
         }
-
         return $this;
     }
+
+    public function isAnnule(): bool {return $this->annule;}
+    public function setAnnule(bool $annule): static {$this->annule = $annule; return $this;}
 
     /**
-     * @return Collection<int, Avis>
+     * @return \Doctrine\Common\Collections\Collection<int, Avis>
      */
-    public function getAvis(): Collection
+    public function getAvis(): \Doctrine\Common\Collections\Collection
     {
         return $this->avis;
     }
@@ -287,34 +172,19 @@ class Covoiturage
 
         return $this;
     }
-
     /**
-     * @return Collection<int, Notification>
+     * @return \Doctrine\Common\Collections\Collection<int, Utilisateur>
      */
-    public function getNotifications(): Collection
+    public function getPassagers(): Collection
     {
-        return $this->notifications;
-    }
-
-    public function addNotification(Notification $notification): static
-    {
-        if (!$this->notifications->contains($notification)) {
-            $this->notifications->add($notification);
-            $notification->setCovoiturage($this);
-        }
-
-        return $this;
-    }
-
-    public function removeNotification(Notification $notification): static
-    {
-        if ($this->notifications->removeElement($notification)) {
-            // set the owning side to null (unless already changed)
-            if ($notification->getCovoiturage() === $this) {
-                $notification->setCovoiturage(null);
+        $passagers = new ArrayCollection();
+        foreach ($this->participations as $participation) {
+            $passager = $participation->getPassager();
+            if ($passager && !$passagers->contains($passager)) {
+                $passagers->add($passager);
             }
         }
 
-        return $this;
+        return $passagers;
     }
 }
