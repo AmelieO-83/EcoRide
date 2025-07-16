@@ -43,3 +43,21 @@ Pour garantir un environnement reproductible, sécurisé et proche de la product
   - `docker-compose up` : pour démarrer tous les services
   - `composer install` : pour installer les dépendances PHP
   - `symfony server:start` : serveur local de dev
+
+## 3. Charte graphique EcoRide
+
+### Palette de couleurs
+
+- **Vert mousse (primaire)** : #4A7C59 — Utilisé pour les en-têtes, boutons principaux, icônes écolo
+- **Bleu gris clair (secondaire)** : #A3BFCB — Utilisé pour les encadrés, fonds de section secondaire
+- **Beige clair (fond)** : #F2EDE4 — Couleur de fond principale
+- **Ocre (accent/boutons)** : #D9A441 — Boutons d’action, accents, pictos
+- **Blanc cassé (texte sur fond sombre)** : #FAFAF7
+- **Gris foncé (texte sur fond clair)** : #333333
+
+### Polices
+
+- **Titres :** Montserrat, sans-serif
+- **Textes courants :** Open Sans, sans-serif
+
+Voir le PDF du projet pour la version complète avec exemples visuels.
