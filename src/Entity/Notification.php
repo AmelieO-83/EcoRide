@@ -1,46 +1,38 @@
 <?php
-
+// src/Entity/Notification.php
 namespace App\Entity;
 
 use App\Enum\NotificationType;
 use App\Repository\NotificationRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
+#[ORM\Table(name: 'notification')]
 class Notification
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
+    #[Groups(['notification:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(enumType: NotificationType::class)]
-    private ?NotificationType $type = null;
+    #[ORM\Column(type: 'string', enumType: NotificationType::class)]
+    #[Groups(['notification:read', 'notification:write'])]
+    private NotificationType $type;
 
-    #[ORM\Column(length: 64)]
-    private ?string $titre = null;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['notification:read', 'notification:write'])]
+    private string $titre;
 
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $contenu = null;
-
-    #[ORM\Column]
-    private ?\DateTimeImmutable $dateEnvoi = null;
-
-    #[ORM\ManyToOne(inversedBy: 'notifications')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Utilisateur $utilisateur = null;
-
-    #[ORM\ManyToOne(inversedBy: 'notifications')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Covoiturage $covoiturage = null;
+    #[ORM\Column(type: 'text')]
+    #[Groups(['notification:read', 'notification:write'])]
+    private string $contenu;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getType(): ?NotificationType
+    public function getType(): NotificationType
     {
         return $this->type;
     }
@@ -48,11 +40,10 @@ class Notification
     public function setType(NotificationType $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
-    public function getTitre(): ?string
+    public function getTitre(): string
     {
         return $this->titre;
     }
@@ -60,11 +51,10 @@ class Notification
     public function setTitre(string $titre): static
     {
         $this->titre = $titre;
-
         return $this;
     }
 
-    public function getContenu(): ?string
+    public function getContenu(): string
     {
         return $this->contenu;
     }
@@ -72,43 +62,6 @@ class Notification
     public function setContenu(string $contenu): static
     {
         $this->contenu = $contenu;
-
-        return $this;
-    }
-
-    public function getDateEnvoi(): ?\DateTimeImmutable
-    {
-        return $this->dateEnvoi;
-    }
-
-    public function setDateEnvoi(\DateTimeImmutable $dateEnvoi): static
-    {
-        $this->dateEnvoi = $dateEnvoi;
-
-        return $this;
-    }
-
-    public function getUtilisateur(): ?Utilisateur
-    {
-        return $this->utilisateur;
-    }
-
-    public function setUtilisateur(?Utilisateur $utilisateur): static
-    {
-        $this->utilisateur = $utilisateur;
-
-        return $this;
-    }
-
-    public function getCovoiturage(): ?Covoiturage
-    {
-        return $this->covoiturage;
-    }
-
-    public function setCovoiturage(?Covoiturage $covoiturage): static
-    {
-        $this->covoiturage = $covoiturage;
-
         return $this;
     }
 }

@@ -329,3 +329,30 @@ L’API Marque permet de gérer la liste des marques automobiles proposées lors
   "libelle": "Toyota"
 }
 ```
+
+## API Notification (consultation des notifications utilisateur)
+
+L’API permet à chaque utilisateur de consulter les notifications reçues (confirmation, annulation, nouveaux passagers, demande d’avis, etc.).
+
+| Méthode | Route                     | Description                                    |
+| ------- | ------------------------- | ---------------------------------------------- |
+| GET     | `/api/notifications`      | Lister toutes les notifications reçues         |
+| PUT     | `/api/notifications/{id}` | Marquer une notification comme lue (optionnel) |
+| DELETE  | `/api/notifications/{id}` | Supprimer une notification (optionnel)         |
+
+- Toutes les notifications sont filtrées pour l’utilisateur connecté.
+- Les notifications peuvent être triées ou filtrées par type, date, statut (lue/non lue), etc.
+- Les notifications sont générées automatiquement par les actions clés (réservation, annulation, avis…).
+
+### Exemple de notification reçue
+
+```json
+{
+  "id": 14,
+  "type": "AnnulationPassager",
+  "titre": "Un passager a annulé",
+  "contenu": "Votre passager Amélie O. a annulé sa participation au trajet Toulon → Nice.",
+  "dateEnvoi": "2025-07-20T10:48:00Z",
+  "lu": false
+}
+```
