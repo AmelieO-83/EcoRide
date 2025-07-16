@@ -375,3 +375,18 @@ Le contrôleur Home fournit le point d’entrée à l’API EcoRide.
   "message": "Bienvenue sur l'API EcoRide. Consultez la documentation pour utiliser les endpoints."
 }
 ```
+
+## Fichiers SQL fournis
+
+Le dossier `/sql` contient :
+
+- `structure.sql` : structure complète de la base MySQL (tables, index, etc.)
+- `data.sql` : exemples de données pour démarrer/tester l’application (utilisateurs, voitures, trajets…)
+
+### Procédure d’import rapide :
+
+1. Crée une base vide (ex. `ecoride_db`).
+2. Importe d’abord `structure.sql`, puis `data.sql` via phpMyAdmin ou la ligne de commande.
+3. Connecte-toi avec les identifiants fournis pour tester chaque parcours.
+
+**Astuce** : Les fichiers `.sql` sont aussi compatibles avec les outils en ligne de commande (`mysql`).
