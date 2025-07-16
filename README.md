@@ -125,3 +125,48 @@ Une commande Symfony permet de supprimer une statistique spécifique de la base 
 ```bash
 php bin/console stats:delete "Nom de la stat"
 ```
+
+## API Utilisateur (CRUD)
+
+L’API REST de gestion des utilisateurs propose les endpoints suivants :
+
+| Méthode | Route                         | Description                      |
+| ------- | ----------------------------- | -------------------------------- |
+| POST    | `/api/utilisateurs`           | Inscription                      |
+| POST    | `/api/utilisateurs/connexion` | Connexion                        |
+| GET     | `/api/utilisateurs/profil`    | Voir le profil (connecté)        |
+| PUT     | `/api/utilisateurs/profil`    | Modifier son profil              |
+| DELETE  | `/api/utilisateurs/{id}`      | Supprimer un utilisateur (admin) |
+
+- L’inscription et la connexion génèrent un API Token unique pour chaque utilisateur.
+- La sécurité est gérée par rôle (`ROLE_USER`, `ROLE_ADMIN`) et par token.
+- Les mots de passe sont hashés et jamais exposés dans l’API.
+- Toutes les routes sont testables via Postman ou curl (voir doc technique pour exemples de payloads).
+
+### Exemples d’utilisation (extrait Postman) :
+
+- Inscription :
+  ```json
+  POST /api/utilisateurs
+  {
+    "email": "demo@ecoride.fr",
+    "password": "motdepasse",
+    "nom": "Durand",
+    "prenom": "Amélie"
+  }
+  ```
+- Connexion :
+  ```json
+  POST /api/utilisateurs/connexion
+  {
+    "email": "demo@ecoride.fr",
+    "password": "motdepasse"
+  }
+  ```
+- Modification :
+  ```json
+  PUT /api/utilisateurs/profil
+  {
+    "ville": "Toulon"
+  }
+  ```
