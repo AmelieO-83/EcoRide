@@ -1,0 +1,41 @@
+# Fichiers de dépendances Composer
+/vendor/
+
+# Fichiers IDE
+.idea/
+.vscode/
+
+# Logs PHP
+logs/
+*.log
+
+# Environnement (fichiers sensibles)
+.env
+.env.local
+.env.test.local
+.env.prod.local
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Cache Symfony (si applicable)
+var/cache/
+var/log/
+
+# Dossiers uploads temporaires
+public/uploads/tmp/
+
+# Fichiers Docker inutiles en prod (si tu utilises Docker)
+docker-compose.override.yml
+docker-compose.dev.yml
+
+# MongoDB
+*.sock
+
+# phpMyAdmin
+phpmyadmin/
+
+# Dossiers/fichiers temporaires
+tmp/
+temp/
