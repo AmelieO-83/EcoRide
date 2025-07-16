@@ -91,3 +91,13 @@ Les principales étapes ont été :
 - Préparation à la configuration des bases de données relationnelle et NoSQL
 
 > Voir la section “Configuration des bases de données” ci-dessous pour les paramètres de connexion.
+
+## 7. Astuce de configuration MongoDB (Doctrine ODM)
+
+Pour garantir que toutes les collections MongoDB du projet soient créées dans la bonne base, il est indispensable de vérifier (et forcer si besoin) le paramètre :
+
+- Fichier : `/config/packages/doctrine_mongodb.yaml`
+- Ligne :
+  ```yaml
+  default_database: ecoride_db
+  ```
