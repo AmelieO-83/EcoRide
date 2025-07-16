@@ -117,3 +117,11 @@ Une commande Symfony permet de lister toutes les statistiques présentes dans la
 php bin/console stats:list
 
 ```
+
+## Suppression de Statistiques MongoDB
+
+Une commande Symfony permet de supprimer une statistique spécifique de la base MongoDB en fonction de son nom :
+
+```bash
+php bin/console stats:delete "Nom de la stat"
+```
