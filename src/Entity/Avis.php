@@ -1,65 +1,89 @@
 <?php
-
+// src/Entity/Avis.php
 namespace App\Entity;
 
-use App\Enum\AvisStatut;
 use App\Repository\AvisRepository;
+use App\Enum\AvisStatut;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AvisRepository::class)]
+#[ORM\Table(name: 'avis')]
 class Avis
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
+    #[Groups(['avis:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 64)]
-    private ?string $titre = null;
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'avisDonnes')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['avis:read'])]
+    private Utilisateur $auteur;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'avisRecus')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['avis:read'])]
+    private Utilisateur $destinataire;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['avis:read','avis:write'])]
+    private int $note;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $commentaire = null;
-
-    #[ORM\Column]
-    private ?float $note = null;
+    #[Groups(['avis:read','avis:write'])]
+    private string $commentaire;
 
     #[ORM\Column(enumType: AvisStatut::class)]
-    private ?AvisStatut $statut = null;
-
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
-
-    #[ORM\ManyToOne(inversedBy: 'avisDonnes')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Utilisateur $auteur = null;
-
-    #[ORM\ManyToOne(inversedBy: 'avisRecus')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Utilisateur $destinataire = null;
+    #[Groups(['avis:read'])]
+    private AvisStatut $statut = AvisStatut::EnAttente;
 
     #[ORM\ManyToOne(inversedBy: 'avis')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Covoiturage $covoiturage = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $dateCreation = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTitre(): ?string
+    public function getAuteur(): Utilisateur
     {
-        return $this->titre;
+        return $this->auteur;
     }
 
-    public function setTitre(string $titre): static
+    public function setAuteur(Utilisateur $auteur): static
     {
-        $this->titre = $titre;
-
+        $this->auteur = $auteur;
         return $this;
     }
 
-    public function getCommentaire(): ?string
+    public function getChauffeur(): Utilisateur
+    {
+        return $this->destinataire;
+    }
+
+    public function setChauffeur(Utilisateur $destinataire): static
+    {
+        $this->destinataire = $destinataire;
+        return $this;
+    }
+
+    public function getNote(): int
+    {
+        return $this->note;
+    }
+
+    public function setNote(int $note): static
+    {
+        $this->note = $note;
+        return $this;
+    }
+
+    public function getCommentaire(): string
     {
         return $this->commentaire;
     }
@@ -67,23 +91,10 @@ class Avis
     public function setCommentaire(string $commentaire): static
     {
         $this->commentaire = $commentaire;
-
         return $this;
     }
 
-    public function getNote(): ?float
-    {
-        return $this->note;
-    }
-
-    public function setNote(float $note): static
-    {
-        $this->note = $note;
-
-        return $this;
-    }
-
-    public function getStatut(): ?AvisStatut
+    public function getStatut(): AvisStatut
     {
         return $this->statut;
     }
@@ -91,43 +102,6 @@ class Avis
     public function setStatut(AvisStatut $statut): static
     {
         $this->statut = $statut;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getAuteur(): ?Utilisateur
-    {
-        return $this->auteur;
-    }
-
-    public function setAuteur(?Utilisateur $auteur): static
-    {
-        $this->auteur = $auteur;
-
-        return $this;
-    }
-
-    public function getDestinataire(): ?Utilisateur
-    {
-        return $this->destinataire;
-    }
-
-    public function setDestinataire(?Utilisateur $destinataire): static
-    {
-        $this->destinataire = $destinataire;
-
         return $this;
     }
 
@@ -142,4 +116,17 @@ class Avis
 
         return $this;
     }
+
+    public function __construct()
+        {
+            // à l’instanciation, on fixe la date de création
+            $this->dateCreation = new \DateTimeImmutable();
+            // si vous avez aussi un statut par défaut :
+            $this->statut = AvisStatut::EnAttente;
+        }
+
+        public function getDateCreation(): \DateTimeImmutable
+        {
+            return $this->dateCreation;
+        }
 }

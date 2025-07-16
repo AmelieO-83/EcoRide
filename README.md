@@ -248,3 +248,30 @@ L’API REST de gestion des trajets propose les endpoints suivants :
 - **Sécurité** : seules les actions autorisées sont possibles selon le rôle et le contexte métier.
 - **Notifications** envoyées automatiquement lors des actions majeures.
 - **Crédit/débit** des utilisateurs géré en temps réel.
+
+## API Avis (notation & commentaires)
+
+L’API REST de gestion des avis permet aux utilisateurs de laisser une note et un commentaire sur un trajet ou un autre utilisateur après participation.
+
+| Méthode | Route            | Description                             |
+| ------- | ---------------- | --------------------------------------- |
+| POST    | `/api/avis`      | Création d’un avis (après trajet)       |
+| GET     | `/api/avis`      | Liste tous les avis (ou avec filtres)   |
+| GET     | `/api/avis/{id}` | Détail d’un avis                        |
+| DELETE  | `/api/avis/{id}` | Suppression d’un avis (auteur ou admin) |
+
+- Chaque avis contient : note, titre, commentaire, auteur, destinataire, trajet concerné, statut (modéré, en attente, etc.)
+- **Sécurité** : seul l’auteur ou un admin peut supprimer/modifier un avis.
+- **Usage** : permet la remontée de la réputation, la modération, la gestion des litiges.
+
+### Exemple d’envoi d’avis (POST /api/avis)
+
+```json
+{
+  "note": 4.5,
+  "titre": "Excellent covoiturage !",
+  "commentaire": "Conducteur ponctuel et voiture confortable.",
+  "covoiturage": 12,
+  "destinataire": 42
+}
+```
