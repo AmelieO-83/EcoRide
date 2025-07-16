@@ -20,3 +20,26 @@ Le choix des technologies s’appuie sur leur robustesse, leur documentation et 
   _Justification : Ces outils améliorent la productivité, la collaboration et la gestion de projet._
 
 Ce choix technique garantit un développement rapide, une grande sécurité et une facilité de déploiement sur des plateformes cloud comme Heroku, Fly.io ou Vercel.
+
+## 2. Configuration de l’environnement de développement local
+
+Pour garantir un environnement reproductible, sécurisé et proche de la production, j’utilise les outils suivants :
+
+- **Système d’exploitation :** MacOS
+- **Éditeur de code :** Visual Studio Code
+- **Gestion de versions :** Git (GitHub)
+- **Gestion de projet :** Trello
+- **Stack technique :**
+  - **PHP 8.2** (géré avec Docker pour garantir la portabilité)
+  - **Symfony 6.4** (via Composer)
+  - **MySQL 8** (accès via Docker, administration via phpMyAdmin)
+  - **MongoDB 6** (via Docker, administration via MongoDB Compass)
+- **Outils complémentaires :**
+  - Docker Desktop (pour la gestion des containers)
+  - Composer (gestion des dépendances PHP)
+  - phpMyAdmin (admin MySQL)
+  - MongoDB Compass (admin MongoDB)
+- **Commandes de base :**
+  - `docker-compose up` : pour démarrer tous les services
+  - `composer install` : pour installer les dépendances PHP
+  - `symfony server:start` : serveur local de dev
