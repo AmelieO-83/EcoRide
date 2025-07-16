@@ -1,43 +1,31 @@
 <?php
-
+// src/Repository/VoitureRepository.php
 namespace App\Repository;
 
+use App\Entity\Utilisateur;
 use App\Entity\Voiture;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Voiture>
- */
 class VoitureRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $r)
     {
-        parent::__construct($registry, Voiture::class);
+        parent::__construct($r, Voiture::class);
     }
 
-    //    /**
-    //     * @return Voiture[] Returns an array of Voiture objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('v.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Voiture
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Récupère toutes les voitures d’un utilisateur.
+     *
+     * @return Voiture[]
+     */
+    public function findByProprietaire(Utilisateur $user): array
+    {
+        return $this->createQueryBuilder('v')
+            ->andWhere('v.proprietaire = :u')
+            ->setParameter('u', $user)
+            ->orderBy('v.modele', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

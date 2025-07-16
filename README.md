@@ -275,3 +275,35 @@ L’API REST de gestion des avis permet aux utilisateurs de laisser une note et 
   "destinataire": 42
 }
 ```
+
+## API Voiture (gestion des véhicules)
+
+L’API permet à chaque utilisateur de gérer sa ou ses voitures (création, consultation, modification, suppression).
+
+| Méthode | Route                | Description                                    |
+| ------- | -------------------- | ---------------------------------------------- |
+| POST    | `/api/voitures`      | Ajouter une voiture à son profil               |
+| GET     | `/api/voitures`      | Lister toutes les voitures de l’utilisateur    |
+| GET     | `/api/voitures/{id}` | Détail d’une voiture                           |
+| PUT     | `/api/voitures/{id}` | Modifier une voiture (propriétaire uniquement) |
+| DELETE  | `/api/voitures/{id}` | Supprimer une voiture (propriétaire/admin)     |
+
+- Une voiture est toujours liée à un utilisateur.
+- À la création d’un trajet, l’utilisateur doit sélectionner une de ses voitures.
+- Les informations disponibles incluent : modèle, immatriculation, énergie, couleur, date de première immatriculation, options (fumeur/animaux), marque.
+- Sécurité : seul le propriétaire (ou un admin) peut modifier ou supprimer une voiture.
+
+### Exemple d’ajout de voiture (POST /api/voitures)
+
+```json
+{
+  "modele": "Yaris",
+  "immatriculation": "AB-123-CD",
+  "energie": "hybride",
+  "couleur": "Bleu",
+  "datePremiereImmatriculation": "15/04/2020",
+  "fumeur": false,
+  "animaux": true,
+  "marque": 2
+}
+```
