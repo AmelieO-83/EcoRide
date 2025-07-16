@@ -307,3 +307,25 @@ L’API permet à chaque utilisateur de gérer sa ou ses voitures (création, co
   "marque": 2
 }
 ```
+
+## API Marque (gestion des marques de voitures)
+
+L’API Marque permet de gérer la liste des marques automobiles proposées lors de l’ajout ou modification d’une voiture.
+
+| Méthode | Route               | Description                       |
+| ------- | ------------------- | --------------------------------- |
+| GET     | `/api/marques`      | Lister toutes les marques         |
+| POST    | `/api/marques`      | Ajouter une marque (admin only)   |
+| DELETE  | `/api/marques/{id}` | Supprimer une marque (admin only) |
+
+- La route GET `/api/marques` est utilisée pour alimenter le champ “marque” du formulaire voiture.
+- Seuls les administrateurs peuvent ajouter ou supprimer une marque.
+- Les marques sont référencées par leur ID et leur libellé.
+
+### Exemple d’ajout de marque (POST /api/marques)
+
+```json
+{
+  "libelle": "Toyota"
+}
+```

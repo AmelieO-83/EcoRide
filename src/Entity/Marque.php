@@ -1,27 +1,30 @@
 <?php
-
+// src/Entity/Marque.php
 namespace App\Entity;
 
 use App\Repository\MarqueRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Voiture;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MarqueRepository::class)]
+#[ORM\Table(name: 'marque')]
 class Marque
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
+    #[Groups(['marque:read', 'marque:list'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 64)]
-    private ?string $libelle = null;
+    #[ORM\Column(type: 'string', length: 100)]
+    #[Groups(['marque:read', 'marque:list', 'marque:write','covoiturage:read','participation:read'])]
+    private string $libelle;
 
     /**
      * @var Collection<int, Voiture>
      */
-    #[ORM\OneToMany(targetEntity: Voiture::class, mappedBy: 'marque')]
+    #[ORM\OneToMany(mappedBy: 'marque', targetEntity: Voiture::class, orphanRemoval: false)]
     private Collection $voitures;
 
     public function __construct()
@@ -34,7 +37,7 @@ class Marque
         return $this->id;
     }
 
-    public function getLibelle(): ?string
+    public function getLibelle(): string
     {
         return $this->libelle;
     }
@@ -42,7 +45,6 @@ class Marque
     public function setLibelle(string $libelle): static
     {
         $this->libelle = $libelle;
-
         return $this;
     }
 
@@ -60,19 +62,16 @@ class Marque
             $this->voitures->add($voiture);
             $voiture->setMarque($this);
         }
-
         return $this;
     }
 
     public function removeVoiture(Voiture $voiture): static
     {
         if ($this->voitures->removeElement($voiture)) {
-            // set the owning side to null (unless already changed)
             if ($voiture->getMarque() === $this) {
                 $voiture->setMarque(null);
             }
         }
-
         return $this;
     }
 }
