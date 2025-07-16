@@ -78,3 +78,16 @@ Les wireframes servent de base à la conception des interfaces graphiques et les
 - **Modèle conceptuel de données (MCD)** : structure de la base relationnelle (tables, relations, types de données).
 
 Les diagrammes détaillés sont disponibles dans le PDF principal à rendre.
+
+## 6. Initialisation du projet Symfony
+
+Le projet EcoRide est construit sur le framework Symfony 6.4 (LTS) afin de garantir robustesse, sécurité et évolutivité.  
+La structure Symfony a été initialisée à la racine du dépôt, en respectant l’organisation standard (`/src`, `/config`, `/public`, etc.), ce qui facilite la gestion des dépendances, la modularité, et l’intégration des outils nécessaires (Doctrine ORM pour MySQL, Doctrine MongoDB ODM pour MongoDB, etc.).
+
+Les principales étapes ont été :
+
+- Installation du squelette Symfony avec Composer (`composer create-project symfony/skeleton:"6.4.*" ./`)
+- Ajout de la structure Symfony à la racine du projet existant (pour garder l’historique Git et les docs)
+- Préparation à la configuration des bases de données relationnelle et NoSQL
+
+> Voir la section “Configuration des bases de données” ci-dessous pour les paramètres de connexion.
