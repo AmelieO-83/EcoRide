@@ -1,78 +1,124 @@
-.eco-main-block {
-  background: #fff;
-  border-radius: 24px;
-  min-height: 500px;
-  box-shadow: 0 2px 10px #0001;
-  position: relative;
-  margin: 0 auto;
-  margin-top: 2.5rem;
-  margin-bottom: 0;
-  max-width: 96vw;
-  width: 1600px;
-  padding: 3rem 2.5rem 2rem 2.5rem;
+html,
+body {
+  height: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: #f2ede4;
+  font-family: "Montserrat", Arial, sans-serif;
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
+  flex-direction: column;
+  min-height: 100vh;
+}
+main {
+  flex: 1 0 auto;
+}
+.recherche {
+  position: relative;
+  background: #fff;
+  border-radius: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 10px #0001;
+  padding: 3.3rem 2.2rem 3.5rem 2.2rem;
+  min-height: 350px;
+  z-index: 2;
   overflow: visible;
 }
-.eco-img-bg {
+.recherche::before {
+  content: "";
   position: absolute;
+  border-radius: 32px;
   right: 0;
   bottom: 0;
-  width: 390px;
-  min-width: 120px;
-  max-width: 40vw;
-  z-index: 1;
+  width: 600px;
+  height: 350px;
+  background-image: url("/images/Fond.jpg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom right;
   pointer-events: none;
-  user-select: none;
-  /* Ajoute ceci pour bien coller au coin */
-  margin-bottom: -6px; /* ou ajuste à -12px si besoin */
+  z-index: 1;
+  opacity: 1;
 }
-.fond-ecoride {
-  background-color: #f2ede4;
-  min-height: 100vh;
-  width: 100vw;
+.recherche > * {
   position: relative;
-  padding-bottom: 0;
-}
-.eco-left {
-  flex: 1 1 58%;
   z-index: 2;
-  min-width: 340px;
 }
-.eco-block-valeurs {
+.recherche-h1 {
+  color: #4a7c59;
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.eco-inpt {
+  border-radius: 12px !important;
+}
+.valeurs {
   background: #f2ede4;
-  border-radius: 12px;
-  padding: 1.7rem 1.7rem 1.1rem 1.7rem;
-  margin-top: 2.1rem;
-  max-width: 600px;
-  font-size: 1.09rem;
-  box-shadow: 0 1px 6px #0001;
+  padding: 2.2rem 0 2.2rem 0;
+  margin-top: -0.5rem;
+  min-height: 240px;
+  border-radius: 0 0 0 0;
 }
-@media (max-width: 1250px) {
-  .eco-main-block {
+.eco-valeurs-title {
+  color: #4a7c59;
+  font-size: 1.23rem;
+  font-weight: bold;
+  margin-bottom: 1.3rem;
+  text-align: left;
+}
+.eco-valeurs-list {
+  padding-left: 0;
+  list-style: none;
+  margin: 0;
+  font-size: 1.08rem;
+}
+.eco-valeurs-list li {
+  margin-bottom: 0.38em;
+}
+footer {
+  flex-shrink: 0;
+  width: 100%;
+  background: #f2ede4;
+  font-size: 0.9rem;
+  color: #999;
+  padding: 0.6rem 0;
+  border-radius: 0 0 16px 16px;
+}
+footer a {
+  color: #999;
+  text-decoration: underline;
+}
+@media (max-width: 800px) {
+  .recherche {
+    width: 100vw;
     max-width: 100vw;
-    padding: 2rem 1rem;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 0 0 18px 18px;
+    padding: 1.2rem 0.3rem 2rem 0.3rem;
+    min-height: 300px;
   }
-  .eco-img-bg {
-    width: 240px;
+  .recherche-form {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    align-items: stretch !important;
   }
-}
-@media (max-width: 900px) {
-  .eco-main-block {
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 98vw;
+  .recherche-form input,
+  .recherche-form button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
-  .eco-img-bg {
-    position: relative;
-    right: unset;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 1rem;
-    width: 140px;
-  }
-  .eco-block-valeurs {
-    max-width: 98vw;
+  .recherche::before {
+    width: 200px;
+    height: 125px;
+    background-size: contain;
+    border-radius: 0 0 18px 18px;
   }
 }
