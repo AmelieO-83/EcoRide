@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\CovoiturageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
@@ -9,10 +10,12 @@ use Symfony\Component\HttpFoundation\Response;
 class HomeController extends AbstractController
 {
     #[Route('/', name: 'home', methods: ['GET'])]
-    public function home() : Response
+    public function home(CovoiturageRepository $covoituragerepository) : Response
     {
-    return $this->render('home/index.html.twig', [
+        $covoiturages = $covoituragerepository->findAll(); // récupère tous les trajets
+        return $this->render('home/index.html.twig', [
             'title' => 'Bienvenue sur EcoRide',
+            'covoiturages' => $covoiturages,
         ]);
     }
 }

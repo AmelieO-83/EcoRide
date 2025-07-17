@@ -390,3 +390,20 @@ Le dossier `/sql` contient :
 3. Connecte-toi avec les identifiants fournis pour tester chaque parcours.
 
 **Astuce** : Les fichiers `.sql` sont aussi compatibles avec les outils en ligne de commande (`mysql`).
+
+## Mécanismes de sécurité mis en place
+
+| Niveau              | Mécanisme mis en place                                                | Description / Rôle                                         |
+| ------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Front (formulaire)  | Validation HTML5, Bootstrap, JS                                       | Contrôle des saisies, limites (required, minlength, etc.)  |
+| Front (vue)         | Échappement automatique (Twig)                                        | Prévention des attaques XSS (scripts dans champs texte)    |
+| Back (API)          | Validation des données (Validator Symfony)                            | Filtrage/validation serveurside, unicité, format, longueur |
+| Authentification    | Hashage des mots de passe (bcrypt)                                    | Jamais de mot de passe en clair, sécurité base utilisateur |
+| Accès API           | API Token unique généré à l’inscription/connexion                     | Authentification à chaque requête sensible                 |
+| Rôles/Sécurité      | Gestion des rôles (`ROLE_USER`, `ROLE_ADMIN`)                         | Restrictions d’accès aux routes selon le rôle              |
+| ORM/NoSQL           | Utilisation de Doctrine ORM/ODM                                       | Protection contre injections SQL/NoSQL                     |
+| CORS                | NelmioCorsBundle                                                      | Contrôle des domaines autorisés pour l’API                 |
+| Endpoints           | Contrôle d’accès (annotations, security.yaml)                         | Limite chaque action à l’utilisateur/propriétaire/admin.   |
+| Gestion des erreurs | Statuts HTTP appropriés (401, 403, 404, 422…)                         | Aucun détail technique révélé en cas d’erreur              |
+| Transactions        | Vérification crédits/disponibilité places avant transaction           | Anti-abus, logique métier renforcée                        |
+| Modération          | Restrictions de modification/suppression (admin ou auteur uniquement) | Limitation des actions aux personnes autorisées.           |
