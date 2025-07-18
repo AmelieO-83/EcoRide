@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% block title %}Covoiturages disponibles | EcoRide{% endblock %}
+
+{% block body %}
+  <div class="container mt-4">
+    <h1>Résultats de votre recherche</h1>
+    {% if covoiturages is empty %}
+      <p>Aucun covoiturage trouvé pour ces critères.</p>
+    {% else %}
+      <div class="row mt-3">
+        {% for t in covoiturages %}
+          <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">{{ t.villeDepart }} → {{ t.villeArrivee }}</h5>
+                <p class="card-text">
+                  <strong>Date :</strong> {{ t.date|date('d/m/Y') }}<br>
+                  <strong>Départ :</strong> {{ t.heureDepart|date('H:i') }}<br>
+                  <strong>Arrivée :</strong> {{ t.heureArrivee|date('H:i') }}<br>
+                  <strong>Prix :</strong> {{ t.prix }} €<br>
+                  <strong>Places :</strong> {{ t.placesDisponibles }}
+                </p>
+                <a href="#" class="btn btn-primary btn-sm disabled">Voir</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -65,20 +65,20 @@ main {
   min-height: 240px;
   border-radius: 0 0 0 0;
 }
-.eco-valeurs-title {
+.valeurs-title {
   color: #4a7c59;
   font-size: 1.23rem;
   font-weight: bold;
   margin-bottom: 1.3rem;
   text-align: left;
 }
-.eco-valeurs-list {
+.valeurs-list {
   padding-left: 0;
   list-style: none;
   margin: 0;
   font-size: 1.08rem;
 }
-.eco-valeurs-list li {
+.valeurs-list li {
   margin-bottom: 0.38em;
 }
 footer {

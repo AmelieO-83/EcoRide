@@ -5,24 +5,20 @@
 {% block body %}
 <div class="recherche text-center">
     <div class="container">
-        <div class="col-lg-12 col-12">
-            <h1 class="recherche-h1 mb-2">EcoRide</h1>
-            <div style="color:#4A7C59;">Le covoiturage pour un avenir plus vert</div>
-            <form class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-4" method="get" action="{{ path('api_covoiturages_list') }}">
-                <input type="text" class="form-control eco-inpt" placeholder="Ville de départ" style="max-width:180px;">
-                <input type="text" class="form-control eco-inpt" placeholder="Ville d'arrivée" style="max-width:180px;">
-                <input type="date" class="form-control eco-inpt" style="max-width:160px;">
-                <button type="submit" class="btn" style="background:#4A7C59; color:white; min-width:110px;">Rechercher</button>
-            </form>
-        </div>
+        <h1 class="recherche-h1 mb-2">EcoRide</h1>
+        <div style="color:#4A7C59;">Le covoiturage pour un avenir plus vert</div>
+        <form class="d-flex flex-wrap gap-2 justify-content-center align-items-center mt-4">
+            <input type="text" name="depart" class="form-control eco-inpt" placeholder="Ville de départ" style="max-width:180px;">
+            <input type="text" name="arrivee" class="form-control eco-inpt" placeholder="Ville d'arrivée" style="max-width:180px;">
+            <input type="date" name="date" class="form-control eco-inpt" style="max-width:160px;">
+            <button type="submit" class="btn" style="background:#4A7C59; color:white; min-width:110px;">Rechercher</button>
+        </form>
     </div>
 </div>
 <div class="valeurs">
     <div class="container">
-        <h2 class="eco-valeurs-title">
-            🌿 Pourquoi choisir EcoRide ?
-        </h2>
-        <ul class="eco-valeurs-list">
+        <h2 class="valeurs-title">🌿 Pourquoi choisir EcoRide ?</h2>
+        <ul class="valeurs-list">
             <li>♻️ <strong>Écologique</strong> : moins de voitures, moins d’émissions</li>
             <li>💶 <strong>Économique</strong> : partagez les frais de déplacement</li>
             <li>🤝 <strong>Solidaire</strong> : connectez-vous avec des trajets locaux</li>
@@ -32,4 +28,57 @@
         </ul>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+  const form       = document.getElementById('search-form');
+  const resultsRow = document.getElementById('results-row');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    resultsRow.innerHTML = '<p class="text-center">Recherche en cours…</p>';
+
+    const params = new URLSearchParams(new FormData(form));
+    try {
+      const res = await fetch('/api/covoiturages?' + params.toString());
+      console.log('Request URL:', res.url);
+      console.log('Status code:', res.status, res.statusText);
+
+      if (!res.ok) {
+        throw new Error(`Erreur ${res.status} : ${res.statusText}`);
+      }
+
+      const trajets = await res.json();
+      console.log('Payload:', trajets);
+
+      if (!Array.isArray(trajets) || trajets.length === 0) {
+        resultsRow.innerHTML = '<p class="text-center">Aucun covoiturage trouvé.</p>';
+        return;
+      }
+
+      resultsRow.innerHTML = trajets.map(t => `
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title">${t.villeDepart} → ${t.villeArrivee}</h5>
+              <p class="card-text">
+                <strong>Date :</strong> ${new Date(t.date).toLocaleDateString('fr-FR')}<br>
+                <strong>Départ :</strong> ${t.heureDepart}<br>
+                <strong>Arrivée :</strong> ${t.heureArrivee}<br>
+                <strong>Prix :</strong> ${t.prix} €<br>
+                <strong>Places :</strong> ${t.placesDisponibles}
+              </p>
+              <a href="#" class="btn btn-primary btn-sm disabled">Voir</a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+    } catch (err) {
+      console.error(err);
+      resultsRow.innerHTML = `<p class="text-danger">${err.message}</p>`;
+    }
+  });
+</script>
 {% endblock %}

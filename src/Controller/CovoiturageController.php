@@ -29,25 +29,40 @@ class CovoiturageController extends AbstractController
         private NotificationService     $notificationService
     ){}
     /**
-     * GET /api/covoiturages
-     * Recherche avec filtres en query params.
+     * Cette même méthode répondra :
+     *  - en JSON sur /api/covoiturages         (route "api_covoiturages_list")
+     *  - en HTML Twig sur /covoiturages         (route "app_covoiturages_list")
      */
-    #[Route('', name: 'list', methods: ['GET'])]
-    public function list(Request $request): JsonResponse
+    #[Route('/api/covoiturages', name:'api_covoiturages_list', methods:['GET'])]
+    #[Route('/covoiturages', name:'app_covoiturages_list', methods:['GET'])]
+    public function list(Request $request): Response|JsonResponse
     {
-        $depart     = $request->query->get('depart');
-        $arrivee    = $request->query->get('arrivee');
-        $date       = $request->query->get('date')
-               ? new \DateTimeImmutable($request->query->get('date'))
-               : null;
+        // 1) Lecture des filtres
+        $depart   = $request->query->get('depart');
+        $arrivee  = $request->query->get('arrivee');
+        $date     = $request->query->get('date')
+                  ? new \DateTimeImmutable($request->query->get('date'))
+                  : null;
 
+        // 2) Recherche en BDD
         $voyages = $this->covoiturageRepository->findByFilters($depart, $arrivee, $date);
-        $json  = $this->serializer->serialize(
-            $voyages,
-            'json',
-            ['groups'=>['covoiturage:read']]
-        );
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+
+        // 3) Si on est sur la route API, on renvoie du JSON
+        if ($request->attributes->get('_route') === 'api_covoiturages_list') {
+            $json = $this->serializer->serialize(
+                $voyages,
+                'json',
+                ['groups'=>['covoiturage:read'], DateTimeNormalizer::FORMAT_KEY => 'Y-m-d']
+            );
+
+            return new JsonResponse($json, Response::HTTP_OK, [], true);
+        }
+
+        // 4) Sinon, on rend le Twig "list.html.twig"
+        return $this->render('covoiturage/list.html.twig', [
+            'covoiturages' => $voyages,
+            'filters'      => ['depart'=>$depart,'arrivee'=>$arrivee,'date'=>$date],
+        ]);
     }
 
     /**
