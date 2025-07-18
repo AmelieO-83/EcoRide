@@ -25,5 +25,9 @@ class HomeController extends AbstractController
             'title' => 'Mentions légales',
         ]);
     }
-
+    #[Route('/contact', name: 'contact', methods: ['GET'])]
+    public function index(): Response
+    {
+        return $this->render('contact.html.twig');
+    }
 }

@@ -1,0 +1,35 @@
+{# templates/contact.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact | EcoRide{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+  <h1>Contactez-nous</h1>
+  <p>Pour toute question, n’hésitez pas à nous écrire :</p>
+
+  <ul class="list-unstyled">
+    <li><strong>Email :</strong> <a href="mailto:contact@ecoride.com">contact@ecoride.com</a></li>
+    <li><strong>Téléphone :</strong> 01 23 45 67 89</li>
+    <li><strong>Adresse :</strong> 10 rue de l’Écologie, 75000 Paris</li>
+    <li><strong>SIRET :</strong> 123 456 789 00010</li>
+  </ul>
+
+  <h2 class="mt-4">Envoyer un message</h2>
+  <form method="post" action="#">
+    <div class="mb-3">
+      <label for="name" class="form-label">Votre nom</label>
+      <input type="text" id="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">Votre email</label>
+      <input type="email" id="email" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="message" class="form-label">Message</label>
+      <textarea id="message" class="form-control" rows="5" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Envoyer</button>
+  </form>
+</div>
+{% endblock %}
