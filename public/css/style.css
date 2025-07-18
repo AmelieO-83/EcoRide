@@ -1,3 +1,5 @@
+@import "variables.css";
+
 html,
 body {
   height: 100%;
@@ -7,7 +9,8 @@ body {
 }
 body {
   background: #f2ede4;
-  font-family: "Montserrat", Arial, sans-serif;
+  font-family: var(--font-sans);
+  color: var(--couleur-texte-sombre);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -80,6 +83,10 @@ main {
 }
 .eco-valeurs-list li {
   margin-bottom: 0.38em;
+}
+.btn-primary {
+  background-color: var(--couleur-primaire);
+  border-color: var(--couleur-primaire);
 }
 footer {
   flex-shrink: 0;

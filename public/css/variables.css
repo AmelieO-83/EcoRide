@@ -1,0 +1,13 @@
+/* variables.css */
+:root {
+  /* Couleurs EcoRide */
+  --couleur-primaire: #4a7c59;
+  --couleur-secondaire: #a3bfcb;
+  --couleur-fond: #f2ede4;
+  --couleur-texte-clair: #fafaf7;
+  --couleur-texte-sombre: #333333;
+
+  /* Polices */
+  --font-sans: "Montserrat", Arial, sans-serif;
+  --font-heading: "Montserrat", sans-serif;
+}

@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription | EcoRide{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="max-width: 500px;">
+  <h2 class="mb-4">Créer un compte</h2>
+  <form method="post" novalidate>
+    <div class="mb-3">
+      <label for="nom" class="form-label">Nom</label>
+      <input type="nom" class="form-control" id="nom" name="nom" required>
+    </div>
+    <div class="mb-3">
+      <label for="prenom" class="form-label">Prénom</label>
+      <input type="prenom" class="form-control" id="prenom" name="prenom" required>
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">Adresse email</label>
+      <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+      <label for="telephone" class="form-label">Numéro de téléphone</label>
+      <input type="telephone" class="form-control" id="telephone" name="telephone" required>
+    </div>
+    <div class="mb-3">
+      <label for="ville" class="form-label">Ville</label>
+      <input type="ville" class="form-control" id="ville" name="ville" required>
+    </div>
+    <div class="mb-3">
+      <label for="date" class="form-label">Date de naissance</label>
+      <input type="date" class="form-control" id="date" name="date" required>
+    </div>
+    <div class="mb-3">
+      <label for="plainPassword" class="form-label">Mot de passe</label>
+      <input type="password" class="form-control" id="plainPassword" name="plainPassword" required>
+    </div>
+    <div class="mb-3">
+      <label for="confirmPassword" class="form-label">Confirmez le mot de passe</label>
+      <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">S'inscrire</button>
+  </form>
+</div>
+{% endblock %}
