@@ -1,6 +1,6 @@
 <?php
-// src/Controller/VoitureController.php
-namespace App\Controller;
+// src/Controller/Api/VoitureController.php
+namespace App\Controller\Api;
 
 use App\Entity\Voiture;
 use App\Repository\MarqueRepository;

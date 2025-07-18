@@ -1,6 +1,6 @@
 <?php
-// src/Controller/MarqueController.php
-namespace App\Controller;
+// src/Controller/Api/MarqueController.php
+namespace App\Controller\Api;
 
 use App\Entity\Marque;
 use App\Repository\MarqueRepository;

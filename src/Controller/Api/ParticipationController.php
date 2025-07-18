@@ -1,6 +1,6 @@
 <?php
-// src/Controller/ParticipationController.php
-namespace App\Controller;
+// src/Controller/Api/ParticipationController.php
+namespace App\Controller\Api;
 
 use App\Entity\Participation;
 use App\Entity\Utilisateur;

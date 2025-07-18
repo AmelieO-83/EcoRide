@@ -30,7 +30,7 @@ services:
   App\Service\Frais:
     arguments:
       $fraisPlateforme: "%frais_plateforme%"
-  App\Controller\UtilisateurController:
+  App\Controller\Api\UtilisateurController:
     arguments:
       $creditInitial: "%credit_initial%"
 

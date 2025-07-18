@@ -1,6 +1,6 @@
 <?php
-// src/Controller/UtilisateurController.php
-namespace App\Controller;
+// src/Controller/Api/UtilisateurController.php
+namespace App\Controller\Api;
 
 use App\Entity\Utilisateur;
 use App\Repository\UtilisateurRepository;
@@ -36,7 +36,6 @@ class UtilisateurController extends AbstractController
     ) {
         $this->creditInitial = $creditInitial;
     }
-
     /**
      * Inscription (POST /api/utilisateurs)
      */
@@ -127,12 +126,18 @@ class UtilisateurController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function profil(#[CurrentUser] Utilisateur $user): JsonResponse
     {
-        $json = $this->serializer->serialize(
-            $user, 'json', ['groups'=>['utilisateur:read']]
-        );
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+        return $this->json([
+            'nom'           => $user->getNom(),
+            'prenom'        => $user->getPrenom(),
+            'email'         => $user->getEmail(),
+            'ville'         => $user->getVille(),
+            'dateNaissance' => $user->getDateNaissance() 
+                                  ? $user->getDateNaissance()->format('Y-m-d') 
+                                  : null,
+            'credit'        => $user->getCredit(),
+            'createdAt' => $user->getCreatedAt()->format(\DateTime::ATOM),
+        ]);
     }
-
     /**
      * Modifier profil (PUT /api/utilisateurs/profil)
      */

@@ -1,6 +1,6 @@
 <?php
-// src/Controller/CovoiturageController.php
-namespace App\Controller;
+// src/Controller/Api/CovoiturageController.php
+namespace App\Controller\Api;
 
 use App\Entity\Covoiturage;
 use App\Enum\NotificationType;
@@ -75,12 +75,8 @@ class CovoiturageController extends AbstractController
         }
         $covoiturage->setVoiture($voiture);
 
-        dump('CHAUFFEUR AVANT ASSOC :', $utilisateur->getId(), $utilisateur->getEmail());
-
         // 4. On associe le chauffeur
         $covoiturage->setChauffeur($utilisateur);
-
-        dump('CHAUFFEUR APRÈS ASSOC :', $covoiturage->getChauffeur()?->getId());
 
         // 5. Validation
         $errors = $this->validator->validate($covoiturage);
@@ -159,6 +155,12 @@ class CovoiturageController extends AbstractController
     #[Route('/{id}', name:'delete', methods:['DELETE'])]
     public function delete(int $id, #[CurrentUser] $utilisateur): JsonResponse
     {
+        if (null === $utilisateur) {
+            return $this->json(
+                ['error' => 'Authentification requise'], 
+                Response::HTTP_UNAUTHORIZED
+            );
+        }
         $covoiturage = $this->covoiturageRepository->find($id);
         if (!$covoiturage) {
             return $this->json(['error'=>'Introuvable'], Response::HTTP_NOT_FOUND);

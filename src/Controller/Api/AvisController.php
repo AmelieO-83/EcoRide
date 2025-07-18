@@ -1,6 +1,6 @@
 <?php
-// src/Controller/AvisController.php
-namespace App\Controller;
+// src/Controller/Api/AvisController.php
+namespace App\Controller\Api;
 
 use App\Entity\Avis;
 use App\Entity\Utilisateur;

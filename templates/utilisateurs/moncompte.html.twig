@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mon compte | EcoRide{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="max-width:600px;">
+  <h2 class="mb-4">Mon compte</h2>
+  <div id="accountInfo">
+    <p>Chargement…</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('ecoride_token');
+  if (!token) {
+    return window.location.href = '{{ path("api_utilisateurs_mon_compte") }}';
+  }
+
+  const resp = await fetch('{{ path("api_me") }}', {
+    headers: { 'X-AUTH-TOKEN': token }
+  });
+
+  if (!resp.ok) {
+    // token invalide ou expiré
+    localStorage.removeItem('ecoride_token');
+    return window.location.href = '{{ path("api_utilisateurs_mon_compte") }}';
+  }
+
+  const data = await resp.json();
+  document.getElementById('accountInfo').innerHTML = `
+    <ul class="list-group">
+      <li class="list-group-item"><strong>Email :</strong> ${data.email}</li>
+      <li class="list-group-item"><strong>Rôles :</strong> ${data.roles.join(', ')}</li>
+      <li class="list-group-item"><strong>Crédit :</strong> ${data.credit}</li>
+      <li class="list-group-item"><strong>Inscrit le :</strong> ${new Date(data.createdAt).toLocaleString('fr-FR')}</li>
+    </ul>
+  `;
+});
+</script>
+{% endblock %}
