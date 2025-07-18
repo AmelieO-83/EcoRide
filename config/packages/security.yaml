@@ -17,7 +17,7 @@ security:
       security: false
 
     public_api:
-      pattern: ^/api/(?:utilisateurs(?:/connexion)?|covoiturages)
+      pattern: ^/(?:api/utilisateurs$|api/utilisateurs/connexion$|api/covoiturages)
       security: false
 
     api:
@@ -28,8 +28,7 @@ security:
         - App\Security\ApiTokenAuthenticator
 
     public_front:
-      # ouvre explicitement la home et toutes les pages front publiques
-      pattern: ^/(?:$|connexion|inscription|contact|mentions-legales)
+      pattern: ^/(?:$|connexion|inscription|contact|mentions-legales|mon-compte)
       security: false
 
     main:

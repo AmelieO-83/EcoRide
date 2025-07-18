@@ -1,11 +1,13 @@
+{# templates/utilisateurs/moncompte.html.twig #}
 {% extends 'base.html.twig' %}
+
 {% block title %}Mon compte | EcoRide{% endblock %}
 
 {% block body %}
 <div class="container mt-5" style="max-width:600px;">
   <h2 class="mb-4">Mon compte</h2>
-  <div id="accountInfo">
-    <p>Chargement…</p>
+  <div id="accountInfo" class="text-center">
+    Chargement de vos informations…
   </div>
 </div>
 {% endblock %}
@@ -14,29 +16,39 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('ecoride_token');
+
   if (!token) {
-    return window.location.href = '{{ path("api_utilisateurs_mon_compte") }}';
+    console.warn('Pas de token, redirection vers login');
+    return window.location.href = '{{ path("connexion") }}';
   }
 
-  const resp = await fetch('{{ path("api_me") }}', {
-    headers: { 'X-AUTH-TOKEN': token }
-  });
+  try {
+    const resp = await fetch('{{ path("api_utilisateurs_profil") }}', {
+      headers: { 'X-AUTH-TOKEN': token }
+    });
 
-  if (!resp.ok) {
-    // token invalide ou expiré
-    localStorage.removeItem('ecoride_token');
-    return window.location.href = '{{ path("api_utilisateurs_mon_compte") }}';
+    if (!resp.ok) {
+      console.warn('Token invalide ou autre, nettoyage et redirection');
+      localStorage.removeItem('ecoride_token');
+      return window.location.href = '{{ path("connexion") }}';
+    }
+
+    const u = await resp.json();
+
+    document.getElementById('accountInfo').innerHTML = `
+      <ul class="list-group">
+        <li class="list-group-item"><strong>Prénom :</strong> ${u.prenom}</li>
+        <li class="list-group-item"><strong>Nom :</strong> ${u.nom}</li>
+        <li class="list-group-item"><strong>Email :</strong> ${u.email}</li>
+        <li class="list-group-item"><strong>Ville :</strong> ${u.ville}</li>
+        <li class="list-group-item"><strong>Naissance :</strong> ${new Date(u.dateNaissance).toLocaleDateString('fr-FR')}</li>
+        <li class="list-group-item"><strong>Crédit :</strong> ${u.credit}</li>
+      </ul>
+    `;
+  } catch (err) {
+    console.error('Erreur Mon Compte:', err);
+    document.getElementById('accountInfo').textContent = 'Erreur lors du chargement';
   }
-
-  const data = await resp.json();
-  document.getElementById('accountInfo').innerHTML = `
-    <ul class="list-group">
-      <li class="list-group-item"><strong>Email :</strong> ${data.email}</li>
-      <li class="list-group-item"><strong>Rôles :</strong> ${data.roles.join(', ')}</li>
-      <li class="list-group-item"><strong>Crédit :</strong> ${data.credit}</li>
-      <li class="list-group-item"><strong>Inscrit le :</strong> ${new Date(data.createdAt).toLocaleString('fr-FR')}</li>
-    </ul>
-  `;
 });
 </script>
 {% endblock %}

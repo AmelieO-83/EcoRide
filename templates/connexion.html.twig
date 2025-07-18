@@ -8,7 +8,7 @@
   <div class="card p-4 shadow" style="max-width:400px; width:100%;">
     <h2 class="text-center mb-4">Se connecter</h2>
 
-    {# Affiche l’erreur si identifiants invalides #}
+    {# Affiche l’erreur si nom d’utilisateur / mot de passe invalides #}
     {% if error %}
       <div class="alert alert-danger">
         {{ error.messageKey|trans(error.messageData, 'security') }}
@@ -16,16 +16,14 @@
     {% endif %}
 
     <div id="errorBox" class="alert alert-danger d-none"></div>
-    <form id="loginForm" action="{{ path('connexion') }}" method="post">
-      {# CSRF token #}
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
+    <form id="loginForm" action="#" method="post">
+      {# On laisse le JS gérer l’appel AJAX, pas besoin d’URL ici #}
       <div class="mb-3">
         <label for="username" class="form-label">Adresse email</label>
         <input
           type="email"
           id="username"
-          name="_username"
+          name="username"
           class="form-control"
           required
           autofocus
@@ -38,7 +36,7 @@
         <input
           type="password"
           id="password"
-          name="_password"
+          name="password"
           class="form-control"
           required
         >
@@ -52,37 +50,44 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
 {% block javascripts %}
 <script>
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email    = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-  const errorBox = document.getElementById('errorBox');
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('loginForm');
+  if (!form) {
+    console.error('loginForm introuvable');
+    return;
+  }
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email    = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const errorBox = document.getElementById('errorBox');
 
-  try {
-    const resp = await fetch('{{ path("api_utilisateurs_connexion") }}', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await resp.json();
+    try {
+      const resp = await fetch('{{ path("api_utilisateurs_connexion") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await resp.json();
 
-    if (resp.ok) {
-      // tu peux stocker le token, puis rediriger
-      localStorage.setItem('ecoride_token', data.apiToken);
-      window.location.href = '{{ path("api_utilisateurs_profil") }}';
-    } else {
-      // affiche l'erreur renvoyée par l'API
-      errorBox.textContent = data.error || 'Erreur inconnue';
+      if (resp.ok) {
+        console.log('Stockage du token', data.apiToken);
+        localStorage.setItem('ecoride_token', data.apiToken);
+        window.location.href = '{{ path("mon_compte") }}';
+      } else {
+        errorBox.textContent = data.error || 'Erreur inconnue';
+        errorBox.classList.remove('d-none');
+      }
+    } catch (err) {
+      console.error('Erreur fetch login:', err);
+      errorBox.textContent = 'Impossible de contacter le serveur.';
       errorBox.classList.remove('d-none');
     }
-  } catch (err) {
-    console.error(err);
-    errorBox.textContent = 'Impossible de contacter le serveur.';
-    errorBox.classList.remove('d-none');
-  }
+  });
 });
 </script>
-{% endblock %}
 {% endblock %}
