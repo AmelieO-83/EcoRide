@@ -26,14 +26,14 @@
           <li class="nav-item"><a class="nav-link" href="{{ path('home') }}">Accueil</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ path('contact') }}">Contact</a></li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle fs-3" 
-              href="#" 
+            <button class="nav-link dropdown-toggle fs-3 bg-transparent border-0" 
               id="authDropdown" 
-              role="button" 
+              type="button"
               data-bs-toggle="dropdown" 
-              aria-expanded="false">
+              aria-expanded="false"
+              onkeydown="if(event.key==='Enter'||event.key===' '){this.click();}">
               <i class="bi bi-person-lines-fill"></i>
-            </a>
+            </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
               <li><a class="dropdown-item" href="{{ path('connexion') }}">Connexion</a></li>
               <li><a class="dropdown-item" href="{{ path('inscription') }}">Inscription</a></li>
