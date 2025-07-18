@@ -30,4 +30,10 @@ class HomeController extends AbstractController
     {
         return $this->render('contact.html.twig');
     }
+    #[Route('/connexion', name: 'connexion', methods: ['GET', 'POST'])]
+    public function login(): Response
+    {
+        // on ne gère pas encore la soumission, on affiche juste le formulaire
+        return $this->render('connexion.html.twig');
+    }
 }
