@@ -5,14 +5,14 @@
 {% block body %}
 <div class="container mt-5" style="max-width: 500px;">
   <h2 class="mb-4">Créer un compte</h2>
-  <form method="post" novalidate>
+  <form id="signup-form" novalidate>
     <div class="mb-3">
       <label for="nom" class="form-label">Nom</label>
-      <input type="nom" class="form-control" id="nom" name="nom" required>
+      <input type="text" class="form-control" id="nom" name="nom" required>
     </div>
     <div class="mb-3">
       <label for="prenom" class="form-label">Prénom</label>
-      <input type="prenom" class="form-control" id="prenom" name="prenom" required>
+      <input type="text" class="form-control" id="prenom" name="prenom" required>
     </div>
     <div class="mb-3">
       <label for="email" class="form-label">Adresse email</label>
@@ -20,11 +20,11 @@
     </div>
     <div class="mb-3">
       <label for="telephone" class="form-label">Numéro de téléphone</label>
-      <input type="telephone" class="form-control" id="telephone" name="telephone" required>
+      <input type="tel" class="form-control" id="telephone" name="telephone">
     </div>
     <div class="mb-3">
       <label for="ville" class="form-label">Ville</label>
-      <input type="ville" class="form-control" id="ville" name="ville" required>
+      <input type="text" class="form-control" id="ville" name="ville" required>
     </div>
     <div class="mb-3">
       <label for="date" class="form-label">Date de naissance</label>
@@ -38,7 +38,65 @@
       <label for="confirmPassword" class="form-label">Confirmez le mot de passe</label>
       <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
     </div>
+    <div id="error-msg" class="text-danger mb-3"></div>
     <button type="submit" class="btn btn-primary w-100">S'inscrire</button>
   </form>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form     = document.getElementById('signup-form');
+  const errorMsg = document.getElementById('error-msg');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    errorMsg.textContent = '';
+
+    const nom           = form.nom.value.trim();
+    const prenom        = form.prenom.value.trim();
+    const email         = form.email.value.trim();
+    const telephone     = form.telephone.value.trim();
+    const ville         = form.ville.value.trim();
+    const date          = form.date.value;
+    const password      = form.plainPassword.value;
+    const confirmPass   = form.confirmPassword.value;
+
+    if (password !== confirmPass) {
+      return errorMsg.textContent = "Les mots de passe ne correspondent pas.";
+    }
+
+    try {
+      const resp = await fetch('{{ path("api_utilisateurs_inscription") }}', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          nom,
+          prenom,
+          email,
+          telephone,
+          ville,
+          dateNaissance: date,
+          password
+        })
+      });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        errorMsg.textContent = data.error || data.errors || 'Erreur lors de l’inscription';
+        return;
+      }
+
+      // Succès : on stocke le token et on redirige
+      localStorage.setItem('ecoride_token', data.apiToken);
+      window.location.href = '{{ path("mon_compte") }}';
+
+    } catch (err) {
+      console.error(err);
+      errorMsg.textContent = "Impossible de contacter le serveur.";
+    }
+  });
+});
+</script>
 {% endblock %}
