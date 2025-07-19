@@ -35,8 +35,14 @@ class CovoiturageRepository extends ServiceEntityRepository
                ->setParameter('arr', $villeArrivee);
         }
         if ($date) {
-            $qb->andWhere('DATE(c.date) = :dt')
-               ->setParameter('dt', $date->format('d-m-Y'));
+            // on alimente un intervalle [début du jour, début du jour suivant)
+            $start = $date->setTime(0, 0, 0);
+            $end   = $start->modify('+1 day');
+
+            $qb->andWhere('c.date >= :start')
+            ->andWhere('c.date <  :end')
+            ->setParameter('start', $start)
+            ->setParameter('end',   $end);
         }
 
         return $qb
