@@ -1,0 +1,20 @@
+{# templates/covoiturages/show.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail du trajet | EcoRide{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="max-width:600px;">
+  <h2 class="mb-4">Trajet : {{ trajet.villeDepart }} → {{ trajet.villeArrivee }}</h2>
+  <ul class="list-group">
+    <li class="list-group-item"><strong>Date :</strong> {{ trajet.date|date('d/m/Y') }}</li>
+    <li class="list-group-item"><strong>Heure de départ :</strong> {{ trajet.heureDepart|date('H:i') }}</li>
+    <li class="list-group-item"><strong>Heure d'arrivée prévue :</strong> {{ trajet.heureArrivee|date('H:i') }}</li>
+    <li class="list-group-item"><strong>Conducteur :</strong> {{ trajet.chauffeur.nom }} {{ trajet.chauffeur.prenom }}</li>
+    <li class="list-group-item"><strong>Voiture :</strong> {{ trajet.voiture.marque.libelle }} {{ trajet.voiture.modele }} {{ trajet.voiture.couleur }}</li>
+    <li class="list-group-item"><strong>Places dispo :</strong> {{ trajet.placesDisponibles }}</li>
+    <li class="list-group-item"><strong>Prix par personne :</strong> {{ trajet.prix }} crédits</li>
+  </ul>
+  <a href="{{ path('covoiturages_list') }}" class="btn btn-link mt-3">← Retour à la liste</a>
+</div>
+{% endblock %}

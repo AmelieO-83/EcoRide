@@ -28,7 +28,7 @@ security:
         - App\Security\ApiTokenAuthenticator
 
     public_front:
-      pattern: ^/(?:$|connexion|inscription|contact|mentions-legales|mon-compte)
+      pattern: ^/(?:$|connexion|inscription|contact|mentions-legales|mon-compte|covoiturages(?:/.*)?)
       security: false
 
     main:
@@ -50,4 +50,5 @@ security:
       }
     - { path: ^/api/covoiturages, roles: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: ^/api, roles: ROLE_USER }
+    - { path: ^/covoiturages, roles: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }

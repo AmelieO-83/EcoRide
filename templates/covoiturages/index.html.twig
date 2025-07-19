@@ -1,0 +1,35 @@
+{# templates/covoiturages/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Tous les trajets | EcoRide{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+  <h1 class="mb-4">Tous les covoiturages</h1>
+
+  {% if covoiturages is empty %}
+    <div class="alert alert-info">Aucun trajet disponible.</div>
+  {% else %}
+    <div class="row g-4">
+      {% for trajet in covoiturages %}
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">
+                {{ trajet.villeDepart }} → {{ trajet.villeArrivee }}
+              </h5>
+              <p class="card-text mb-1">
+                <strong>Date :</strong> {{ trajet.date|date('d/m/Y H:i') }}
+              </p>
+              <p class="card-text mb-3">
+                <strong>Conducteur :</strong> {{ trajet.chauffeur.email }}
+              </p>
+              <a href="{{ path('trajet_show', { id: trajet.id }) }}" class="btn btn-outline-primary mt-auto">Voir le détail</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
