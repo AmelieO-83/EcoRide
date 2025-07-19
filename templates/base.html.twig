@@ -34,14 +34,10 @@
               onkeydown="if(event.key==='Enter'||event.key===' '){this.click();}">
               <i class="bi bi-person-lines-fill"></i>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
-              {% if app.user %}
-                <li><a class="dropdown-item" href="{{ path('mon_compte') }}">Mon compte</a></li>
-                <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
-              {% else %}
-                <li><a class="dropdown-item" href="{{ path('connexion') }}">Connexion</a></li>
-                <li><a class="dropdown-item" href="{{ path('inscription') }}">Inscription</a></li>
-              {% endif %}
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown" id="authMenu">
+              <li id="menuConnexion"><a class="dropdown-item" href="{{ path('connexion') }}">Connexion</a></li>
+              <li id="menuInscription"><a class="dropdown-item" href="{{ path('inscription') }}">Inscription</a></li>
+              <li id="menuDeconnexion" class="d-none"><a class="dropdown-item" href="#" id="logoutLink">Déconnexion</a></li>
             </ul>
           </li>
         </ul>
@@ -59,6 +55,45 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+  
+  {# ======= AUTH DROPDOWN SCRIPT (toujours chargé) ======= #}
+  <script>
+    (function(){
+      // quand la page est complètement chargée
+      window.addEventListener('DOMContentLoaded', () => {
+        const token      = localStorage.getItem('ecoride_token');
+        const menuConn   = document.getElementById('menuConnexion');
+        const menuInscr  = document.getElementById('menuInscription');
+        const menuDeconn = document.getElementById('menuDeconnexion');
+        const logoutLink = document.getElementById('logoutLink');
+
+        if (token) {
+          menuConn?.classList.add('d-none');
+          menuInscr?.classList.add('d-none');
+          menuDeconn?.classList.remove('d-none');
+        } else {
+          menuConn?.classList.remove('d-none');
+          menuInscr?.classList.remove('d-none');
+          menuDeconn?.classList.add('d-none');
+        }
+
+        logoutLink?.addEventListener('click', async e => {
+          e.preventDefault();
+          try {
+            await fetch('{{ path("api_utilisateurs_deconnexion") }}', {
+              method: 'POST',
+              headers: { 'X-AUTH-TOKEN': token }
+            });
+          } catch (_) {}
+          localStorage.removeItem('ecoride_token');
+          location.href = '{{ path("accueil") }}';
+        });
+      });
+    })();
+  </script>
+  {# ======================================================= #}
+
   {% block javascripts %}{% endblock %}
+
 </body>
 </html>
