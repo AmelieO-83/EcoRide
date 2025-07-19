@@ -1,14 +1,41 @@
-{# templates/utilisateurs/moncompte.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Mon compte | EcoRide{% endblock %}
+{% block title %}Mon Compte | EcoRide{% endblock %}
 
 {% block body %}
-<div class="container mt-5" style="max-width:600px;">
-  <h2 class="mb-4">Mon compte</h2>
-  <div id="accountInfo" class="text-center">
-    Chargement de vos informations…
-  </div>
+<div class="container mt-5" style="max-width:500px;">
+  <h2 class="mb-4">Mon profil</h2>
+
+  <div id="message" class="alert d-none"></div>
+
+  <form id="profileForm">
+    <div class="mb-3">
+      <label for="prenom" class="form-label">Prénom</label>
+      <input type="text" id="prenom" name="prenom" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="nom" class="form-label">Nom</label>
+      <input type="text" id="nom" name="nom" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" id="email" name="email" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="ville" class="form-label">Ville</label>
+      <input type="text" id="ville" name="ville" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label for="dateNaissance" class="form-label">Date de naissance</label>
+      <input type="date" id="dateNaissance" name="dateNaissance" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Nouveau mot de passe</label>
+      <input type="password" id="password" name="password" class="form-control">
+      <div class="form-text">Laissez vide pour ne pas modifier.</div>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+  </form>
 </div>
 {% endblock %}
 
@@ -16,39 +43,73 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('ecoride_token');
+  if (!token) return window.location.href = '{{ path("connexion") }}';
 
-  if (!token) {
-    console.warn('Pas de token, redirection vers login');
-    return window.location.href = '{{ path("connexion") }}';
-  }
+  const form    = document.getElementById('profileForm');
+  const message = document.getElementById('message');
 
+  // 1) Charger les données existantes
   try {
     const resp = await fetch('{{ path("api_utilisateurs_profil") }}', {
       headers: { 'X-AUTH-TOKEN': token }
     });
+    if (!resp.ok) throw new Error('Non authentifié');
+    const user = await resp.json();
+    // remplir le formulaire
+    form.prenom.value        = user.prenom || '';
+    form.nom.value           = user.nom    || '';
+    form.email.value         = user.email  || '';
+    form.ville.value         = user.ville  || '';
+    form.dateNaissance.value = user.dateNaissance ? user.dateNaissance.split('T')[0] : '';
+  } catch (err) {
+    console.error(err);
+    return window.location.href = '{{ path("connexion") }}';
+  }
 
-    if (!resp.ok) {
-      console.warn('Token invalide ou autre, nettoyage et redirection');
-      localStorage.removeItem('ecoride_token');
-      return window.location.href = '{{ path("connexion") }}';
+  // 2) Écouter la soumission
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    message.classList.add('d-none');
+    message.textContent = '';
+
+    const payload = {
+      prenom:        form.prenom.value.trim(),
+      nom:           form.nom.value.trim(),
+      email:         form.email.value.trim(),
+      ville:         form.ville.value.trim(),
+      dateNaissance: form.dateNaissance.value,
+    };
+    if (form.password.value) {
+      payload.password = form.password.value;
     }
 
-    const u = await resp.json();
-
-    document.getElementById('accountInfo').innerHTML = `
-      <ul class="list-group">
-        <li class="list-group-item"><strong>Prénom :</strong> ${u.prenom}</li>
-        <li class="list-group-item"><strong>Nom :</strong> ${u.nom}</li>
-        <li class="list-group-item"><strong>Email :</strong> ${u.email}</li>
-        <li class="list-group-item"><strong>Ville :</strong> ${u.ville}</li>
-        <li class="list-group-item"><strong>Naissance :</strong> ${new Date(u.dateNaissance).toLocaleDateString('fr-FR')}</li>
-        <li class="list-group-item"><strong>Crédit :</strong> ${u.credit}</li>
-      </ul>
-    `;
-  } catch (err) {
-    console.error('Erreur Mon Compte:', err);
-    document.getElementById('accountInfo').textContent = 'Erreur lors du chargement';
-  }
+    try {
+      const resp = await fetch('{{ path("api_utilisateurs_modifier") }}', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-AUTH-TOKEN': token
+        },
+        body: JSON.stringify(payload)
+      });
+      if (resp.ok) {
+        message.className = 'alert alert-success';
+        message.textContent = 'Profil mis à jour avec succès.';
+        message.classList.remove('d-none');
+        form.password.value = '';
+      } else {
+        const err = await resp.json();
+        message.className = 'alert alert-danger';
+        message.textContent = err.error || err.errors || 'Erreur lors de la mise à jour';
+        message.classList.remove('d-none');
+      }
+    } catch (err) {
+      console.error(err);
+      message.className = 'alert alert-danger';
+      message.textContent = 'Impossible de contacter le serveur.';
+      message.classList.remove('d-none');
+    }
+  });
 });
 </script>
 {% endblock %}
