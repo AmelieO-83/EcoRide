@@ -1,19 +1,20 @@
+{# templates/covoiturages/proposer.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Proposer un trajet | EcoRide{% endblock %}
 
 {% block body %}
 <div class="container mt-5" style="max-width:600px;">
-  <h2 class="mb-4">Proposer un trajet</h2>
-  <div id="msg" class="alert d-none"></div>
-  <form id="proposerForm">
+  <h2 class="mb-4">Proposez un trajet</h2>
+  <div id="message" class="alert d-none"></div>
+  <form id="proposeForm">
     <div class="mb-3">
-      <label for="depart" class="form-label">Ville de départ</label>
-      <input type="text" id="depart" name="depart" class="form-control" required>
+      <label for="villeDepart" class="form-label">Ville de départ</label>
+      <input type="text" id="villeDepart" name="villeDepart" class="form-control" required>
     </div>
     <div class="mb-3">
-      <label for="arrivee" class="form-label">Ville d'arrivée</label>
-      <input type="text" id="arrivee" name="arrivee" class="form-control" required>
+      <label for="villeArrivee" class="form-label">Ville d'arrivée</label>
+      <input type="text" id="villeArrivee" name="villeArrivee" class="form-control" required>
     </div>
     <div class="mb-3">
       <label for="dateDepart" class="form-label">Date de départ</label>
@@ -24,12 +25,18 @@
       <input type="time" id="heureDepart" name="heureDepart" class="form-control" required>
     </div>
     <div class="mb-3">
-      <label for="places" class="form-label">Places disponibles</label>
-      <input type="number" id="places" name="places" class="form-control" min="1" required>
+      <label for="placesDisponibles" class="form-label">Places disponibles</label>
+      <input type="number" id="placesDisponibles" name="placesDisponibles" class="form-control" min="1" required>
     </div>
     <div class="mb-3">
-      <label for="prix" class="form-label">Prix par personne</label>
+      <label for="prix" class="form-label">Prix par personne (crédits)</label>
       <input type="number" id="prix" name="prix" class="form-control" min="0" required>
+    </div>
+    <div class="mb-3">
+      <label for="voitureSelect" class="form-label">Choisissez votre voiture</label>
+      <select id="voitureSelect" name="voiture" class="form-select" required>
+        <option value="">-- Sélectionnez --</option>
+      </select>
     </div>
     <button type="submit" class="btn btn-primary w-100">Proposer</button>
   </form>
@@ -38,47 +45,84 @@
 
 {% block javascripts %}
 <script>
-document.getElementById('proposerForm').addEventListener('submit', async e => {
-  e.preventDefault();
+document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('ecoride_token');
   if (!token) return window.location.href = '{{ path("connexion") }}';
 
-  const form = e.target;
-  const payload = {
-    villeDepart: form.depart.value,
-    villeArrivee: form.arrivee.value,
-    dateDepart: form.dateDepart.value,
-    heureDepart: form.heureDepart.value,
-    places: parseInt(form.places.value,10),
-    prix: parseFloat(form.prix.value),
-  };
+  const selectVoiture = document.getElementById('voitureSelect');
+  const form = document.getElementById('proposeForm');
+  const msg  = document.getElementById('message');
 
-  const msg = document.getElementById('msg');
   try {
-    const resp = await fetch('{{ path("api_covoiturages_create") }}', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AUTH-TOKEN': token
-      },
-      body: JSON.stringify(payload)
+    // 1. Chargement du profil pour récupérer l'id
+    const prof = await fetch('{{ path("api_utilisateurs_profil") }}', {
+      headers: { 'X-AUTH-TOKEN': token }
     });
-    if (resp.ok) {
-      msg.className = 'alert alert-success';
-      msg.textContent = 'Trajet proposé avec succès !';
-      msg.classList.remove('d-none');
-      form.reset();
-    } else {
-      const err = await resp.json();
+    if (!prof.ok) throw new Error('Profil introuvable');
+    const user = await prof.json();
+
+    // 2. Chargement des voitures
+    const vresp = await fetch(`/api/voitures?user=${user.id}`, {
+      headers: { 'X-AUTH-TOKEN': token }
+    });
+    if (!vresp.ok) throw new Error('Voitures introuvables');
+    const voitures = await vresp.json();
+
+    voitures.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = `${v.marque.nom} ${v.modele} (${v.energie}, ${v.couleur})`;
+      selectVoiture.appendChild(opt);
+    });
+  } catch (err) {
+    console.error(err);
+    msg.className = 'alert alert-danger';
+    msg.textContent = 'Impossible de charger vos voitures.';
+    msg.classList.remove('d-none');
+    return;
+  }
+
+  // 3. Soumission du formulaire
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    msg.classList.add('d-none');
+
+    const payload = {
+      villeDepart:       form.villeDepart.value.trim(),
+      villeArrivee:      form.villeArrivee.value.trim(),
+      dateDepart:        form.dateDepart.value,      // back-end attend d/m/Y ?
+      heureDepart:       form.heureDepart.value,
+      placesDisponibles: parseInt(form.placesDisponibles.value, 10),
+      prix:              parseFloat(form.prix.value),
+      voiture:           parseInt(form.voiture.value, 10)
+    };
+
+    try {
+      const resp = await fetch('{{ path("api_covoiturages_create") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-AUTH-TOKEN': token
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.ok) {
+        // success → redirection vers détail du trajet
+        const traj = await resp.json();
+        // l'API renvoie un JSON, possibilité de lire le Location header:
+        const loc = resp.headers.get('Location');
+        window.location.href = loc || `{{ path('trajet_show', {'id':'__ID__'}) }}`.replace('__ID__', JSON.parse(traj).id);
+      } else {
+        const err = await resp.json();
+        throw new Error(err.error || 'Erreur inconnue');
+      }
+    } catch (err) {
       msg.className = 'alert alert-danger';
-      msg.textContent = err.error || 'Erreur lors de la proposition.';
+      msg.textContent = err.message;
       msg.classList.remove('d-none');
     }
-  } catch (err) {
-    msg.className = 'alert alert-danger';
-    msg.textContent = 'Impossible de contacter le serveur.';
-    msg.classList.remove('d-none');
-  }
+  });
 });
 </script>
 {% endblock %}

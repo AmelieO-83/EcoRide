@@ -180,11 +180,11 @@ class AvisController extends AbstractController
     }
 
     /**
-     * DELETE /api/avis/{id}
-     * Supprimer un avis (ROLE_ADMIN ou ROLE_EMPLOYE).
+     * PUT /api/avis/{id}/rejeter
+     * Rejeter un avis (ROLE_ADMIN ou ROLE_EMPLOYE).
      */
-    #[Route('/{id}', name:'delete', methods:['DELETE'])]
-    public function delete(int $id, #[CurrentUser] $utilisateur): JsonResponse
+    #[Route('/{id}/rejeter', name:'reject', methods:['PUT'])]
+    public function reject(int $id, #[CurrentUser] $utilisateur): JsonResponse
     {
         $avis = $this->avisRepository->find($id);
         if (!$avis) {

@@ -77,6 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resp.ok) {
         console.log('Stockage du token', data.apiToken);
         localStorage.setItem('ecoride_token', data.apiToken);
+        if (data.roles.includes('ROLE_EMPLOYE')) {
+          window.location.href = '{{ path("employe") }}';
+          return;
+        }
         window.location.href = '{{ path("mon_compte") }}';
       } else {
         errorBox.textContent = data.error || 'Erreur inconnue';

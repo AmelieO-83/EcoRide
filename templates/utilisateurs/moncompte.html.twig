@@ -46,7 +46,7 @@
         <h2 class="mb-4">Mes voitures</h2>
         <div id="carList" class="list-group mb-4"></div>
         <div class="me-4">
-          <a href="#" class="btn btn-primary">Ajouter une voiture</a>
+          <a href="{{ path('voiture_ajouter') }}" class="btn btn-primary">Ajouter une voiture</a>
         </div>
       </div>
       <div class="col-lg-6 mb-4 d-flex flex-column">
@@ -73,17 +73,21 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('ecoride_token');
+  console.log('TOKEN MON COMPTE =', token);
+  console.log('APPEL PROFIL →', '{{ path("api_utilisateurs_profil") }}');
   if (!token) return window.location.href = '{{ path("connexion") }}';
 
   const form    = document.getElementById('profileForm');
   const message = document.getElementById('message');
   const carList = document.getElementById('carList');
 
-  // 1) Charger profil
+  // 1. Charger profil
   try {
+    console.log('Fetch profil headers', { 'X-AUTH-TOKEN': token });
     const resp = await fetch('{{ path("api_utilisateurs_profil") }}', {
       headers: { 'X-AUTH-TOKEN': token }
     });
+    console.log('Fetch profil status', resp.status);
     if (!resp.ok) throw new Error();
     const user = await resp.json();
 
@@ -93,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     form.ville.value         = user.ville  || '';
     form.dateNaissance.value = user.dateNaissance?.split('T')[0] || '';
 
-    // 2) Charger mes voitures
+    // 2. Charger mes voitures
     const vresp = await fetch(`/api/voitures?user=${user.id}`, {
       headers: { 'X-AUTH-TOKEN': token }
     });
@@ -113,7 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return window.location.href = '{{ path("connexion") }}';
   }
 
-  // 3) Soumission du profil
+  // 3. Soumission du profil
   form.addEventListener('submit', async e => {
     e.preventDefault();
     message.classList.add('d-none');

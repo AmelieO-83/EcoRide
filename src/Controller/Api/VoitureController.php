@@ -43,7 +43,6 @@ class VoitureController extends AbstractController
      * GET /api/voitures/{id}
      */
     #[Route('/{id}', name:'show', methods:['GET'])]
-    #[IsGranted('ROLE_USER')]
     public function show(int $id, #[CurrentUser] $proprietaire): JsonResponse
     {
         $voiture = $this->repository->find($id);

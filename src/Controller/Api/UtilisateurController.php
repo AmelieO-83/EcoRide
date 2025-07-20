@@ -127,6 +127,7 @@ class UtilisateurController extends AbstractController
     public function profil(#[CurrentUser] Utilisateur $user): JsonResponse
     {
         return $this->json([
+            'id'         => $user->getId(),
             'nom'           => $user->getNom(),
             'prenom'        => $user->getPrenom(),
             'email'         => $user->getEmail(),

@@ -1,0 +1,127 @@
+{# templates/voitures/add.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter ma voiture | EcoRide{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="max-width:600px;">
+  <h2 class="mb-4">Ajouter une voiture</h2>
+  <div id="alertBox" class="alert d-none"></div>
+  <form id="carForm" novalidate>
+    <div class="mb-3">
+      <label for="marque" class="form-label">Marque</label>
+      <select id="marque" name="marque" class="form-select" required>
+        <option value="">-- sélectionnez --</option>
+        {# On remplira en JS via GET /api/marques #}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="modele" class="form-label">Modèle</label>
+      <input type="text" id="modele" name="modele" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="immatriculation" class="form-label">Immatriculation</label>
+      <input type="text" id="immatriculation" name="immatriculation" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="energie" class="form-label">Énergie</label>
+      <select id="energie" name="energie" class="form-select" required>
+        <option value="">--</option>
+        <option value="essence">Essence</option>
+        <option value="diesel">Diesel</option>
+        <option value="hybride">Hybride</option>
+        <option value="electrique">Électrique</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="couleur" class="form-label">Couleur</label>
+      <input type="text" id="couleur" name="couleur" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label for="date_premiere_immatriculation" class="form-label">1ère immatriculation</label>
+      <input type="date" id="date_premiere_immatriculation" name="date_premiere_immatriculation" class="form-control">
+    </div>
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="fumeur" name="fumeur" value="1">
+      <label class="form-check-label" for="fumeur">Fumeur</label>
+    </div>
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="animaux" name="animaux" value="1">
+      <label class="form-check-label" for="animaux">Animaux</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('ecoride_token');
+  const selectMarque = document.getElementById('marque');
+
+  try {
+    // 1. on récupère la liste des marques
+    const resp = await fetch('/api/marques', {
+      headers: { 'X-AUTH-TOKEN': token }
+    });
+    if (!resp.ok) throw new Error('Impossible de charger les marques');
+    const marques = await resp.json();
+
+    // 2. on construit les <option>
+    marques.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.libelle;  // ou m.nom selon ton champ
+      selectMarque.appendChild(opt);
+    });
+  } catch (err) {
+    console.error(err);
+    const alertBox = document.getElementById('alertBox');
+    alertBox.textContent = 'Erreur lors du chargement des marques.';
+    alertBox.classList.remove('d-none');
+  }
+});
+document.getElementById('carForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const alertBox = document.getElementById('alertBox');
+  alertBox.classList.add('d-none');
+
+  // collecte des données
+  const form = e.target;
+  const payload = {
+    marque: form.marque.value,
+    modele: form.modele.value,
+    immatriculation: form.immatriculation.value,
+    energie: form.energie.value,
+    couleur: form.couleur.value,
+    date_premiere_immatriculation: form.date_premiere_immatriculation.value,
+    fumeur: form.fumeur.checked ? 1 : 0,
+    animaux: form.animaux.checked ? 1 : 0,
+  };
+
+  try {
+    const resp = await fetch('{{ path("api_voitures_create") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type':'application/json',
+        'X-AUTH-TOKEN': localStorage.getItem('ecoride_token'),
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      // succès : redirection vers mon compte
+      window.location.href = '{{ path("voiture_ajouter")|replace({"/ajouter":""}) }}'; 
+      // ou bien vers la liste /mon-compte
+    } else {
+      alertBox.textContent = data.error || data.errors || 'Erreur inconnue';
+      alertBox.classList.remove('d-none');
+    }
+  } catch (err) {
+    alertBox.textContent = 'Impossible de contacter le serveur';
+    alertBox.classList.remove('d-none');
+  }
+});
+</script>
+{% endblock %}
