@@ -12,9 +12,113 @@
     <li class="list-group-item"><strong>Heure d'arrivée prévue :</strong> {{ trajet.heureArrivee|date('H:i') }}</li>
     <li class="list-group-item"><strong>Conducteur :</strong> {{ trajet.chauffeur.nom }} {{ trajet.chauffeur.prenom }}</li>
     <li class="list-group-item"><strong>Voiture :</strong> {{ trajet.voiture.marque.libelle }} {{ trajet.voiture.modele }} {{ trajet.voiture.couleur }}</li>
+    <li class="list-group-item"><strong>Fumeur :</strong> {{ trajet.voiture.fumeur ? 'Oui' : 'Non' }}</li>
+    <li class="list-group-item"><strong>Animaux :</strong> {{ trajet.voiture.animaux ? 'Oui' : 'Non' }}</li>
     <li class="list-group-item"><strong>Places dispo :</strong> {{ trajet.placesDisponibles }}</li>
     <li class="list-group-item"><strong>Prix par personne :</strong> {{ trajet.prix }} crédits</li>
   </ul>
-  <a href="{{ path('covoiturages_list') }}" class="btn btn-link mt-3">← Retour à la liste</a>
+
+  {# Bouton "Participer" qui ouvre le modal #}
+  <button type="button" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#participationModal">Participer à ce covoiturage</button>
+
+  {# Bouton Retour #}
+  <div><a href="{{ path('covoiturages_list') }}" class="btn btn-link mt-3">← Retour à la liste</a></div>
 </div>
+
+{# ======= Modal de confirmation ======= #}
+<div 
+  class="modal fade" 
+  id="participationModal" 
+  tabindex="-1" 
+  aria-labelledby="participationModalLabel" 
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="participationModalLabel">Confirmer votre participation</h5>
+        <button 
+          type="button" 
+          class="btn-close" 
+          data-bs-dismiss="modal" 
+          aria-label="Fermer"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>Confirmez que vous voulez participer au covoiturage suivant :</p>
+        <ul>
+          <li><strong>Départ :</strong> {{ trajet.villeDepart }}</li>
+          <li><strong>Arrivée :</strong> {{ trajet.villeArrivee }}</li>
+          <li><strong>Date :</strong> {{ trajet.date|date('d/m/Y') }}</li>
+          <li><strong>Heure de départ :</strong> {{ trajet.heureDepart|date('H:i') }}</li>
+        </ul>
+        <p>Le tarif est de <strong>{{ trajet.prix }} crédits</strong>.</p>
+        <div id="participationError" class="alert alert-danger d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          data-bs-dismiss="modal"
+        >Annuler</button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          id="confirmParticipationBtn"
+        >
+          Je confirme et paye {{ trajet.prix }} crédits
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const confirmBtn = document.getElementById('confirmParticipationBtn');
+      const errorBox   = document.getElementById('participationError');
+      confirmBtn?.addEventListener('click', async () => {
+        errorBox.classList.add('d-none');
+        const token = localStorage.getItem('ecoride_token');
+        if (!token) {
+          window.location.href = '{{ path("connexion") }}';
+          return;
+        }
+        try {
+          const resp = await fetch(
+            '{{ path("api_participation_participer", {"id": trajet.id}) }}',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-AUTH-TOKEN': token
+              }
+            }
+          );
+          const data = await resp.json();
+          if (resp.ok) {
+            // mettre à jour le solde dans le localStorage (si tu l'y conserves)
+            localStorage.setItem('ecoride_credit', data.nouveauCredit);
+
+            // fermer le modal puis rediriger ou afficher un succès
+            const modal = bootstrap.Modal.getInstance(
+              document.getElementById('participationModal')
+            );
+            modal.hide();
+            // tu peux rediriger vers le compte pour voir la réservation :
+            window.location.href = '{{ path("mon_compte") }}';
+          } else {
+            errorBox.textContent = data.error || 'Une erreur est survenue.';
+            errorBox.classList.remove('d-none');
+          }
+        } catch (err) {
+          errorBox.textContent = 'Impossible de contacter le serveur.';
+          errorBox.classList.remove('d-none');
+        }
+      });
+    });
+  </script>
 {% endblock %}

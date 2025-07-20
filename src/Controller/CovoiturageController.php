@@ -13,29 +13,38 @@ class CovoiturageController extends AbstractController
     #[Route('/covoiturages', name: 'covoiturages_list', methods: ['GET'])]
     public function list(Request $request, CovoiturageRepository $repo): Response
     {
-        $depart  = $request->query->get('depart');
-        $arrivee = $request->query->get('arrivee');
-        $date    = $request->query->get('date');
-        $dateObj = $date ? new \DateTimeImmutable($date) : null;
+        // 1) On lit la query string
+        $depart   = $request->query->get('depart');
+        $arrivee  = $request->query->get('arrivee');
+        $dateStr  = $request->query->get('date');
+        $date     = $dateStr ? new \DateTimeImmutable($dateStr) : null;
+        $energie  = $request->query->get('energie');
+        $fumeur  = $request->query->has('fumeur')  ? $request->query->get('fumeur') === '1'  : null;
+        $animaux = $request->query->has('animaux') ? $request->query->get('animaux')==='1' : null;
 
-        $searchPerformed = !empty($depart) || !empty($arrivee) || !empty($date);
+        // 2) On appelle le repository
+        $results = $repo->findByFilters(
+            $depart,
+            $arrivee,
+            $date,
+            $energie,
+            $fumeur,
+            $animaux
+        );
 
-        if ($searchPerformed) {
-            $covoiturages = $repo->findByFilters($depart, $arrivee, $dateObj);
-        } else {
-            $covoiturages = $repo->findAll();
-        }
-
+        // 3) On rend la vue en passant tout
         return $this->render('covoiturages/index.html.twig', [
-            'covoiturages' => $covoiturages,
-            'criteres'     => [
-                'depart'  => $depart,
-                'arrivee' => $arrivee,
-                'date'    => $date,
-            ],
-            'searchPerformed' => $searchPerformed,
+            'covoiturages'    => $results,
+            'searchPerformed' => $request->query->count() > 0,
+            'depart'          => $depart,
+            'arrivee'         => $arrivee,
+            'dateStr'         => $dateStr,
+            'energie'         => $energie,
+            'fumeur'          => $fumeur,
+            'animaux'         => $animaux,
         ]);
     }
+
 
     #[Route('/covoiturages/{id}', name: 'trajet_show', methods: ['GET'])]
     public function show(int $id, CovoiturageRepository $repo): Response

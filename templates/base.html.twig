@@ -5,23 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}EcoRide{% endblock %}</title>
   <link rel="icon" href="{{ asset('images/EcoRide_logo.png') }}">
+
+  {# Bootstrap CSS #}
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
     rel="stylesheet"
     integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
     crossorigin="anonymous"
   >
+
+  {# Variables CSS (couleurs, fonts) #}
   <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
+
+  {# Style global #}
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+  {# Google Fonts #}
   <link
     href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
     rel="stylesheet"
   >
+
+  {# Bootstrap Icons #}
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
   >
-  {% block stylesheets %}{% endblock %}
 </head>
 <body>
   <nav class="navbar navbar-expand-lg"

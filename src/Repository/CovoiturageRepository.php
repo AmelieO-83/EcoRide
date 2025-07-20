@@ -19,35 +19,52 @@ class CovoiturageRepository extends ServiceEntityRepository
      * @param string|null $villeDepart
      * @param string|null $villeArrivee
      * @param \DateTimeImmutable|null $date
+     * @param string|null $energie     // "", "hybride" ou "electrique"
+     * @param bool|null   $fumeur      // true ou false
+     * @param bool|null   $animaux     // true ou false
      * @return Covoiturage[]
      */
-    public function findByFilters(?string $villeDepart, ?string $villeArrivee, ?\DateTimeImmutable $date): array
-    {
-        $qb = $this->createQueryBuilder('c')
-            ->andWhere('c.placesDisponibles > 0');
+        public function findByFilters(
+            ?string $villeDepart,
+            ?string $villeArrivee,
+            ?\DateTimeImmutable $date,
+            ?string $energie,
+            ?bool $fumeur,
+            ?bool $animaux
+        ): array {
+            $qb = $this->createQueryBuilder('c')
+                // on join la voiture pour filtrer dessus
+                ->join('c.voiture', 'v')
+                ->andWhere('c.placesDisponibles > 0');
 
-        if ($villeDepart) {
-            $qb->andWhere('c.villeDepart = :dep')
-               ->setParameter('dep', $villeDepart);
-        }
-        if ($villeArrivee) {
-            $qb->andWhere('c.villeArrivee = :arr')
-               ->setParameter('arr', $villeArrivee);
-        }
-        if ($date) {
-            // on alimente un intervalle [début du jour, début du jour suivant)
-            $start = $date->setTime(0, 0, 0);
-            $end   = $start->modify('+1 day');
+            if ($villeDepart) {
+                $qb->andWhere('c.villeDepart = :dep')
+                ->setParameter('dep', $villeDepart);
+            }
+            if ($villeArrivee) {
+                $qb->andWhere('c.villeArrivee = :arr')
+                ->setParameter('arr', $villeArrivee);
+            }
+            if ($date) {
+                $qb->andWhere('c.date = :dt')
+                ->setParameter('dt', $date->format('Y-m-d'));
+            }
+            if ($energie) {
+                $qb->andWhere('v.energie = :ene')
+                ->setParameter('ene', $energie);
+            }
+            if (null !== $fumeur) {
+                $qb->andWhere('v.fumeur = :fum')
+                ->setParameter('fum', $fumeur);
+            }
+            if (null !== $animaux) {
+                $qb->andWhere('v.animaux = :ani')
+                ->setParameter('ani', $animaux);
+            }
 
-            $qb->andWhere('c.date >= :start')
-            ->andWhere('c.date <  :end')
-            ->setParameter('start', $start)
-            ->setParameter('end',   $end);
+            return $qb
+                ->orderBy('c.date', 'ASC')
+                ->getQuery()
+                ->getResult();
         }
-
-        return $qb
-            ->orderBy('c.date', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
 }

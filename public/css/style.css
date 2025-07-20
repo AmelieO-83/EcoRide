@@ -149,3 +149,26 @@ footer a {
     border-radius: 0 0 18px 18px;
   }
 }
+form.filtres {
+  background-color: var(--couleur-primaire) !important;
+  color: var(--couleur-texte-clair) !important;
+  padding: 1.5rem; /* ajustable */
+  border-radius: 0.5rem; /* ajustable */
+}
+form.filtres .form-check-label,
+form.filtres .form-label {
+  color: var(--couleur-texte-clair) !important;
+}
+form.filtres .form-check-input {
+  background-color: transparent;
+  border-color: var(--couleur-texte-clair);
+}
+form.filtres .form-check-input:hover,
+form.filtres .form-check-input:focus {
+  border-color: var(--couleur-secondaire);
+  box-shadow: 0 0 0 0.25rem rgba(163, 191, 203, 0.5);
+}
+form.filtres .form-check-input:checked {
+  background-color: var(--couleur-secondaire);
+  border-color: var(--couleur-secondaire);
+}
