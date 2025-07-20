@@ -29,7 +29,10 @@ class HomeController extends AbstractController
     #[Route('/contact', name: 'contact', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('contact.html.twig');
+        return $this->render('contact.html.twig', [
+        'data'   => ['name'=>'','email'=>'','subject'=>'','message'=>''],
+        'errors' => [],
+        ]);
     }
     #[Route('/connexion', name: 'connexion', methods: ['GET','POST'])]
     public function login(AuthenticationUtils $authUtils): Response
