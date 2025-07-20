@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Proposer un trajet | EcoRide{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="max-width:600px;">
+  <h2 class="mb-4">Proposer un trajet</h2>
+  <div id="msg" class="alert d-none"></div>
+  <form id="proposerForm">
+    <div class="mb-3">
+      <label for="depart" class="form-label">Ville de départ</label>
+      <input type="text" id="depart" name="depart" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="arrivee" class="form-label">Ville d'arrivée</label>
+      <input type="text" id="arrivee" name="arrivee" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="dateDepart" class="form-label">Date de départ</label>
+      <input type="date" id="dateDepart" name="dateDepart" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="heureDepart" class="form-label">Heure de départ</label>
+      <input type="time" id="heureDepart" name="heureDepart" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="places" class="form-label">Places disponibles</label>
+      <input type="number" id="places" name="places" class="form-control" min="1" required>
+    </div>
+    <div class="mb-3">
+      <label for="prix" class="form-label">Prix par personne</label>
+      <input type="number" id="prix" name="prix" class="form-control" min="0" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Proposer</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.getElementById('proposerForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const token = localStorage.getItem('ecoride_token');
+  if (!token) return window.location.href = '{{ path("connexion") }}';
+
+  const form = e.target;
+  const payload = {
+    villeDepart: form.depart.value,
+    villeArrivee: form.arrivee.value,
+    dateDepart: form.dateDepart.value,
+    heureDepart: form.heureDepart.value,
+    places: parseInt(form.places.value,10),
+    prix: parseFloat(form.prix.value),
+  };
+
+  const msg = document.getElementById('msg');
+  try {
+    const resp = await fetch('{{ path("api_covoiturages_create") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-AUTH-TOKEN': token
+      },
+      body: JSON.stringify(payload)
+    });
+    if (resp.ok) {
+      msg.className = 'alert alert-success';
+      msg.textContent = 'Trajet proposé avec succès !';
+      msg.classList.remove('d-none');
+      form.reset();
+    } else {
+      const err = await resp.json();
+      msg.className = 'alert alert-danger';
+      msg.textContent = err.error || 'Erreur lors de la proposition.';
+      msg.classList.remove('d-none');
+    }
+  } catch (err) {
+    msg.className = 'alert alert-danger';
+    msg.textContent = 'Impossible de contacter le serveur.';
+    msg.classList.remove('d-none');
+  }
+});
+</script>
+{% endblock %}

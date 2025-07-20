@@ -1,41 +1,71 @@
+{# templates/utilisateurs/moncompte.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Mon Compte | EcoRide{% endblock %}
 
 {% block body %}
-<div class="container mt-5" style="max-width:500px;">
-  <h2 class="mb-4">Mon profil</h2>
+<div class="container mt-5">
+  <div class="row">
+    {# Colonne gauche : Profil #}
+    <div class="col-lg-6 mb-4">
+      <h2 class="mb-4">Mon profil</h2>
+      <div id="message" class="alert d-none"></div>
+      <form id="profileForm">
+        <div class="mb-3">
+          <label for="prenom" class="form-label">Prénom</label>
+          <input type="text" id="prenom" name="prenom" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="nom" class="form-label">Nom</label>
+          <input type="text" id="nom" name="nom" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" name="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="ville" class="form-label">Ville</label>
+          <input type="text" id="ville" name="ville" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label for="dateNaissance" class="form-label">Date de naissance</label>
+          <input type="date" id="dateNaissance" name="dateNaissance" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Nouveau mot de passe</label>
+          <input type="password" id="password" name="password" class="form-control">
+          <div class="form-text">Laissez vide pour ne pas modifier.</div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+      </form>
+    </div>
 
-  <div id="message" class="alert d-none"></div>
+    {# Colonne droite : Voitures + Proposer covoiturage #}
+    <div class="col-lg-6 mb-4">
+      <div class="col-md-6 mb-4 d-flex flex-column">
+        <h2 class="mb-4">Mes voitures</h2>
+        <div id="carList" class="list-group mb-4"></div>
+        <div class="me-4">
+          <a href="#" class="btn btn-primary">Ajouter une voiture</a>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4 d-flex flex-column">
+        <h2 class="mb-4">Trajets proposés</h2>
+        <div id="listeProposes" class="list-group mb-4"></div>
+        <div class="me-4">
+          <a href="{{ path('proposer_trajet') }}" class="btn btn-primary">Proposer un covoiturage</a>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4 d-flex flex-column">
+        <h2 class="mb-4">Mes participations</h2>
+        <div id="listeParticipe" class="list-group mb-4"></div>
+        <div class="me-4">
+          <a href="{{ path('accueil') }}" class="btn btn-primary">Rechercher un covoiturage</a>
+        </div>
+      </div>
 
-  <form id="profileForm">
-    <div class="mb-3">
-      <label for="prenom" class="form-label">Prénom</label>
-      <input type="text" id="prenom" name="prenom" class="form-control" required>
     </div>
-    <div class="mb-3">
-      <label for="nom" class="form-label">Nom</label>
-      <input type="text" id="nom" name="nom" class="form-control" required>
-    </div>
-    <div class="mb-3">
-      <label for="email" class="form-label">Email</label>
-      <input type="email" id="email" name="email" class="form-control" required>
-    </div>
-    <div class="mb-3">
-      <label for="ville" class="form-label">Ville</label>
-      <input type="text" id="ville" name="ville" class="form-control">
-    </div>
-    <div class="mb-3">
-      <label for="dateNaissance" class="form-label">Date de naissance</label>
-      <input type="date" id="dateNaissance" name="dateNaissance" class="form-control">
-    </div>
-    <div class="mb-3">
-      <label for="password" class="form-label">Nouveau mot de passe</label>
-      <input type="password" id="password" name="password" class="form-control">
-      <div class="form-text">Laissez vide pour ne pas modifier.</div>
-    </div>
-    <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
-  </form>
+  </div>
 </div>
 {% endblock %}
 
@@ -47,44 +77,58 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const form    = document.getElementById('profileForm');
   const message = document.getElementById('message');
+  const carList = document.getElementById('carList');
 
-  // 1) Charger les données existantes
+  // 1) Charger profil
   try {
     const resp = await fetch('{{ path("api_utilisateurs_profil") }}', {
       headers: { 'X-AUTH-TOKEN': token }
     });
-    if (!resp.ok) throw new Error('Non authentifié');
+    if (!resp.ok) throw new Error();
     const user = await resp.json();
-    // remplir le formulaire
+
     form.prenom.value        = user.prenom || '';
     form.nom.value           = user.nom    || '';
     form.email.value         = user.email  || '';
     form.ville.value         = user.ville  || '';
-    form.dateNaissance.value = user.dateNaissance ? user.dateNaissance.split('T')[0] : '';
+    form.dateNaissance.value = user.dateNaissance?.split('T')[0] || '';
+
+    // 2) Charger mes voitures
+    const vresp = await fetch(`/api/voitures?user=${user.id}`, {
+      headers: { 'X-AUTH-TOKEN': token }
+    });
+    const voitures = await vresp.json();
+    if (voitures.length) {
+      voitures.forEach(v => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item';
+        item.textContent = `${v.marque.nom} ${v.modele} – ${v.couleur}`;
+        carList.appendChild(item);
+      });
+    } else {
+      carList.innerHTML = '<div class="text-muted">Aucune voiture enregistrée.</div>';
+    }
   } catch (err) {
     console.error(err);
     return window.location.href = '{{ path("connexion") }}';
   }
 
-  // 2) Écouter la soumission
+  // 3) Soumission du profil
   form.addEventListener('submit', async e => {
     e.preventDefault();
     message.classList.add('d-none');
-    message.textContent = '';
 
     const payload = {
       prenom:        form.prenom.value.trim(),
       nom:           form.nom.value.trim(),
       email:         form.email.value.trim(),
       ville:         form.ville.value.trim(),
-      dateNaissance: form.dateNaissance.value,
+      dateNaissance: form.dateNaissance.value
     };
-    if (form.password.value) {
-      payload.password = form.password.value;
-    }
+    if (form.password.value) payload.password = form.password.value;
 
     try {
-      const resp = await fetch('{{ path("api_utilisateurs_modifier") }}', {
+      const update = await fetch('{{ path("api_utilisateurs_modifier") }}', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -92,19 +136,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         },
         body: JSON.stringify(payload)
       });
-      if (resp.ok) {
+      if (update.ok) {
         message.className = 'alert alert-success';
         message.textContent = 'Profil mis à jour avec succès.';
         message.classList.remove('d-none');
         form.password.value = '';
       } else {
-        const err = await resp.json();
+        const err = await update.json();
         message.className = 'alert alert-danger';
-        message.textContent = err.error || err.errors || 'Erreur lors de la mise à jour';
+        message.textContent = err.error || err.errors || 'Erreur lors de la mise à jour.';
         message.classList.remove('d-none');
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       message.className = 'alert alert-danger';
       message.textContent = 'Impossible de contacter le serveur.';
       message.classList.remove('d-none');

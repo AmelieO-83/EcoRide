@@ -49,4 +49,16 @@ class CovoiturageController extends AbstractController
             'trajet' => $trajet,
         ]);
     }
+    
+    #[Route('/proposer-trajet', name: 'proposer_trajet', methods: ['GET'])]
+    public function proposer(): Response
+    {
+        return $this->render('covoiturages/proposer.html.twig');
+    }
+    
+    #[Route('/mes-covoiturages', name: 'espace_covoiturage')]
+    public function index(): Response
+    {
+        return $this->render('covoiturages/espace.html.twig');
+    }
 }

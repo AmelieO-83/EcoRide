@@ -1,43 +1,85 @@
 <!DOCTYPE html>
 <html lang="fr" xml:lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}EcoRide{% endblock %}</title>
-    <link rel="icon" href="{{ asset('images/EcoRide_logo.png') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    {% block stylesheets %}{% endblock %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}EcoRide{% endblock %}</title>
+  <link rel="icon" href="{{ asset('images/EcoRide_logo.png') }}">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
+    crossorigin="anonymous"
+  >
+  <link rel="stylesheet" href="{{ asset('css/variables.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
+    rel="stylesheet"
+  >
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+  >
+  {% block stylesheets %}{% endblock %}
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg" style="background-color: #F2EDE4; border-bottom:1px solid #ece7df;">
+  <nav class="navbar navbar-expand-lg"
+       style="background-color: #F2EDE4; border-bottom:1px solid #ece7df;">
     <div class="container-fluid">
       <a class="navbar-brand" href="{{ path('accueil') }}">
-        <img src="{{ asset('images/EcoRide_logo.png') }}" alt="EcoRide Logo" height="38">
+        <img src="{{ asset('images/EcoRide_logo.png') }}"
+             alt="EcoRide Logo" height="38">
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarEcoride">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarEcoride"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarEcoride">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ path('accueil') }}">Accueil</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ path('contact') }}">Contact</a></li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ path('accueil') }}">Accueil</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ path('contact') }}">Contact</a>
+          </li>
           <li class="nav-item dropdown">
-            <button class="nav-link dropdown-toggle fs-3 bg-transparent border-0" 
-              id="authDropdown" 
+            <button
+              class="nav-link dropdown-toggle fs-3 bg-transparent border-0"
+              id="authDropdown"
               type="button"
-              data-bs-toggle="dropdown" 
+              data-bs-toggle="dropdown"
               aria-expanded="false"
-              onkeydown="if(event.key==='Enter'||event.key===' '){this.click();}">
+              onkeydown="if(event.key==='Enter'||event.key===' '){this.click();}"
+            >
               <i class="bi bi-person-lines-fill"></i>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown" id="authMenu">
-              <li id="menuConnexion"><a class="dropdown-item" href="{{ path('connexion') }}">Connexion</a></li>
-              <li id="menuInscription"><a class="dropdown-item" href="{{ path('inscription') }}">Inscription</a></li>
-              <li id="menuDeconnexion" class="d-none"><a class="dropdown-item" href="#" id="logoutLink">Déconnexion</a></li>
+            <ul
+              class="dropdown-menu dropdown-menu-end"
+              aria-labelledby="authDropdown"
+              id="authMenu"
+            >
+              <li id="menuConnexion">
+                <a class="dropdown-item"
+                   href="{{ path('connexion') }}">Connexion</a>
+              </li>
+              <li id="menuInscription">
+                <a class="dropdown-item"
+                   href="{{ path('inscription') }}">Inscription</a>
+              </li>
+              <li id="menuMoncompte" class="d-none">
+                <a class="dropdown-item"
+                   href="{{ path('mon_compte') }}">Mon compte</a>
+              </li>
+              <li id="menuDeconnexion" class="d-none">
+                <a class="dropdown-item" href="#" id="logoutLink">
+                  Déconnexion
+                </a>
+              </li>
             </ul>
           </li>
         </ul>
@@ -49,31 +91,45 @@
     {% block body %}{% endblock %}
   </main>
 
-  <footer class="container-fluid d-flex justify-content-between align-items-center py-2" style="background:#f2ede4; font-size:0.96em;">
-    <a class="ms-2" style="color:#666;" href="mailto:contact@ecoride.com">contact@ecoride.com</a>
-    <a href="{{ path('mentions_legales') }}" class="me-2" style="color:#666; text-decoration:underline;">Mentions légales</a>
+  <footer
+    class="container-fluid d-flex justify-content-between align-items-center py-2"
+    style="background:#f2ede4; font-size:0.96em;"
+  >
+    <a class="ms-2" style="color:#666;"
+       href="mailto:contact@ecoride.com">contact@ecoride.com</a>
+    <a href="{{ path('mentions_legales') }}"
+       class="me-2"
+       style="color:#666; text-decoration:underline;">
+      Mentions légales
+    </a>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
-  
-  {# ======= AUTH DROPDOWN SCRIPT (toujours chargé) ======= #}
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+    crossorigin="anonymous"
+  ></script>
+
+  {# ======= AUTH DROPDOWN SCRIPT ======= #}
   <script>
     (function(){
-      // quand la page est complètement chargée
       window.addEventListener('DOMContentLoaded', () => {
-        const token      = localStorage.getItem('ecoride_token');
-        const menuConn   = document.getElementById('menuConnexion');
-        const menuInscr  = document.getElementById('menuInscription');
-        const menuDeconn = document.getElementById('menuDeconnexion');
-        const logoutLink = document.getElementById('logoutLink');
+        const token        = localStorage.getItem('ecoride_token');
+        const menuConn     = document.getElementById('menuConnexion');
+        const menuInscr    = document.getElementById('menuInscription');
+        const menuMoncompte = document.getElementById('menuMoncompte');
+        const menuDeconn   = document.getElementById('menuDeconnexion');
+        const logoutLink   = document.getElementById('logoutLink');
 
         if (token) {
           menuConn?.classList.add('d-none');
           menuInscr?.classList.add('d-none');
+          menuMoncompte?.classList.remove('d-none');
           menuDeconn?.classList.remove('d-none');
         } else {
           menuConn?.classList.remove('d-none');
           menuInscr?.classList.remove('d-none');
+          menuMoncompte?.classList.add('d-none');
           menuDeconn?.classList.add('d-none');
         }
 
@@ -91,9 +147,8 @@
       });
     })();
   </script>
-  {# ======================================================= #}
+  {# ======================================= #}
 
   {% block javascripts %}{% endblock %}
-
 </body>
 </html>

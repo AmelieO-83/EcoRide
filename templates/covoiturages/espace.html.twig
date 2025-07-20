@@ -1,0 +1,105 @@
+{# templates/covoiturages/espace.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon espace covoiturage | EcoRide{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+  <h2 class="mb-4">Mon espace covoiturage</h2>
+
+  <div class="row">
+    <!-- Colonne Trajets proposés -->
+    <div class="col-md-6 mb-4 d-flex flex-column">
+      <h3>Trajets proposés</h3>
+      <div id="listeProposes" class="row g-3 flex-grow-1"></div>
+      <div class="mt-3 text-center">
+        <button id="btnProposer" class="btn btn-primary">
+          Proposer un trajet
+        </button>
+      </div>
+    </div>
+
+    <!-- Colonne Mes participations -->
+    <div class="col-md-6 mb-4 d-flex flex-column">
+      <h3>Mes participations</h3>
+      <div id="listeParticipe" class="row g-3 flex-grow-1"></div>
+      <div class="mt-3 text-center">
+        <button id="btnRechercher" class="btn btn-primary">
+          Rechercher un covoiturage
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('ecoride_token');
+  if (!token) {
+    return window.location.href = '{{ path("connexion") }}';
+  }
+
+  // Bouton proposer
+  document.getElementById('btnProposer')
+    .addEventListener('click', () => {
+      window.location.href = '{{ path("proposer_trajet") }}';
+    });
+
+  // Bouton rechercher
+  document.getElementById('btnRechercher')
+    .addEventListener('click', () => {
+      window.location.href = '#'; 
+      // ou bien vers la home avec query form : path('accueil') + '#recherche'
+    });
+
+  try {
+    // 1) profil
+    const prof = await fetch('{{ path("api_utilisateurs_profil") }}', {
+      headers: { 'X-AUTH-TOKEN': token }
+    });
+    if (!prof.ok) throw new Error();
+    const user = await prof.json();
+
+    // 2) covoiturages
+    const resp = await fetch('{{ path("api_covoiturages_list") }}');
+    const covs = await resp.json();
+
+    // 3) filtre
+    const proposes  = covs.filter(c => c.chauffeur.id === user.id);
+    const participe = covs.filter(c =>
+      c.passagers && c.passagers.some(p => p.id === user.id)
+    );
+
+    // 4) template carte
+    const tpl = c => `
+      <div class="col-12">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">${c.villeDepart} → ${c.villeArrivee}</h5>
+            <p class="card-text mb-1">
+              <strong>Date :</strong> ${new Date(c.dateDepart).toLocaleDateString()}
+            </p>
+            <a href="${'{{ path("trajet_show", {"id":"__ID__"}) }}'.replace('__ID__', c.id)}"
+               class="btn btn-sm btn-outline-primary">Voir</a>
+          </div>
+        </div>
+      </div>`.replace(/__ID__/g, c.id);
+
+    // 5) affichage
+    document.getElementById('listeProposes').innerHTML =
+      proposes.map(tpl).join('') || '<p class="text-muted">Aucun trajet proposé.</p>';
+
+    document.getElementById('listeParticipe').innerHTML =
+      participe.map(tpl).join('') || '<p class="text-muted">Aucune participation.</p>';
+
+  } catch (err) {
+    const msg = document.getElementById('ec-space-msg');
+    msg.className = 'alert alert-danger';
+    msg.textContent = 'Impossible de charger vos trajets.';
+    msg.classList.remove('d-none');
+  }
+});
+</script>
+{% endblock %}
