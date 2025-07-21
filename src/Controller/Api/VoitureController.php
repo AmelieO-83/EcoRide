@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\Voiture;
+use App\Enum\EnergieType;
 use App\Repository\MarqueRepository;
 use App\Repository\VoitureRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -75,20 +76,30 @@ class VoitureController extends AbstractController
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }
-        // 2) Désérialisation des autres champs (sans "marque")
-        $voiture = $this->serializer->deserialize(
-            $request->getContent(),
-            Voiture::class,
-            'json',
-            [
-              AbstractNormalizer::GROUPS => ['voiture:write'],
-              AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => true,
-            ]
-        );
+        $data = json_decode($request->getContent(), true);
 
+        // 2) Crée et remplit manuellement la Voiture
+        $voiture = new Voiture();
         $voiture
             ->setProprietaire($proprietaire)
-            ->setMarque($marque);
+            ->setMarque($marque)
+            ->setModele($data['modele'] ?? null)
+            ->setCouleur($data['couleur'] ?? null)
+            ->setEnergie(isset($data['energie']) 
+                ? EnergieType::from($data['energie'])
+                : null)
+            ->setImmatriculation($data['immatriculation'] ?? null);
+
+        // si ta propriété s’appelle vraiment "datePremiereImmatriculation"
+        if (!empty($data['date_premiere_immatriculation'])) {
+            $voiture->setDatePremiereImmatriculation(
+                new \DateTimeImmutable($data['date_premiere_immatriculation'])
+            );
+        }
+
+        $voiture
+            ->setFumeur(!empty($data['fumeur']))
+            ->setAnimaux(!empty($data['animaux']));
 
         $errors = $this->validator->validate($voiture);
         if (count($errors)>0) {
