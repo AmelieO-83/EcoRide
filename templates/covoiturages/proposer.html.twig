@@ -117,16 +117,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         body: JSON.stringify(payload)
       });
 
-      if (resp.ok) {
-        // success → redirection vers détail du trajet
-        const traj = await resp.json();
-        // l'API renvoie un JSON, possibilité de lire le Location header:
-        const loc = resp.headers.get('Location');
-        window.location.href = loc || `{{ path('trajet_show', {'id':'__ID__'}) }}`.replace('__ID__', JSON.parse(traj).id);
-      } else {
+      if (resp.status === 401 || resp.status === 403) {
+        msg.className = 'alert alert-warning';
+        msg.textContent = 'Vous devez être connecté pour proposer un trajet.';
+        msg.classList.remove('d-none');
+        return;
+      }
+
+      if (!resp.ok) {
         const err = await resp.json();
         throw new Error(err.error || 'Erreur inconnue');
       }
+
+      // Succès : stocker le message et rediriger
+      const traj = await resp.json();
+      localStorage.setItem('success_message', 'Votre covoiturage a bien été enregistré !');
+      window.location.href = '{{ path("mon_compte") }}';
+      
     } catch (err) {
       msg.className = 'alert alert-danger';
       msg.textContent = err.message;

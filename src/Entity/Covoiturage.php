@@ -36,7 +36,7 @@ class Covoiturage
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
-    #[Context([DateTimeNormalizer::FORMAT_KEY => 'd/m/Y'])]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d'])]
     private ?\DateTimeImmutable $date = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]

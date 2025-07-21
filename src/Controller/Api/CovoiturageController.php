@@ -57,6 +57,9 @@ class CovoiturageController extends AbstractController
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(Request $request, #[CurrentUser] $utilisateur): JsonResponse
     {
+        if (!$utilisateur) {
+            return $this->json(['error' => 'Authentification requise'], Response::HTTP_UNAUTHORIZED);
+        }
         // 1. On extrait d’abord le JSON en tableau pour récupérer l’ID de la voiture
         $data = json_decode($request->getContent(), true);
 
@@ -65,7 +68,10 @@ class CovoiturageController extends AbstractController
             $request->getContent(),
             Covoiturage::class,
             'json',
-            ['groups'=>['covoiturage:write'], DateTimeNormalizer::FORMAT_KEY => 'd/m/Y']
+            [
+                'groups' => ['covoiturage:write'],
+                DateTimeNormalizer::FORMAT_KEY => 'Y-m-d' // ✅ Correct pour <input type="date">
+            ]
         );
 
         // 3. On va chercher la Voiture gérée par Doctrine
