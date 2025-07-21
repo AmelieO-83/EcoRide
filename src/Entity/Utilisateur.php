@@ -76,7 +76,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\Column(length: 64)]
+    #[ORM\Column(length: 64, unique: true)]
     private string $apiToken;
 
     /** @var Collection<int, Voiture> */
@@ -121,11 +121,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(string $p): self { $this->password = $p; return $this; }
 
-    public function eraseCredentials(): void
-    {
-        // This method is intentionally left empty because
-        // there are no temporary, sensitive data to clear on this user entity.
-    }
+    public function eraseCredentials() {}
 
     public function getNom(): ?string { return $this->nom; }
     public function setNom(string $nom): self { $this->nom = $nom; return $this; }

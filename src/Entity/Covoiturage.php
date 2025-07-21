@@ -62,8 +62,8 @@ class Covoiturage
     private bool $ecologique = false;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "covoiturages")]
-    #[ORM\JoinColumn(nullable: true)]
-    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ])]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
     #[SerializedName('chauffeur')]
     private ?Utilisateur $utilisateur = null;
 

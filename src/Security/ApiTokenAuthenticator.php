@@ -26,23 +26,23 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $token = $request->headers->get('X-AUTH-TOKEN', '');
+        $token = $request->headers->get('X-AUTH-TOKEN');
 
-        if ('' === $token) {
-            throw new CustomUserMessageAuthenticationException('Pas de jeton API fourni');
+        if (!$token) {
+            throw new CustomUserMessageAuthenticationException('Aucun token fourni');
         }
 
-        return new SelfValidatingPassport(
-            new UserBadge($token, function(string $apiToken) {
-                $user = $this->userRepo->findOneBy(['apiToken' => $apiToken]);
-                if (!$user) {
-                    throw new CustomUserMessageAuthenticationException('Jeton API invalide');
-                }
-                return $user;
-            })
-        );
-    }
+        return new SelfValidatingPassport(new UserBadge($token, function($token) {
+            $user = $this->userRepo->findOneBy(['apiToken' => $token]);
 
+            if (!$user) {
+                throw new CustomUserMessageAuthenticationException('Token invalide');
+            }
+
+            return $user;
+        }));
+    }
+    
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         // Laisse passer la requête si authentification OK

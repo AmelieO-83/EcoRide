@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\Covoiturage;
+use App\Entity\Utilisateur;
 use App\Enum\NotificationType;
 use App\Repository\CovoiturageRepository;
 use App\Repository\VoitureRepository;
@@ -108,9 +109,14 @@ class CovoiturageController extends AbstractController
      * GET /api/covoiturages/{id}
      * Affiche un trajet.
      */
-    #[Route('/{id}', name:'show', methods:['GET'])]
-    public function show(int $id): JsonResponse
+    #[Route('/{id}<\d+>', name:'show', methods:['GET'])]
+    public function show($id): JsonResponse
     {
+        if (!ctype_digit((string) $id)) {
+            return $this->json(['error' => 'ID invalide'], Response::HTTP_BAD_REQUEST);
+        }
+        $id = (int) $id;
+        
         $covoiturage = $this->covoiturageRepository->find($id);
         if (!$covoiturage) {
             return $this->json(['error'=>'Introuvable'], Response::HTTP_NOT_FOUND);
@@ -195,4 +201,23 @@ class CovoiturageController extends AbstractController
         }
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
+    
+    /**
+     * GET /api/covoiturages/proposes
+     * Retourne les trajets créés par l’utilisateur connecté.
+     */
+    #[Route('/proposes', name: 'proposes', methods: ['GET'])]
+    public function listProposes(#[CurrentUser] ?Utilisateur $utilisateur): JsonResponse
+    {
+        if (!$utilisateur) {
+            return $this->json(['error' => 'Authentification requise'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $proposes = $this->covoiturageRepository->findBy(['utilisateur' => $utilisateur]);
+
+        $json = $this->serializer->serialize($proposes, 'json', ['groups' => ['covoiturage:read']]);
+
+        return new JsonResponse($json, Response::HTTP_OK, [], true);
+    }
+
 }

@@ -1,4 +1,3 @@
-{# templates/utilisateurs/moncompte.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Mon Compte | EcoRide{% endblock %}
@@ -10,6 +9,7 @@
     <div class="col-lg-6 mb-4">
       <h2 class="mb-4">Mon profil</h2>
       <div id="message" class="alert d-none"></div>
+      <div id="popupSuccess" class="alert alert-success d-none" role="alert"></div>
       <form id="profileForm">
         <div class="mb-3">
           <label for="prenom" class="form-label">Prénom</label>
@@ -86,12 +86,23 @@
   const token = localStorage.getItem('ecoride_token');
   if (!token) return window.location.href = '{{ path("connexion") }}';
 
-  // Modal de succès si flag
+  // Modal de succès si participation
   if (new URLSearchParams(window.location.search).get('participation') === 'success') {
     new bootstrap.Modal(document.getElementById('successModal')).show();
   }
 
-  // Utility fetch JSON
+  // Succès après ajout de covoiturage
+  const popup = document.getElementById('popupSuccess');
+  const successMsg = localStorage.getItem('success_message');
+  if (successMsg) {
+    popup.textContent = successMsg;
+    popup.classList.remove('d-none');
+    localStorage.removeItem('success_message');
+
+    // Recharge immédiatement les trajets proposés si succès
+    await loadTrajetsProposes();
+  }
+
   async function fetchJson(url) {
     const resp = await fetch(url, {
       headers: {
@@ -102,82 +113,90 @@
     return resp.ok ? resp.json() : null;
   }
 
-  // Charger Profil et rediriger si nécessaire
-  let user;
-  try {
-    user = await fetchJson('{{ path("api_utilisateurs_profil") }}');
-    if (!user) throw new Error();
-  } catch {
-    return window.location.href = '{{ path("connexion") }}';
-  }
+  // Charger Profil
+  const user = await fetchJson('{{ path("api_utilisateurs_profil") }}');
+  if (!user) return window.location.href = '{{ path("connexion") }}';
 
-        // Pré-remplir le formulaire Profil avec les données utilisateur
   document.getElementById('prenom').value        = user.prenom || '';
   document.getElementById('nom').value           = user.nom    || '';
   document.getElementById('email').value         = user.email  || '';
   document.getElementById('ville').value         = user.ville  || '';
   document.getElementById('dateNaissance').value = user.dateNaissance?.split('T')[0] || '';
 
-    // Mes voitures
+  // Voitures
   const cars = await fetchJson('{{ path("api_voitures_list") }}') || [];
   document.getElementById('carList').innerHTML = cars.length
     ? cars.map(v => {
-        const marqueLabel = v.marque && v.marque.libelle ? v.marque.libelle : '';
-        return `
-          <div class="list-group-item d-flex justify-content-between align-items-center">
-            <span>${marqueLabel} ${v.modele} – ${v.couleur}</span>
-            <a href="#" class="text-danger link-delete-car" data-id="${v.id}">Supprimer</a>
-          </div>
-        `;
+        const marqueLabel = v.marque?.libelle || '';
+        return `<div class="list-group-item d-flex justify-content-between align-items-center">
+          <span>${marqueLabel} ${v.modele} – ${v.couleur}</span>
+          <a href="#" class="text-danger link-delete-car" data-id="${v.id}">Supprimer</a>
+        </div>`;
       }).join('')
     : '<div class="text-muted">Aucune voiture enregistrée.</div>';
 
-  // Gestion du clic Annuler voiture via délégation
   document.getElementById('carList').addEventListener('click', async e => {
     if (!e.target.matches('.link-delete-car')) return;
     e.preventDefault();
     const id = e.target.dataset.id;
     if (!confirm('Voulez-vous vraiment supprimer cette voiture ?')) return;
     const resp = await fetch(
-      '{{ path("api_voitures_delete", {"id":"ID_PLACEHOLDER"}) }}'
-        .replace('ID_PLACEHOLDER', id),
-      {
-        method: 'DELETE',
-        headers: {
-          'X-AUTH-TOKEN': token,
-          'Accept': 'application/json'
-        }
-      }
+      '{{ path("api_voitures_delete", {"id":"ID_PLACEHOLDER"}) }}'.replace('ID_PLACEHOLDER', id),
+      { method: 'DELETE', headers: { 'X-AUTH-TOKEN': token } }
     );
+    if (resp.ok) location.reload();
+    else alert('Impossible de supprimer la voiture.');
+  });
+
+  // Trajets proposés
+  async function loadTrajetsProposes() {
+    const trajets = await fetchJson('{{ path("api_covoiturages_proposes") }}') || [];
+    console.log("Trajets proposés reçus :", trajets);
+
+    document.getElementById('listeProposes').innerHTML = trajets.length
+      ? trajets.map(t => {
+          const id = parseInt(t.id, 10);
+          const date = t.date ? t.date.split('T')[0] : '??';
+          return `<div class="list-group-item d-flex justify-content-between align-items-center">
+            <span>${t.villeDepart} → ${t.villeArrivee} le ${date}</span>
+            <a href="#" class="text-danger link-annuler-covoiturage" data-id="${id}">Annuler</a>
+          </div>`;
+        }).join('')
+      : '<div class="text-muted">Aucun covoiturage proposé.</div>';
+  }
+  await loadTrajetsProposes();
+  document.getElementById('listeProposes').addEventListener('click', async e => {
+    if (!e.target.matches('.link-annuler-covoiturage')) return;
+    e.preventDefault();
+    const id = e.target.dataset.id;
+    if (!confirm('Voulez-vous vraiment annuler ce covoiturage ?')) return;
+
+    const resp = await fetch(`/api/covoiturages/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-AUTH-TOKEN': token }
+    });
+
     if (resp.ok) {
-      // recharger la liste des voitures
-      const updated = await fetchJson('{{ path("api_voitures_list") }}') || [];
-      document.getElementById('carList').innerHTML = updated.length
-        ? updated.map(v => {
-            const label = v.marque?.libelle || '';
-            return `<div class="list-group-item">${label} ${v.modele} – ${v.couleur}</div>`;
-          }).join('')
-        : '<div class="text-muted">Aucune voiture enregistrée.</div>';
+      await loadTrajetsProposes(); // Recharge la liste
     } else {
-      alert('Impossible de supprimer la voiture.');
+      alert('Impossible d’annuler le covoiturage.');
     }
   });
 
-  // Mes trajets proposés'
+  // Participations
   async function loadParticipations() {
     const parts = await fetchJson('{{ path("api_participation_list") }}') || [];
     document.getElementById('listeParticipe').innerHTML = parts.length
       ? parts.map(p => {
-        return `<div class="list-group-item d-flex justify-content-between align-items-center">
-          <span>${p.covoiturage.villeDepart} → ${p.covoiturage.villeArrivee} le ${p.covoiturage.date.split('T')[0]}</span>
-          <a href="#" class="text-danger link-annuler" data-id="${p.id}">Annuler</a>
-        </div>`;
-      }).join('')
+          return `<div class="list-group-item d-flex justify-content-between align-items-center">
+            <span>${p.covoiturage.villeDepart} → ${p.covoiturage.villeArrivee} le ${p.covoiturage.date.split('T')[0]}</span>
+            <a href="#" class="text-danger link-annuler" data-id="${p.id}">Annuler</a>
+          </div>`;
+        }).join('')
       : '<div class="text-muted">Aucune participation pour l’instant.</div>';
   }
   await loadParticipations();
 
-  // Gestion du clic Annuler via délégation
   document.getElementById('listeParticipe').addEventListener('click', async e => {
     if (!e.target.matches('.link-annuler')) return;
     e.preventDefault();
@@ -187,18 +206,13 @@
       method: 'DELETE',
       headers: { 'X-AUTH-TOKEN': token }
     });
-    if (resp.ok) {
-      await loadParticipations();
-    } else {
-      alert('Impossible d’annuler la participation.');
-    }
+    if (resp.ok) await loadParticipations();
+    else alert('Impossible d’annuler la participation.');
   });
 
-  // Après succès, recharger participations lorsque le modal est fermé
-  const modalEl = document.getElementById('successModal');
-  modalEl.addEventListener('hidden.bs.modal', loadParticipations);
+  document.getElementById('successModal')
+    .addEventListener('hidden.bs.modal', loadParticipations);
 
-  // Soumission Profil
   document.getElementById('profileForm').addEventListener('submit', async e => {
     e.preventDefault();
     const msg = document.getElementById('message'); msg.classList.add('d-none');
@@ -224,7 +238,8 @@
       msg.className = res.ok ? 'alert alert-success' : 'alert alert-danger';
       msg.textContent = res.ok ? 'Profil mis à jour avec succès.' : err.error || 'Erreur lors de la mise à jour.';
     } catch {
-      msg.className = 'alert alert-danger'; msg.textContent = 'Impossible de contacter le serveur.';
+      msg.className = 'alert alert-danger';
+      msg.textContent = 'Impossible de contacter le serveur.';
     }
     msg.classList.remove('d-none');
   });
