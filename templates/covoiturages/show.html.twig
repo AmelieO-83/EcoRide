@@ -11,8 +11,10 @@
     <li class="list-group-item"><strong>Heure de départ :</strong> {{ trajet.heureDepart|date('H:i') }}</li>
     <li class="list-group-item"><strong>Heure d'arrivée prévue :</strong> {{ trajet.heureArrivee|date('H:i') }}</li>
     <li class="list-group-item"><strong>Conducteur :</strong> {{ trajet.chauffeur.nom }} {{ trajet.chauffeur.prenom }}</li>
-    <li class="list-group-item"><strong>Voiture :</strong> {{ trajet.voiture.marque.libelle }} {{ trajet.voiture.modele }} {{ trajet.voiture.couleur }}</li>
-    <li class="list-group-item"><strong>Energie :</strong> {{ trajet.voiture.energie.name|capitalize }}</li>
+    <li class="list-group-item">
+      <strong>Voiture :</strong> {{ trajet.voiture.marque.libelle }} {{ trajet.voiture.modele }} {{ trajet.voiture.couleur }}
+    </li>
+    <li class="list-group-item"><strong>Énergie :</strong> {{ trajet.voiture.energie.name|capitalize }}</li>
     <li class="list-group-item"><strong>Fumeur :</strong> {{ trajet.voiture.fumeur ? 'Oui' : 'Non' }}</li>
     <li class="list-group-item"><strong>Animaux :</strong> {{ trajet.voiture.animaux ? 'Oui' : 'Non' }}</li>
     <li class="list-group-item"><strong>Places dispo :</strong> {{ trajet.placesDisponibles }}</li>
@@ -20,7 +22,9 @@
   </ul>
 
   {# Bouton "Participer" qui ouvre le modal #}
-  <button type="button" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#participationModal">Participer à ce covoiturage</button>
+  <button type="button" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#participationModal">
+    Participer à ce covoiturage
+  </button>
 
   {# Bouton Retour #}
   <div><a href="{{ path('covoiturages_list') }}" class="btn btn-link mt-3">← Retour à la liste</a></div>
@@ -94,28 +98,29 @@
             {
               method: 'POST',
               headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'X-AUTH-TOKEN': token
               }
             }
           );
-          const data = await resp.json();
+          let data;
+          try {
+            data = await resp.json();
+          } catch {
+            data = { error: resp.statusText || `Erreur ${resp.status}` };
+          }
           if (resp.ok) {
-            // mettre à jour le solde dans le localStorage (si tu l'y conserves)
             localStorage.setItem('ecoride_credit', data.nouveauCredit);
-
-            // fermer le modal puis rediriger ou afficher un succès
-            const modal = bootstrap.Modal.getInstance(
+            bootstrap.Modal.getInstance(
               document.getElementById('participationModal')
-            );
-            modal.hide();
-            // tu peux rediriger vers le compte pour voir la réservation :
+            ).hide();
             window.location.href = '{{ path("mon_compte") }}';
           } else {
-            errorBox.textContent = data.error || 'Une erreur est survenue.';
+            errorBox.textContent = data.error || `Erreur ${resp.status}`;
             errorBox.classList.remove('d-none');
           }
-        } catch (err) {
+        } catch {
           errorBox.textContent = 'Impossible de contacter le serveur.';
           errorBox.classList.remove('d-none');
         }

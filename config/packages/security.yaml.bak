@@ -20,7 +20,7 @@ security:
       security: false
 
     public_api:
-      pattern: ^/(?:api/utilisateurs$|api/utilisateurs/connexion$|api/covoiturages$)
+      pattern: ^/(?:api/utilisateurs$|api/utilisateurs/connexion$|api/covoiturages)
       security: false
 
     api:
@@ -51,7 +51,7 @@ security:
         path: ^/api/utilisateurs/connexion$,
         roles: IS_AUTHENTICATED_ANONYMOUSLY,
       }
-    - { path: ^/api/covoiturages$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: ^/api/covoiturages, roles: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: ^/api, roles: ROLE_USER }
     - { path: ^/employe$, roles: ROLE_EMPLOYE }
     - { path: ^/proposer-trajet, roles: IS_AUTHENTICATED_ANONYMOUSLY }

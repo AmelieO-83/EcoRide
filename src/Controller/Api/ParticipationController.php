@@ -71,16 +71,21 @@ class ParticipationController extends AbstractController
         $this->manager->flush();
 
         // Notifie le chauffeur d'un nouveau passager
-        $this->notificationService->trigger(
-            NotificationType::NouveauPassager,
-            $covoiturage->getChauffeur(),
-            [
-                'passager' => $utilisateur,
-                'trajet'   => sprintf('%s → %s', $covoiturage->getVilleDepart(), $covoiturage->getVilleArrivee()),
-            ]
-        );
+        try {
+            $this->notificationService->trigger(
+                NotificationType::NouveauPassager,
+                $covoiturage->getChauffeur(),
+                [
+                    'passager' => $utilisateur,
+                    'trajet'   => sprintf('%s → %s', $covoiturage->getVilleDepart(), $covoiturage->getVilleArrivee()),
+                ]
+            );
+        } catch (\Throwable $e) {
+            // on log l'erreur mais on poursuit
+            // logger()->error('Notification failed: '.$e->getMessage());
+        }
 
-        return $this->json($participation, Response::HTTP_CREATED, [], ['groups'=>['participation:read']]);
+        return $this->json(['participationId' => $participation->getId(), 'nouveauCredit'   => $utilisateur->getCredit(),], Response::HTTP_CREATED);
     }
 
     /**
