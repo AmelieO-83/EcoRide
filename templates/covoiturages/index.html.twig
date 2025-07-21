@@ -7,28 +7,64 @@
 <div class="container mt-5">
   <h1 class="mb-4">Résultats de la recherche</h1>
   
-  {# ==== Bandeau de recherche réutilisé depuis l’accueil ==== #}
-  <div class="mb-4">
-    <form method="get" action="{{ path('covoiturages_list') }}" class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
-      <input type="text" name="depart" class="form-control eco-inpt" placeholder="Ville de départ" style="max-width:180px;" value="{{ depart }}">
-      <input type="text" name="arrivee" class="form-control eco-inpt" placeholder="Ville d'arrivée" style="max-width:180px;" value="{{ arrivee }}">
-      <input type="date" name="date" class="form-control eco-inpt" style="max-width:160px;" placeholder="jj/mm/aaaa"value="{{ dateStr }}">
-      <button type="submit" class="btn btn-primary" style="min-width:110px;">Rechercher</button>
-    </form>
-  </div>
-  {# ==== fin bandeau ==== #}
-  
-  <div class="text-center mb-3">
-    <a href="#" id="toggleFilters" class="text-success">Filtrer la recherche ↓</a>
-  </div>
+  {# ===== Un seul formulaire pour recherche + filtres ===== #}
+  <form id="searchForm"
+        method="get"
+        action="{{ path('covoiturages_list') }}"
+  >
+    {# --- Bandeau de recherche --- #}
+    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mb-3">
+      <input type="text" name="depart"
+             class="form-control eco-inpt"
+             placeholder="Ville de départ"
+             style="max-width:180px;"
+             value="{{ depart }}">
+      <input type="text" name="arrivee"
+             class="form-control eco-inpt"
+             placeholder="Ville d'arrivée"
+             style="max-width:180px;"
+             value="{{ arrivee }}">
+      <input type="date" name="date"
+             class="form-control eco-inpt"
+             style="max-width:160px;"
+             value="{{ dateStr }}">
+      <button type="submit" class="btn btn-primary" style="min-width:110px;">
+        Rechercher
+      </button>
+    </div>
 
-  {# ton formulaire de filtres, caché au chargement #}
-  <form id="filtersForm" class="row g-2 align-items-end filtres p-3 rounded mb-4 d-none"
-        method="get" action="{{ path('covoiturages_list') }}">
-    {# … tes champs de filtres (fumeur, animaux, énergie…) … #}
+    {# --- Lien pour masquer/afficher les filtres --- #}
+    <div class="text-center mb-3">
+      <a href="#" id="toggleFilters" class="text-success">Filtrer la recherche ↓</a>
+    </div>
+
+    {# --- Bloc de filtres avancés (caché par défaut) --- #}
+    <div id="filtersBlock" class="row g-2 align-items-end filtres p-3 rounded mb-4 d-none">
+      <div class="col-12">
+        <label class="form-label d-block">Type de voiture</label>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio"
+                 name="energie" id="energieTous" value=""
+                 {{ energie == '' ? 'checked' : '' }}>
+          <label class="form-check-label" for="energieTous">Tous</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio"
+                 name="energie" id="energieHybride" value="hybride"
+                 {{ energie == 'hybride' ? 'checked' : '' }}>
+          <label class="form-check-label" for="energieHybride">Hybride</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio"
+                 name="energie" id="energieElectrique" value="electrique"
+                 {{ energie == 'electrique' ? 'checked' : '' }}>
+          <label class="form-check-label" for="energieElectrique">Électrique</label>
+        </div>
+      </div>
+    </div>
   </form>
 
-  {# --- Étape 2 : on boucle sur les covoiturages — mêmes cards que tout à l’heure --- #}
+  {# --- Résultats --- #}
   {% if covoiturages is empty %}
     <div class="alert alert-warning">
       {% if searchPerformed %}
@@ -63,13 +99,21 @@
 {% block javascripts %}
   {{ parent() }}
   <script>
+    // toggle du bloc de filtres
     document.getElementById('toggleFilters').addEventListener('click', function(e) {
       e.preventDefault();
-      const form = document.getElementById('filtersForm');
-      form.classList.toggle('d-none');
-      this.textContent = form.classList.contains('d-none')
+      const block = document.getElementById('filtersBlock');
+      block.classList.toggle('d-none');
+      this.textContent = block.classList.contains('d-none')
         ? 'Filtrer la recherche ↓'
         : 'Masquer les filtres ↑';
+    });
+
+    // auto-submit sur changement d'énergie
+    document.querySelectorAll('#filtersBlock input[name="energie"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById('searchForm').submit();
+      });
     });
   </script>
 {% endblock %}
