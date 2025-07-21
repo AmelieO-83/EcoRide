@@ -29,7 +29,7 @@ class UtilisateurController extends AbstractController
     public function __construct(
         private EntityManagerInterface      $manager,
         private SerializerInterface         $serializer,
-        private ValidatorInterface $validator,
+        private ValidatorInterface          $validator,
         private UserPasswordHasherInterface $hasher,
         private UtilisateurRepository       $repo,
         int                                 $creditInitial
@@ -99,8 +99,14 @@ class UtilisateurController extends AbstractController
         }
 
         $user = $this->repo->findOneBy(['email'=>$data['email']]);
-        if (!$user || !$this->hasher->isPasswordValid($user, $data['password'])) {
-            return $this->json(['error'=>'Identifiants invalides'], Response::HTTP_UNAUTHORIZED);
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur inconnu'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $ok = $this->hasher->isPasswordValid($user, $data['password']);
+
+        if (!$ok) {
+            return $this->json(['error' => 'Mot de passe incorrect'], Response::HTTP_UNAUTHORIZED);
         }
 
         return $this->json([
