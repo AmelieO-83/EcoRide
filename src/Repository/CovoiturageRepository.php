@@ -28,9 +28,16 @@ class CovoiturageRepository extends ServiceEntityRepository
             ?string $villeDepart,
             ?string $villeArrivee,
             ?\DateTimeImmutable $date,
-            string $energie = ''
+            string $energie = '',
+            bool $fumeur = false,
+            bool $animaux = false
         ): array {
             $qb = $this->createQueryBuilder('c');
+
+            if ('' !== $energie || $fumeur || $animaux) {
+                // on ajoute les jointures nécessaires
+                $qb->join('c.voiture', 'v');
+            }
 
             if ($villeDepart) {
                 $qb->andWhere('c.villeDepart = :dep')
@@ -46,9 +53,14 @@ class CovoiturageRepository extends ServiceEntityRepository
             }
             if ('' !== $energie) {
                 // on join seulement si on filtre l’énergie
-                $qb->join('c.voiture', 'v')
-                ->andWhere('v.energie = :e')
-                ->setParameter('e', $energie);
+                $qb->andWhere('v.energie = :energie')
+                ->setParameter('energie', $energie);
+            }
+            if ($fumeur) {
+                $qb->andWhere('v.fumeur = true');
+            }
+            if ($animaux) {
+                $qb->andWhere('c.animaux = true');
             }
             return $qb
                 ->orderBy('c.date', 'ASC')
