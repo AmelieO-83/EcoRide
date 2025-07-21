@@ -77,6 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resp.ok) {
         console.log('Stockage du token', data.apiToken);
         localStorage.setItem('ecoride_token', data.apiToken);
+        if (data.roles.includes('ROLE_ADMIN')) {
+          window.location.href = '{{ path("admin") }}';
+          return;
+        }
         if (data.roles.includes('ROLE_EMPLOYE')) {
           window.location.href = '{{ path("employe") }}';
           return;
