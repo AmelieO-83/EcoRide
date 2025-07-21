@@ -18,11 +18,15 @@
     </div>
     <div class="mb-3">
       <label for="dateDepart" class="form-label">Date de départ</label>
-      <input type="date" id="dateDepart" name="dateDepart" class="form-control" required>
+      <input type="date" id="dateDepart" name="date" class="form-control" required>
     </div>
     <div class="mb-3">
       <label for="heureDepart" class="form-label">Heure de départ</label>
       <input type="time" id="heureDepart" name="heureDepart" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="heureArrivee" class="form-label">Heure d'arrivée prévue</label>
+      <input type="time" id="heureArrivee" name="heureArrivee" class="form-control" required>
     </div>
     <div class="mb-3">
       <label for="placesDisponibles" class="form-label">Places disponibles</label>
@@ -90,8 +94,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const payload = {
       villeDepart:       form.villeDepart.value.trim(),
       villeArrivee:      form.villeArrivee.value.trim(),
-      dateDepart:        form.dateDepart.value,      // back-end attend d/m/Y ?
+      date:              form.date.value,
       heureDepart:       form.heureDepart.value,
+      heureArrivee:      form.heureArrivee.value,
       placesDisponibles: parseInt(form.placesDisponibles.value, 10),
       prix:              parseFloat(form.prix.value),
       voiture:           parseInt(form.voiture.value, 10)

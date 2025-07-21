@@ -111,27 +111,88 @@
     return window.location.href = '{{ path("connexion") }}';
   }
 
-  // Mes voitures
-  const cars = await fetchJson(`/api/voitures?user=${user.id}`) || [];
+        // Pré-remplir le formulaire Profil avec les données utilisateur
+  document.getElementById('prenom').value        = user.prenom || '';
+  document.getElementById('nom').value           = user.nom    || '';
+  document.getElementById('email').value         = user.email  || '';
+  document.getElementById('ville').value         = user.ville  || '';
+  document.getElementById('dateNaissance').value = user.dateNaissance?.split('T')[0] || '';
+
+    // Mes voitures
+  const cars = await fetchJson('{{ path("api_voitures_list") }}') || [];
   document.getElementById('carList').innerHTML = cars.length
-    ? cars.map(v => `<div class="list-group-item">${v.marque.nom} ${v.modele} – ${v.couleur}</div>`).join('')
+    ? cars.map(v => {
+        const marqueLabel = v.marque && v.marque.libelle ? v.marque.libelle : '';
+        return `
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <span>${marqueLabel} ${v.modele} – ${v.couleur}</span>
+            <a href="#" class="text-danger link-delete-car" data-id="${v.id}">Supprimer</a>
+          </div>
+        `;
+      }).join('')
     : '<div class="text-muted">Aucune voiture enregistrée.</div>';
 
-  // Mes trajets proposés
-  const trips = await fetchJson('{{ path("api_covoiturages_list") }}') || [];
-  const myTrips = trips.filter(t => t.chauffeur.id === user.id);
-  document.getElementById('listeProposes').innerHTML = myTrips.length
-    ? myTrips.map(t => `<div class="list-group-item">${t.villeDepart} → ${t.villeArrivee} le ${t.date.split('T')[0]}</div>`).join('')
-    : '<div class="text-muted">Aucun trajet proposé.</div>';
+  // Gestion du clic Annuler voiture via délégation
+  document.getElementById('carList').addEventListener('click', async e => {
+    if (!e.target.matches('.link-delete-car')) return;
+    e.preventDefault();
+    const id = e.target.dataset.id;
+    if (!confirm('Voulez-vous vraiment supprimer cette voiture ?')) return;
+    const resp = await fetch(
+      '{{ path("api_voitures_delete", {"id":"ID_PLACEHOLDER"}) }}'
+        .replace('ID_PLACEHOLDER', id),
+      {
+        method: 'DELETE',
+        headers: {
+          'X-AUTH-TOKEN': token,
+          'Accept': 'application/json'
+        }
+      }
+    );
+    if (resp.ok) {
+      // recharger la liste des voitures
+      const updated = await fetchJson('{{ path("api_voitures_list") }}') || [];
+      document.getElementById('carList').innerHTML = updated.length
+        ? updated.map(v => {
+            const label = v.marque?.libelle || '';
+            return `<div class="list-group-item">${label} ${v.modele} – ${v.couleur}</div>`;
+          }).join('')
+        : '<div class="text-muted">Aucune voiture enregistrée.</div>';
+    } else {
+      alert('Impossible de supprimer la voiture.');
+    }
+  });
 
-  // Mes participations
+  // Mes trajets proposés'
   async function loadParticipations() {
     const parts = await fetchJson('{{ path("api_participation_list") }}') || [];
     document.getElementById('listeParticipe').innerHTML = parts.length
-      ? parts.map(p => `<div class="list-group-item">${p.covoiturage.villeDepart} → ${p.covoiturage.villeArrivee} le ${p.covoiturage.date.split('T')[0]}</div>`).join('')
+      ? parts.map(p => {
+        return `<div class="list-group-item d-flex justify-content-between align-items-center">
+          <span>${p.covoiturage.villeDepart} → ${p.covoiturage.villeArrivee} le ${p.covoiturage.date.split('T')[0]}</span>
+          <a href="#" class="text-danger link-annuler" data-id="${p.id}">Annuler</a>
+        </div>`;
+      }).join('')
       : '<div class="text-muted">Aucune participation pour l’instant.</div>';
   }
   await loadParticipations();
+
+  // Gestion du clic Annuler via délégation
+  document.getElementById('listeParticipe').addEventListener('click', async e => {
+    if (!e.target.matches('.link-annuler')) return;
+    e.preventDefault();
+    const id = e.target.dataset.id;
+    if (!confirm('Voulez-vous vraiment annuler cette participation ?')) return;
+    const resp = await fetch(`/api/participations/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-AUTH-TOKEN': token }
+    });
+    if (resp.ok) {
+      await loadParticipations();
+    } else {
+      alert('Impossible d’annuler la participation.');
+    }
+  });
 
   // Après succès, recharger participations lorsque le modal est fermé
   const modalEl = document.getElementById('successModal');
