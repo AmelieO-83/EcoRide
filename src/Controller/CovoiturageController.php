@@ -13,35 +13,27 @@ class CovoiturageController extends AbstractController
     #[Route('/covoiturages', name: 'covoiturages_list', methods: ['GET'])]
     public function list(Request $request, CovoiturageRepository $repo): Response
     {
-        // 1) On lit la query string
-        $depart   = $request->query->get('depart');
-        $arrivee  = $request->query->get('arrivee');
-        $dateStr  = $request->query->get('date');
-        $date     = $dateStr ? new \DateTimeImmutable($dateStr) : null;
-        $energie  = $request->query->get('energie');
-        $fumeur  = $request->query->has('fumeur')  ? $request->query->get('fumeur') === '1'  : null;
-        $animaux = $request->query->has('animaux') ? $request->query->get('animaux')==='1' : null;
+        // 1) On lit les critères (par défaut chaînes vides pour faciliter les tests)
+        $depart   = $request->query->get('depart', '');
+        $arrivee  = $request->query->get('arrivee', '');
+        $dateStr  = $request->query->get('date', '');
+        $dateObj  = $dateStr ? new \DateTimeImmutable($dateStr) : null;
 
-        // 2) On appelle le repository
-        $results = $repo->findByFilters(
-            $depart,
-            $arrivee,
-            $date,
-            $energie,
-            $fumeur,
-            $animaux
-        );
+        // 2) A-t-on lancé une vraie recherche ?
+        $searchPerformed = (bool) ($depart || $arrivee || $dateStr);
 
-        // 3) On rend la vue en passant tout
+        // 3) Si oui on filtre, sinon on prend tout
+        $covoiturages = $searchPerformed
+            ? $repo->findByFilters($depart, $arrivee, $dateObj)
+            : $repo->findAll();
+
+        // 4) On rend la vue
         return $this->render('covoiturages/index.html.twig', [
-            'covoiturages'    => $results,
-            'searchPerformed' => $request->query->count() > 0,
+            'covoiturages'    => $covoiturages,
             'depart'          => $depart,
             'arrivee'         => $arrivee,
             'dateStr'         => $dateStr,
-            'energie'         => $energie,
-            'fumeur'          => $fumeur,
-            'animaux'         => $animaux,
+            'searchPerformed' => $searchPerformed,
         ]);
     }
 

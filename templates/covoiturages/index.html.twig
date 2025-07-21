@@ -6,105 +6,37 @@
 {% block body %}
 <div class="container mt-5">
   <h1 class="mb-4">Résultats de la recherche</h1>
+  
+  {# ==== Bandeau de recherche réutilisé depuis l’accueil ==== #}
+  <div class="mb-4">
+    <form method="get" action="{{ path('covoiturages_list') }}" class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+      <input type="text" name="depart" class="form-control eco-inpt" placeholder="Ville de départ" style="max-width:180px;" value="{{ depart }}">
+      <input type="text" name="arrivee" class="form-control eco-inpt" placeholder="Ville d'arrivée" style="max-width:180px;" value="{{ arrivee }}">
+      <input type="date" name="date" class="form-control eco-inpt" style="max-width:160px;" placeholder="jj/mm/aaaa"value="{{ dateStr }}">
+      <button type="submit" class="btn btn-primary" style="min-width:110px;">Rechercher</button>
+    </form>
+  </div>
+  {# ==== fin bandeau ==== #}
+  
+  <div class="text-center mb-3">
+    <a href="#" id="toggleFilters" class="text-success">Filtrer la recherche ↓</a>
+  </div>
 
-  {# ==== FORMULAIRE de recherche + filtres ==== #}
-  <form 
-    class="row g-2 align-items-end filtres p-3 rounded mb-4" 
-    method="get" 
-    action="{{ path('covoiturages_list') }}"
-  >
-    {# Ville de départ #}
-    <div class="col-md-3">
-      <label for="depart" class="form-label">Départ</label>
-      <input 
-        type="text" 
-        id="depart" 
-        name="depart" 
-        class="form-control" 
-        placeholder="Ville de départ"
-        value="{{ depart|default('') }}"
-      >
-    </div>
-
-    {# Ville d'arrivée #}
-    <div class="col-md-3">
-      <label for="arrivee" class="form-label">Arrivée</label>
-      <input 
-        type="text" 
-        id="arrivee" 
-        name="arrivee" 
-        class="form-control" 
-        placeholder="Ville d'arrivée"
-        value="{{ arrivee|default('') }}"
-      >
-    </div>
-
-    {# Date #}
-    <div class="col-md-2">
-      <label for="date" class="form-label">Date</label>
-      <input 
-        type="date" 
-        id="date" 
-        name="date" 
-        class="form-control" 
-        value="{{ dateStr|default('') }}"
-      >
-    </div>
-
-    {# Type d'énergie (radios) #}
-    <div class="col-md-4">
-      <label class="form-label d-block">Type de voiture</label>
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="energie" id="energieTous"  
-               value="" {{ energie is not defined or energie == '' ? 'checked' }}>
-        <label class="form-check-label" for="energieTous">Tous</label>
-      </div>
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="energie" id="energieHybride" 
-               value="hybride" {{ energie == 'hybride' ? 'checked' }}>
-        <label class="form-check-label" for="energieHybride">Hybride</label>
-      </div>
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="energie" id="energieElec"    
-               value="electrique" {{ energie == 'electrique' ? 'checked' }}>
-        <label class="form-check-label" for="energieElec">Électrique</label>
-      </div>
-    </div>
-
-    {# Fumeur (switch) #}
-    <div class="col-md-2 text-center">
-      <label class="form-label d-block">Fumeur</label>
-      <input type="hidden" name="fumeur" value="0">
-      <div class="form-check form-switch d-inline-block">
-        <input class="form-check-input" type="checkbox" role="switch"
-               id="fumeurSwitch" name="fumeur" value="1"
-               {{ fumeur == true ? 'checked' }}>
-      </div>
-    </div>
-
-    {# Animaux (switch) #}
-    <div class="col-md-2 text-center">
-      <label class="form-label d-block">Animaux</label>
-      <input type="hidden" name="animaux" value="0">
-      <div class="form-check form-switch d-inline-block">
-        <input class="form-check-input" type="checkbox" role="switch"
-               id="animauxSwitch" name="animaux" value="1"
-               {{ animaux == true ? 'checked' }}>
-      </div>
-    </div>
-
-    {# Bouton Rechercher #}
-    <div class="col-auto">
-      <button type="submit" class="btn btn-primary mt-4">Rechercher</button>
-    </div>
+  {# ton formulaire de filtres, caché au chargement #}
+  <form id="filtersForm" class="row g-2 align-items-end filtres p-3 rounded mb-4 d-none"
+        method="get" action="{{ path('covoiturages_list') }}">
+    {# … tes champs de filtres (fumeur, animaux, énergie…) … #}
   </form>
-  {# ==== fin formulaire ==== #}
 
-  {# --- Messages selon le contexte --- #}
-  {% if not searchPerformed %}
-    <div class="alert alert-info">Veuillez saisir au moins un critère de recherche.</div>
-  {% elseif covoiturages is empty %}
-    <div class="alert alert-warning">Aucun covoiturage ne correspond à vos critères.</div>
+  {# --- Étape 2 : on boucle sur les covoiturages — mêmes cards que tout à l’heure --- #}
+  {% if covoiturages is empty %}
+    <div class="alert alert-warning">
+      {% if searchPerformed %}
+        Aucun covoiturage ne correspond à vos critères.
+      {% else %}
+        Aucun covoiturage disponible pour l’instant.
+      {% endif %}
+    </div>
   {% else %}
     <div class="row g-4">
       {% for trajet in covoiturages %}
@@ -116,7 +48,9 @@
               <p class="card-text"><strong>Départ :</strong> {{ trajet.heureDepart|date('H:i') }}</p>
               <p class="card-text"><strong>Arrivée :</strong> {{ trajet.heureArrivee|date('H:i') }}</p>
               <p class="card-text"><strong>Prix :</strong> {{ trajet.prix }} crédits</p>
-              <a href="{{ path('trajet_show', {id:trajet.id}) }}" class="btn btn-primary mt-auto">Voir</a>
+              <a href="{{ path('trajet_show', {id:trajet.id}) }}" class="btn btn-primary mt-auto">
+                Voir
+              </a>
             </div>
           </div>
         </div>
@@ -124,4 +58,18 @@
     </div>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    document.getElementById('toggleFilters').addEventListener('click', function(e) {
+      e.preventDefault();
+      const form = document.getElementById('filtersForm');
+      form.classList.toggle('d-none');
+      this.textContent = form.classList.contains('d-none')
+        ? 'Filtrer la recherche ↓'
+        : 'Masquer les filtres ↑';
+    });
+  </script>
 {% endblock %}

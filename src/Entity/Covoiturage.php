@@ -34,10 +34,10 @@ class Covoiturage
     #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
     private ?string $villeArrivee = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'd/m/Y'])]
-    private ?\DateTimeInterface $date = null;
+    private ?\DateTimeImmutable $date = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
     #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
