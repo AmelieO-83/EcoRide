@@ -12,6 +12,7 @@
     <li class="list-group-item"><strong>Heure d'arrivée prévue :</strong> {{ trajet.heureArrivee|date('H:i') }}</li>
     <li class="list-group-item"><strong>Conducteur :</strong> {{ trajet.chauffeur.nom }} {{ trajet.chauffeur.prenom }}</li>
     <li class="list-group-item"><strong>Voiture :</strong> {{ trajet.voiture.marque.libelle }} {{ trajet.voiture.modele }} {{ trajet.voiture.couleur }}</li>
+    <li class="list-group-item"><strong>Energie :</strong> {{ trajet.voiture.energie.name|capitalize }}</li>
     <li class="list-group-item"><strong>Fumeur :</strong> {{ trajet.voiture.fumeur ? 'Oui' : 'Non' }}</li>
     <li class="list-group-item"><strong>Animaux :</strong> {{ trajet.voiture.animaux ? 'Oui' : 'Non' }}</li>
     <li class="list-group-item"><strong>Places dispo :</strong> {{ trajet.placesDisponibles }}</li>
