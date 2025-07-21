@@ -25,30 +25,21 @@
 
     {# --- Bloc de filtres avancés (caché par défaut) --- #}
     <div id="filtersBlock" class="row g-3 filtres p-3 rounded mb-4 {{ showFilters ? '' : 'd-none' }}">
-      {# Colonne 1 : énergie #}
-      <div class="col-md-4">
-        <label class="form-label d-block">Type de trajet</label>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="energie" id="energieTous" value="" {{ energie == '' ? 'checked' : '' }}>
-          <label class="form-check-label" for="energieTous">Tous</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="energie" id="energieHybride" value="hybride" {{ energie == 'hybride' ? 'checked' : '' }}>
-          <label class="form-check-label" for="energieHybride">Hybride</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="energie" id="energieElectrique" value="electrique" {{ energie == 'electrique' ? 'checked' : '' }}>
-          <label class="form-check-label" for="energieElectrique">Électrique</label>
+      {# Colonne 1 : trajet écologique #}
+      <div class="col-md-4 d-flex align-items-center">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="ecologique" id="ecologiqueCheckbox" value="1" {{ ecologique ? 'checked' : '' }}>
+          <label class="form-check-label" for="ecologiqueCheckbox">Trajet écologique</label>
         </div>
       </div>
-      {# Colonne 2 : fumeur #}
+      {# Colonne 2 : fumeur autorisé #}
       <div class="col-md-4 d-flex align-items-center">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" name="fumeur" id="fumeurCheckbox" value="1" {{ fumeur ? 'checked' : '' }}>
           <label class="form-check-label" for="fumeurCheckbox">Fumeur autorisé</label>
         </div>
       </div>
-      {# Colonne 3 : animaux #}
+      {# Colonne 3 : animaux autorisés #}
       <div class="col-md-4 d-flex align-items-center">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" name="animaux" id="animauxCheckbox" value="1" {{ animaux ? 'checked' : '' }}>
@@ -101,10 +92,8 @@
         : 'Masquer les filtres ↑';
     });
 
-    // auto-submit sur changement d'énergie, fumeur ou animaux
-    document.querySelectorAll('#filtersBlock input[name="energie"]').forEach(radio => {
-      radio.addEventListener('change', () => document.getElementById('searchForm').submit());
-    });
+    // auto-submit sur changement des filtres
+    document.getElementById('ecologiqueCheckbox').addEventListener('change', () => document.getElementById('searchForm').submit());
     document.getElementById('fumeurCheckbox').addEventListener('change', () => document.getElementById('searchForm').submit());
     document.getElementById('animauxCheckbox').addEventListener('change', () => document.getElementById('searchForm').submit());
   </script>
