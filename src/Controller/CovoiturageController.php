@@ -19,13 +19,21 @@ class CovoiturageController extends AbstractController
         $dateStr  = $request->query->get('date', '');
         $dateObj  = $dateStr ? new \DateTimeImmutable($dateStr) : null;
         $energie = $request->query->get('energie', '');
+        $fumeur   = $request->query->getBoolean('fumeur');
+        $animaux  = $request->query->getBoolean('animaux');
 
         // 2) A-t-on lancé une vraie recherche ?
-        $searchPerformed = (bool) ($depart || $arrivee || $dateStr || $energie);
+        $searchPerformed = (bool) ($depart || $arrivee || $dateStr || $energie || $fumeur || $animaux);
+
+        // nouveau flag : on montre les filtres si on a un paramètre filtre dans l’URL
+        $showFilters = 
+        $request->query->has('energie') ||
+        $request->query->has('fumeur') ||
+        $request->query->has('animaux');
 
         // 3) Si oui on filtre, sinon on prend tout
         $covoiturages = $searchPerformed
-            ? $repo->findByFilters($depart, $arrivee, $dateObj, $energie)
+            ? $repo->findByFilters($depart, $arrivee, $dateObj, $energie, $fumeur, $animaux)
             : $repo->findAll();
 
         // 4) On rend la vue
@@ -35,7 +43,10 @@ class CovoiturageController extends AbstractController
             'arrivee'         => $arrivee,
             'dateStr'         => $dateStr,
             'energie'         => $energie,
+            'fumeur'          => $fumeur,
+            'animaux'         => $animaux,
             'searchPerformed' => $searchPerformed,
+            'showFilters'     => $showFilters,
         ]);
     }
 
