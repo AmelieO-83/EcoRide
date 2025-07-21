@@ -18,6 +18,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class Voiture
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
+    #[Groups(['voiture:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
@@ -48,7 +49,7 @@ class Voiture
     #[Groups(['voiture:read','voiture:write'])]
     private bool $animaux = false;
 
-    #[Groups(['covoiturage:read','participation:read'])]
+    #[Groups(['covoiturage:read','participation:read','voiture:read'])]
     #[ORM\ManyToOne(targetEntity: Marque::class, inversedBy: 'voitures')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Marque $marque = null;

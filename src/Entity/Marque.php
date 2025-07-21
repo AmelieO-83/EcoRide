@@ -18,7 +18,7 @@ class Marque
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 100)]
-    #[Groups(['marque:read', 'marque:list', 'marque:write','covoiturage:read','participation:read'])]
+    #[Groups(['marque:read', 'marque:list', 'marque:write','covoiturage:read','participation:read','voiture:read'])]
     private string $libelle;
 
     /**

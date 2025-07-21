@@ -66,16 +66,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const user = await prof.json();
 
     // 2. Chargement des voitures
-    const vresp = await fetch(`/api/voitures?user=${user.id}`, {
+    const response = await fetch('{{ path("api_voitures_list") }}', {
       headers: { 'X-AUTH-TOKEN': token }
     });
-    if (!vresp.ok) throw new Error('Voitures introuvables');
-    const voitures = await vresp.json();
+
+    if (!response.ok) {
+      throw new Error(`Erreur lors du chargement des voitures (HTTP ${response.status})`);
+    }
+
+    const voitures = await response.json();
 
     voitures.forEach(v => {
       const opt = document.createElement('option');
       opt.value = v.id;
-      opt.textContent = `${v.marque.nom} ${v.modele} (${v.energie}, ${v.couleur})`;
+      const marqueLabel = v.marque?.libelle || '';
+      opt.textContent = `${marqueLabel} ${v.modele} (${v.energie}, ${v.couleur})`;
       selectVoiture.appendChild(opt);
     });
   } catch (err) {
