@@ -115,7 +115,7 @@
             bootstrap.Modal.getInstance(
               document.getElementById('participationModal')
             ).hide();
-            window.location.href = '{{ path("mon_compte") }}';
+            window.location.href = '{{ path("mon_compte") }}?participation=success';
           } else {
             errorBox.textContent = data.error || `Erreur ${resp.status}`;
             errorBox.classList.remove('d-none');

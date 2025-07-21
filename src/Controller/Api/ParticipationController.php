@@ -193,8 +193,21 @@ class ParticipationController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function list(#[CurrentUser] Utilisateur $utilisateur): JsonResponse
     {
-        $list = $this->participationRepository->findByUser($utilisateur);
-        $json = $this->serializer->serialize($list, 'json', ['groups'=>['participation:read']]);
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+        $participations = $this->participationRepository->findByUser($utilisateur);
+
+        $result = array_map(function(Participation $p) {
+            $cov = $p->getCovoiturage();
+            return [
+                'id' => $p->getId(),
+                'covoiturage' => [
+                    'villeDepart'  => $cov->getVilleDepart(),
+                    'villeArrivee' => $cov->getVilleArrivee(),
+                    'date'         => $cov->getDate()->format('Y-m-d'),
+                ],
+                'confirme' => $p->isConfirme(),
+            ];
+        }, $participations);
+
+        return $this->json($result, Response::HTTP_OK);
     }
 }
