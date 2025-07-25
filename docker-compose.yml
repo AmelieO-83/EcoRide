@@ -3,7 +3,7 @@ services:
     image: php:8.2-fpm
     container_name: ecoride-php
     volumes:
-      - ./backend:/var/www/html
+      - ./:/var/www/html
     working_dir: /var/www/html
     depends_on:
       - db
@@ -51,6 +51,19 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+
+  apache:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-apache
+    container_name: ecoride-apache
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8082:80"
+    depends_on:
+      - db
+      - mongo
 
 volumes:
   db_data:

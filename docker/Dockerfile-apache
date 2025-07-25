@@ -1,0 +1,14 @@
+FROM php:8.2-apache
+
+RUN apt-get update && apt-get install -y libicu-dev libzip-dev libpng-dev libxml2-dev libonig-dev libcurl4-openssl-dev git unzip
+RUN docker-php-ext-install intl zip gd pdo pdo_mysql
+
+# Installe l'extension MongoDB
+RUN pecl install mongodb && docker-php-ext-enable mongodb
+
+# Active le rewrite mod (utile pour Symfony)
+RUN a2enmod rewrite
+
+# Change le DocumentRoot
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
