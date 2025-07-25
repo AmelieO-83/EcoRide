@@ -3,10 +3,34 @@
 {% block title %}Mon Compte | EcoRide{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-  <div class="row">
-    {# Profil #}
-    <div class="col-lg-6 mb-4">
+<div class="container mt-5" style="max-width:900px;">
+  <!-- NAVIGATION DES ONGLET -->
+  <ul class="nav nav-tabs mb-3" id="profilTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-profil" data-bs-toggle="tab" data-bs-target="#pane-profil" type="button" role="tab" aria-controls="pane-profil" aria-selected="true">
+        Mon profil
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-voitures" data-bs-toggle="tab" data-bs-target="#pane-voitures" type="button" role="tab" aria-controls="pane-voitures" aria-selected="false">
+        Mes voitures
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-trajets" data-bs-toggle="tab" data-bs-target="#pane-trajets" type="button" role="tab" aria-controls="pane-trajets" aria-selected="false">
+        Trajets proposés
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-participations" data-bs-toggle="tab" data-bs-target="#pane-participations" type="button" role="tab" aria-controls="pane-participations" aria-selected="false">
+        Mes participations
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="profilTabsContent">
+    <!-- Onglet Profil -->
+    <div class="tab-pane fade show active" id="pane-profil" role="tabpanel" aria-labelledby="tab-profil">
       <h2 class="mb-4">Mon profil</h2>
       <div id="message" class="alert d-none"></div>
       <div id="popupSuccess" class="alert alert-success d-none" role="alert"></div>
@@ -40,28 +64,30 @@
       </form>
     </div>
 
-    {# Voitures, Proposés, Participations #}
-    <div class="col-lg-6 mb-4">
-      <div class="mb-4">
-        <h2 class="mb-3">Mes voitures</h2>
-        <div id="carList" class="list-group mb-2"></div>
-        <a href="{{ path('voiture_ajouter') }}" class="btn btn-primary">Ajouter une voiture</a>
-      </div>
-      <div class="mb-4">
-        <h2 class="mb-3">Trajets proposés</h2>
-        <div id="listeProposes" class="list-group mb-2"></div>
-        <a href="{{ path('proposer_trajet') }}" class="btn btn-primary">Proposer un covoiturage</a>
-      </div>
-      <div class="mb-4">
-        <h2 class="mb-3">Mes participations</h2>
-        <div id="listeParticipe" class="list-group mb-2"></div>
-        <a href="{{ path('covoiturages_list') }}" class="btn btn-primary">Rechercher un covoiturage</a>
-      </div>
+    <!-- Onglet Voitures -->
+    <div class="tab-pane fade" id="pane-voitures" role="tabpanel" aria-labelledby="tab-voitures">
+      <h2 class="mb-3">Mes voitures</h2>
+      <div id="carList" class="list-group mb-2"></div>
+      <a href="{{ path('voiture_ajouter') }}" class="btn btn-primary">Ajouter une voiture</a>
+    </div>
+
+    <!-- Onglet Trajets proposés -->
+    <div class="tab-pane fade" id="pane-trajets" role="tabpanel" aria-labelledby="tab-trajets">
+      <h2 class="mb-3">Trajets proposés</h2>
+      <div id="listeProposes" class="list-group mb-2"></div>
+      <a href="{{ path('proposer_trajet') }}" class="btn btn-primary">Proposer un covoiturage</a>
+    </div>
+
+    <!-- Onglet Participations -->
+    <div class="tab-pane fade" id="pane-participations" role="tabpanel" aria-labelledby="tab-participations">
+      <h2 class="mb-3">Mes participations</h2>
+      <div id="listeParticipe" class="list-group mb-2"></div>
+      <a href="{{ path('covoiturages_list') }}" class="btn btn-primary">Rechercher un covoiturage</a>
     </div>
   </div>
 </div>
 
-{# Modal succès participation #}
+<!-- Modal succès participation -->
 <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
