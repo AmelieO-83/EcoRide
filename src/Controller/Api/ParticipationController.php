@@ -123,7 +123,7 @@ class ParticipationController extends AbstractController
             ]
         );
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(['success' => true], Response::HTTP_OK);
     }
 
     /**
