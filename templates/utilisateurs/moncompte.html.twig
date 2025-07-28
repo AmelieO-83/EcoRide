@@ -272,3 +272,41 @@
 })();
 </script>
 {% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+  /* Styles personnalisés pour les onglets Bootstrap du profil */
+
+  /* Couleur des onglets non sélectionnés */
+  .nav-tabs .nav-link {
+    color: var(--couleur-texte-sombre) !important;
+    background: transparent !important;
+    border: 1px solid #e0e0e0;
+    transition: color 0.2s, background 0.2s;
+  }
+
+  /* Onglet actif */
+  .nav-tabs .nav-link.active {
+    color: var(--couleur-texte-clair) !important;
+    background-color: var(--couleur-primaire) !important;
+    border-color: var(--couleur-primaire) var(--couleur-primaire) #fff;
+  }
+
+  /* Couleur au survol */
+  .nav-tabs .nav-link:hover {
+    color: var(--couleur-primaire) !important;
+    background-color: var(--couleur-secondaire) !important;
+  }
+
+  /* Coins arrondis et esthétique plus douce */
+  .nav-tabs .nav-link {
+    border-radius: 0.75rem 0.75rem 0 0;
+    margin-right: 0.25rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    font-family: var(--font-sans)
+  }
+</style>
+{% endblock %}
+

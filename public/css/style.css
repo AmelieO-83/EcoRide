@@ -172,3 +172,26 @@ form.filtres .form-check-input:checked {
   background-color: var(--couleur-secondaire);
   border-color: var(--couleur-secondaire);
 }
+#profilTabs {
+  /* texte onglets inactifs */
+  --bs-nav-link-color: var(--couleur-texte-sombre);
+  /* texte onglets au survol */
+  --bs-nav-link-hover-color: var(--couleur-primaire);
+  /* texte onglet actif */
+  --bs-nav-tabs-link-active-color: var(--couleur-texte-clair);
+  /* fond onglet actif */
+  --bs-nav-tabs-link-active-bg: var(--couleur-primaire);
+  /* bordure onglet actif */
+  --bs-nav-tabs-link-active-border-color: var(--couleur-primaire);
+  /* bordure générale sous les onglets */
+  --bs-nav-tabs-border-color: var(--couleur-primaire);
+}
+
+/* coins arrondis, inter-onglets, police… */
+#profilTabs .nav-link {
+  border-radius: 0.75rem 0.75rem 0 0;
+  margin-right: 0.25rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-family: var(--font-sans);
+}
