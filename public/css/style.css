@@ -172,26 +172,53 @@ form.filtres .form-check-input:checked {
   background-color: var(--couleur-secondaire);
   border-color: var(--couleur-secondaire);
 }
+/* ==== Onglets “Mon Compte” ==== */
 #profilTabs {
-  /* texte onglets inactifs */
   --bs-nav-link-color: var(--couleur-texte-sombre);
-  /* texte onglets au survol */
   --bs-nav-link-hover-color: var(--couleur-primaire);
-  /* texte onglet actif */
   --bs-nav-tabs-link-active-color: var(--couleur-texte-clair);
-  /* fond onglet actif */
   --bs-nav-tabs-link-active-bg: var(--couleur-primaire);
-  /* bordure onglet actif */
   --bs-nav-tabs-link-active-border-color: var(--couleur-primaire);
-  /* bordure générale sous les onglets */
   --bs-nav-tabs-border-color: var(--couleur-primaire);
 }
-
-/* coins arrondis, inter-onglets, police… */
 #profilTabs .nav-link {
+  border: 1px solid var(--bs-nav-tabs-border-color) !important;
+  background: transparent !important;
+  color: var(--bs-nav-link-color) !important;
   border-radius: 0.75rem 0.75rem 0 0;
   margin-right: 0.25rem;
   font-weight: 600;
   letter-spacing: 0.5px;
   font-family: var(--font-sans);
+  transition: color 0.2s, background 0.2s;
+}
+#profilTabs .nav-link:hover {
+  color: var(--bs-nav-link-hover-color) !important;
+  background-color: var(--couleur-secondaire) !important;
+}
+#profilTabs .nav-link.active {
+  color: var(--bs-nav-tabs-link-active-color) !important;
+  background-color: var(--bs-nav-tabs-link-active-bg) !important;
+  border-color: var(--bs-nav-tabs-link-active-border-color)
+    var(--bs-nav-tabs-link-active-border-color) #fff !important;
+}
+
+/* ==== Star rating pour le pop-up “Terminé” ==== */
+.star-rating {
+  font-size: 2rem;
+  direction: rtl; /* sélection de droite à gauche */
+  display: inline-flex;
+}
+.star-rating input {
+  display: none;
+}
+.star-rating label {
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.2s;
+}
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color: var(--couleur-primaire);
 }

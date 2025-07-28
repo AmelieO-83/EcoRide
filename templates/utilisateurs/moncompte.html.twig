@@ -1,107 +1,142 @@
+{# templates/utilisateurs/moncompte.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Mon Compte | EcoRide{% endblock %}
 
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    /* Onglets personnalisés */
+    .nav-tabs .nav-link {
+      color: var(--couleur-texte-sombre) !important;
+      background: transparent !important;
+      border: 1px solid #e0e0e0 !important;
+      transition: color .2s, background .2s;
+      border-radius: .75rem .75rem 0 0;
+      margin-right: .25rem;
+      font-weight: 600;
+      letter-spacing: .5px;
+      font-family: var(--font-sans);
+    }
+    .nav-tabs .nav-link.active {
+      color: var(--couleur-texte-clair) !important;
+      background-color: var(--couleur-primaire) !important;
+      border-color: var(--couleur-primaire) var(--couleur-primaire) #fff !important;
+    }
+    .nav-tabs .nav-link:hover {
+      color: var(--couleur-primaire) !important;
+      background-color: var(--couleur-secondaire) !important;
+    }
+
+    /* Star-rating */
+    .star-rating {
+      font-size: 2rem;
+      direction: rtl;
+      display: inline-flex;
+    }
+    .star-rating input { display: none; }
+    .star-rating label {
+      cursor: pointer;
+      color: #ccc;
+      transition: color 0.2s;
+    }
+    .star-rating input:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+      color: var(--couleur-primaire);
+    }
+  </style>
+{% endblock %}
+
 {% block body %}
 <div class="container mt-5" style="max-width:900px;">
-  <!-- NAVIGATION DES ONGLET -->
   <ul class="nav nav-tabs mb-3" id="profilTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="tab-profil" data-bs-toggle="tab" data-bs-target="#pane-profil" type="button" role="tab" aria-controls="pane-profil" aria-selected="true">
-        Mon profil
-      </button>
+      <button class="nav-link active" id="tab-profil" data-bs-toggle="tab" data-bs-target="#pane-profil" type="button" role="tab">Mon profil</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-voitures" data-bs-toggle="tab" data-bs-target="#pane-voitures" type="button" role="tab" aria-controls="pane-voitures" aria-selected="false">
-        Mes voitures
-      </button>
+      <button class="nav-link" id="tab-voitures" data-bs-toggle="tab" data-bs-target="#pane-voitures" type="button" role="tab">Mes voitures</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-trajets" data-bs-toggle="tab" data-bs-target="#pane-trajets" type="button" role="tab" aria-controls="pane-trajets" aria-selected="false">
-        Trajets proposés
-      </button>
+      <button class="nav-link" id="tab-trajets" data-bs-toggle="tab" data-bs-target="#pane-trajets" type="button" role="tab">Trajets proposés</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-participations" data-bs-toggle="tab" data-bs-target="#pane-participations" type="button" role="tab" aria-controls="pane-participations" aria-selected="false">
-        Mes participations
-      </button>
+      <button class="nav-link" id="tab-participations" data-bs-toggle="tab" data-bs-target="#pane-participations" type="button" role="tab">Mes participations</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-avis" data-bs-toggle="tab" data-bs-target="#pane-avis" type="button" role="tab">Mes avis</button>
     </li>
   </ul>
 
   <div class="tab-content" id="profilTabsContent">
-    <!-- Onglet Profil -->
-    <div class="tab-pane fade show active" id="pane-profil" role="tabpanel" aria-labelledby="tab-profil">
+    <div class="tab-pane fade show active" id="pane-profil" role="tabpanel">
       <h2 class="mb-4">Mon profil</h2>
       <div id="message" class="alert d-none"></div>
-      <div id="popupSuccess" class="alert alert-success d-none" role="alert"></div>
       <form id="profileForm">
-        <div class="mb-3">
-          <label for="prenom" class="form-label">Prénom</label>
-          <input type="text" id="prenom" name="prenom" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="nom" class="form-label">Nom</label>
-          <input type="text" id="nom" name="nom" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="email" class="form-label">Email</label>
-          <input type="email" id="email" name="email" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="ville" class="form-label">Ville</label>
-          <input type="text" id="ville" name="ville" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="dateNaissance" class="form-label">Date de naissance</label>
-          <input type="date" id="dateNaissance" name="dateNaissance" class="form-control">
-        </div>
+        <div class="mb-3"><label for="prenom" class="form-label">Prénom</label><input type="text" id="prenom" class="form-control" required></div>
+        <div class="mb-3"><label for="nom" class="form-label">Nom</label><input type="text" id="nom" class="form-control" required></div>
+        <div class="mb-3"><label for="email" class="form-label">Email</label><input type="email" id="email" class="form-control" required></div>
+        <div class="mb-3"><label for="ville" class="form-label">Ville</label><input type="text" id="ville" class="form-control"></div>
+        <div class="mb-3"><label for="dateNaissance" class="form-label">Date de naissance</label><input type="date" id="dateNaissance" class="form-control"></div>
         <div class="mb-3">
           <label for="password" class="form-label">Nouveau mot de passe</label>
-          <input type="password" id="password" name="password" class="form-control">
+          <input type="password" id="password" class="form-control">
           <div class="form-text">Laissez vide pour ne pas modifier.</div>
         </div>
         <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
       </form>
     </div>
 
-    <!-- Onglet Voitures -->
-    <div class="tab-pane fade" id="pane-voitures" role="tabpanel" aria-labelledby="tab-voitures">
+    <div class="tab-pane fade" id="pane-voitures" role="tabpanel">
       <h2 class="mb-3">Mes voitures</h2>
       <div id="carList" class="list-group mb-2"></div>
       <a href="{{ path('voiture_ajouter') }}" class="btn btn-primary">Ajouter une voiture</a>
     </div>
 
-    <!-- Onglet Trajets proposés -->
-    <div class="tab-pane fade" id="pane-trajets" role="tabpanel" aria-labelledby="tab-trajets">
+    <div class="tab-pane fade" id="pane-trajets" role="tabpanel">
       <h2 class="mb-3">Trajets proposés</h2>
       <div id="listeProposes" class="list-group mb-2"></div>
       <a href="{{ path('proposer_trajet') }}" class="btn btn-primary">Proposer un covoiturage</a>
     </div>
 
-    <!-- Onglet Participations -->
-    <div class="tab-pane fade" id="pane-participations" role="tabpanel" aria-labelledby="tab-participations">
+    <div class="tab-pane fade" id="pane-participations" role="tabpanel">
       <h2 class="mb-3">Mes participations</h2>
       <div id="listeParticipe" class="list-group mb-2"></div>
       <a href="{{ path('covoiturages_list') }}" class="btn btn-primary">Rechercher un covoiturage</a>
     </div>
+
+    <div class="tab-pane fade" id="pane-avis" role="tabpanel">
+      <h2 class="mb-3">Mes avis</h2>
+      <div id="listeAvis" class="list-group mb-2"></div>
+    </div>
   </div>
 </div>
 
-<!-- Modal succès participation -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+<div class="modal fade" id="avisModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="avisForm" class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="successModalLabel">Participation confirmée</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        <h5 class="modal-title">Laisser un avis</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body text-center">
-        <p>Votre participation a bien été prise en compte !</p>
+      <div class="modal-body">
+        <input type="hidden" id="avisCovoiturageId">
+        <div class="mb-3 star-rating">
+          {% for i in 5..1 %}
+            <input type="radio" name="avisNote" id="star{{ i }}" value="{{ i }}" required>
+            <label for="star{{ i }}" title="{{ i }} étoiles">★</label>
+          {% endfor %}
+        </div>
+        <div class="mb-3">
+          <label for="avisCommentaire" class="form-label">Commentaire</label>
+          <textarea id="avisCommentaire" class="form-control" rows="3" required></textarea>
+        </div>
       </div>
-      <div class="modal-footer justify-content-center">
-        <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-primary">Envoyer l’avis</button>
       </div>
-    </div>
+    </form>
   </div>
 </div>
 {% endblock %}
@@ -111,202 +146,134 @@
 (async () => {
   const token = localStorage.getItem('ecoride_token');
   if (!token) return window.location.href = '{{ path("connexion") }}';
-
-  // Modal de succès si participation
-  if (new URLSearchParams(window.location.search).get('participation') === 'success') {
-    new bootstrap.Modal(document.getElementById('successModal')).show();
+  function fetchJson(url, opts={}) {
+    opts.headers = { 'X-AUTH-TOKEN': token, 'Accept':'application/json', ...(opts.headers||{}) };
+    return fetch(url, opts).then(r => r.ok ? r.json() : []);
   }
 
-  // Succès après ajout de covoiturage
-  const popup = document.getElementById('popupSuccess');
-  const successMsg = localStorage.getItem('success_message');
-  if (successMsg) {
-    popup.textContent = successMsg;
-    popup.classList.remove('d-none');
-    localStorage.removeItem('success_message');
-
-    // Recharge immédiatement les trajets proposés si succès
-    await loadTrajetsProposes();
-  }
-
-  async function fetchJson(url) {
-    const resp = await fetch(url, {
-      headers: {
-        'X-AUTH-TOKEN': token,
-        'Accept': 'application/json'
-      }
-    });
-    return resp.ok ? resp.json() : null;
-  }
-
-  // Charger Profil
+  // PROFIL
   const user = await fetchJson('{{ path("api_utilisateurs_profil") }}');
   if (!user) return window.location.href = '{{ path("connexion") }}';
-
-  document.getElementById('prenom').value        = user.prenom || '';
-  document.getElementById('nom').value           = user.nom    || '';
-  document.getElementById('email').value         = user.email  || '';
-  document.getElementById('ville').value         = user.ville  || '';
-  document.getElementById('dateNaissance').value = user.dateNaissance?.split('T')[0] || '';
-
-  // Voitures
-  const cars = await fetchJson('{{ path("api_voitures_list") }}') || [];
-  document.getElementById('carList').innerHTML = cars.length
-    ? cars.map(v => {
-        const marqueLabel = v.marque?.libelle || '';
-        return `<div class="list-group-item d-flex justify-content-between align-items-center">
-          <span>${marqueLabel} ${v.modele} – ${v.couleur}</span>
-          <a href="#" class="text-danger link-delete-car" data-id="${v.id}">Supprimer</a>
-        </div>`;
-      }).join('')
-    : '<div class="text-muted">Aucune voiture enregistrée.</div>';
-
-  document.getElementById('carList').addEventListener('click', async e => {
-    if (!e.target.matches('.link-delete-car')) return;
-    e.preventDefault();
-    const id = e.target.dataset.id;
-    if (!confirm('Voulez-vous vraiment supprimer cette voiture ?')) return;
-    const resp = await fetch(
-      '{{ path("api_voitures_delete", {"id":"ID_PLACEHOLDER"}) }}'.replace('ID_PLACEHOLDER', id),
-      { method: 'DELETE', headers: { 'X-AUTH-TOKEN': token } }
-    );
-    if (resp.ok) location.reload();
-    else alert('Impossible de supprimer la voiture.');
+  ['prenom','nom','email','ville','dateNaissance'].forEach(f => {
+    const el = document.getElementById(f);
+    el.value = f==='dateNaissance' && user[f] ? user[f].split('T')[0] : (user[f]||'');
   });
-
-  // Trajets proposés
-  async function loadTrajetsProposes() {
-    const trajets = await fetchJson('{{ path("api_covoiturages_proposes") }}') || [];
-    console.log("Trajets proposés reçus :", trajets);
-
-    document.getElementById('listeProposes').innerHTML = trajets.length
-      ? trajets.map(t => {
-          const id = parseInt(t.id, 10);
-          const date = t.date ? t.date.split('T')[0] : '??';
-          return `<div class="list-group-item d-flex justify-content-between align-items-center">
-            <span>${t.villeDepart} → ${t.villeArrivee} le ${date}</span>
-            <a href="#" class="text-danger link-annuler-covoiturage" data-id="${id}">Annuler</a>
-          </div>`;
-        }).join('')
-      : '<div class="text-muted">Aucun covoiturage proposé.</div>';
-  }
-  await loadTrajetsProposes();
-  document.getElementById('listeProposes').addEventListener('click', async e => {
-    if (!e.target.matches('.link-annuler-covoiturage')) return;
+  document.getElementById('profileForm').addEventListener('submit', async e=>{
     e.preventDefault();
-    const id = e.target.dataset.id;
-    if (!confirm('Voulez-vous vraiment annuler ce covoiturage ?')) return;
-
-    const resp = await fetch(`/api/covoiturages/${id}`, {
-      method: 'DELETE',
-      headers: { 'X-AUTH-TOKEN': token }
-    });
-
-    if (resp.ok) {
-      await loadTrajetsProposes(); // Recharge la liste
-    } else {
-      alert('Impossible d’annuler le covoiturage.');
-    }
-  });
-
-  // Participations
-  async function loadParticipations() {
-    const parts = await fetchJson('{{ path("api_participation_list") }}') || [];
-    document.getElementById('listeParticipe').innerHTML = parts.length
-      ? parts.map(p => {
-          return `<div class="list-group-item d-flex justify-content-between align-items-center">
-            <span>${p.covoiturage.villeDepart} → ${p.covoiturage.villeArrivee} le ${p.covoiturage.date.split('T')[0]}</span>
-            <a href="#" class="text-danger link-annuler" data-id="${p.id}">Annuler</a>
-          </div>`;
-        }).join('')
-      : '<div class="text-muted">Aucune participation pour l’instant.</div>';
-  }
-  await loadParticipations();
-
-  document.getElementById('listeParticipe').addEventListener('click', async e => {
-    if (!e.target.matches('.link-annuler')) return;
-    e.preventDefault();
-    const id = e.target.dataset.id;
-    if (!confirm('Voulez-vous vraiment annuler cette participation ?')) return;
-    const resp = await fetch(`/api/participations/${id}`, {
-      method: 'DELETE',
-      headers: { 'X-AUTH-TOKEN': token }
-    });
-    if (resp.ok) await loadParticipations();
-    else alert('Impossible d’annuler la participation.');
-  });
-
-  document.getElementById('successModal')
-    .addEventListener('hidden.bs.modal', loadParticipations);
-
-  document.getElementById('profileForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const msg = document.getElementById('message'); msg.classList.add('d-none');
     const payload = {
-      prenom: document.getElementById('prenom').value.trim(),
-      nom: document.getElementById('nom').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      ville: document.getElementById('ville').value.trim(),
-      dateNaissance: document.getElementById('dateNaissance').value
+      prenom:document.getElementById('prenom').value.trim(),
+      nom:document.getElementById('nom').value.trim(),
+      email:document.getElementById('email').value.trim(),
+      ville:document.getElementById('ville').value.trim(),
+      dateNaissance:document.getElementById('dateNaissance').value
     };
-    const pwd = document.getElementById('password').value;
-    if (pwd) payload.password = pwd;
-    try {
-      const res = await fetch('{{ path("api_utilisateurs_modifier") }}', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-AUTH-TOKEN': token
-        },
-        body: JSON.stringify(payload)
-      });
-      const err = await (res.ok ? {} : res.json());
-      msg.className = res.ok ? 'alert alert-success' : 'alert alert-danger';
-      msg.textContent = res.ok ? 'Profil mis à jour avec succès.' : err.error || 'Erreur lors de la mise à jour.';
-    } catch {
-      msg.className = 'alert alert-danger';
-      msg.textContent = 'Impossible de contacter le serveur.';
-    }
+    const pwd=document.getElementById('password').value;
+    if(pwd) payload.password=pwd;
+    const r=await fetch('{{ path("api_utilisateurs_modifier") }}',{
+      method:'PUT',headers:{'Content-Type':'application/json','X-AUTH-TOKEN':token},
+      body:JSON.stringify(payload)
+    });
+    const msg=document.getElementById('message');
+    if(r.ok){msg.className='alert alert-success';msg.textContent='Profil mis à jour.';}
+    else{const e=await r.json();msg.className='alert alert-danger';msg.textContent=e.error||'Erreur.';}
     msg.classList.remove('d-none');
   });
+
+  // VOITURES
+  const cars=await fetchJson('{{ path("api_voitures_list") }}');
+  document.getElementById('carList').innerHTML = cars.length
+    ? cars.map(v=>`<div class="list-group-item d-flex justify-content-between">
+        <span>${v.marque.libelle} ${v.modele} – ${v.couleur}</span>
+        <a href="#" class="text-danger link-delete-car" data-id="${v.id}">Supprimer</a>
+      </div>`).join('')
+    : '<div class="text-muted">Aucune voiture.</div>';
+  document.getElementById('carList').addEventListener('click', async e=>{
+    if(!e.target.matches('.link-delete-car'))return;
+    e.preventDefault();if(!confirm('Supprimer ?'))return;
+    const id=e.target.dataset.id;
+    const r=await fetch(`{{ path("api_voitures_delete",{"id":"ID"}) }}`.replace('ID',id),{method:'DELETE',headers:{'X-AUTH-TOKEN':token}});
+    if(r.ok)location.reload();else alert('Erreur');
+  });
+
+  // TRAJETS PROPOSÉS
+  async function loadTrajets(){
+    const t=await fetchJson('{{ path("api_covoiturages_proposes") }}');
+    document.getElementById('listeProposes').innerHTML = t.length
+      ? t.map(c=>`<div class="list-group-item d-flex justify-content-between">
+          <span>${c.villeDepart} → ${c.villeArrivee} le ${c.date.split('T')[0]}</span>
+          <a href="#" class="text-danger link-annuler-trajet" data-id="${c.id}">Annuler</a>
+        </div>`).join('')
+      : '<div class="text-muted">Aucun covoiturage proposé.</div>';
+  }
+  await loadTrajets();
+  document.getElementById('listeProposes').addEventListener('click',async e=>{
+    if(!e.target.matches('.link-annuler-trajet'))return;
+    e.preventDefault();if(!confirm('Annuler ?'))return;
+    const id=e.target.dataset.id;
+    const r=await fetch(`/api/covoiturages/${id}`,{method:'DELETE',headers:{'X-AUTH-TOKEN':token}});
+    if(r.ok)loadTrajets();else alert('Erreur');
+  });
+
+  // PARTICIPATIONS + TERMINE
+  async function loadParticipations(){
+    const p=await fetchJson('{{ path("api_participation_list") }}');
+    document.getElementById('listeParticipe').innerHTML = p.length
+      ? p.map(o=>`<div class="list-group-item d-flex justify-content-between">
+          <span>${o.covoiturage.villeDepart} → ${o.covoiturage.villeArrivee} le ${o.covoiturage.date}</span>
+          <div>
+            <a href="#" class="text-danger link-annuler-part" data-id="${o.id}">Annuler</a>
+            <a href="#" class="text-success link-termine-part" data-covoiturage-id="${o.covoiturage.id}">Terminé</a>
+          </div>
+        </div>`).join('')
+      : '<div class="text-muted">Aucune participation.</div>';
+  }
+  await loadParticipations();
+  document.getElementById('listeParticipe').addEventListener('click',async e=>{
+    if(e.target.matches('.link-annuler-part')){
+      e.preventDefault();if(!confirm('Annuler ?'))return;
+      const id=e.target.dataset.id;
+      const r=await fetch(`/api/participations/${id}`,{method:'DELETE',headers:{'X-AUTH-TOKEN':token}});
+      if(r.ok)loadParticipations();else alert('Erreur');
+      return;
+    }
+    if(e.target.matches('.link-termine-part')){
+      e.preventDefault();
+      const cid=e.target.dataset.covoiturageId;
+      document.getElementById('avisCovoiturageId').value=cid;
+      document.querySelectorAll('input[name="avisNote"]').forEach(i=>i.checked=false);
+      document.getElementById('avisCommentaire').value='';
+      new bootstrap.Modal(document.getElementById('avisModal')).show();
+    }
+  });
+
+  // AVIS LIST & SUBMIT
+  document.getElementById('tab-avis').addEventListener('shown.bs.tab', async ()=>{
+    const avis=await fetchJson('{{ path("api_avis_list") }}');
+    document.getElementById('listeAvis').innerHTML=avis.length
+      ? avis.map(a=>`<div class="list-group-item">
+          <strong>Note : ${a.note}/5</strong>
+          <div class="small text-muted">${new Date(a.dateCreation).toLocaleDateString()}</div>
+          <p>${a.commentaire}</p>
+        </div>`).join('')
+      : '<div class="text-muted">Aucun avis.</div>';
+  });
+  if(document.querySelector('#tab-avis.active'))document.getElementById('tab-avis').dispatchEvent(new Event('shown.bs.tab'));
+
+  document.getElementById('avisForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const noteEl=document.querySelector('input[name="avisNote"]:checked');
+    if(!noteEl){alert('Note requise');return;}
+    const note=parseInt(noteEl.value,10);
+    const comm=document.getElementById('avisCommentaire').value.trim();
+    const cid=document.getElementById('avisCovoiturageId').value;
+    const r=await fetch('{{ path("api_avis_create") }}',{method:'POST',headers:{'Content-Type':'application/json','X-AUTH-TOKEN':token},body:JSON.stringify({covoiturageId:cid,note,commentaire:comm})});
+    if(!r.ok){const e=await r.json();alert(e.error||'Erreur');return;}
+    bootstrap.Modal.getInstance(document.getElementById('avisModal')).hide();
+    alert('Avis envoyé, en attente de validation.');
+    loadParticipations();
+    document.getElementById('tab-avis').click();
+  });
+
 })();
 </script>
 {% endblock %}
-
-{% block stylesheets %}
-{{ parent() }}
-<style>
-  /* Styles personnalisés pour les onglets Bootstrap du profil */
-
-  /* Couleur des onglets non sélectionnés */
-  .nav-tabs .nav-link {
-    color: var(--couleur-texte-sombre) !important;
-    background: transparent !important;
-    border: 1px solid #e0e0e0;
-    transition: color 0.2s, background 0.2s;
-  }
-
-  /* Onglet actif */
-  .nav-tabs .nav-link.active {
-    color: var(--couleur-texte-clair) !important;
-    background-color: var(--couleur-primaire) !important;
-    border-color: var(--couleur-primaire) var(--couleur-primaire) #fff;
-  }
-
-  /* Couleur au survol */
-  .nav-tabs .nav-link:hover {
-    color: var(--couleur-primaire) !important;
-    background-color: var(--couleur-secondaire) !important;
-  }
-
-  /* Coins arrondis et esthétique plus douce */
-  .nav-tabs .nav-link {
-    border-radius: 0.75rem 0.75rem 0 0;
-    margin-right: 0.25rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    font-family: var(--font-sans)
-  }
-</style>
-{% endblock %}
-
