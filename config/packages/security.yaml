@@ -33,7 +33,7 @@ security:
         - App\Security\ApiTokenAuthenticator
 
     public_front:
-      pattern: ^/(?:$|connexion|inscription|contact|mentions-legales|mon-compte|mes-covoiturages|proposer-trajet|employe|voitures/ajouter|covoiturages(?:/.*)?)
+      pattern: ^/(?:$|connexion|inscription|contact|mentions-legales|mon-compte|mes-covoiturages|proposer-trajet|employe|admin|voitures/ajouter|covoiturages(?:/.*)?)
       security: false
 
     main:
@@ -56,6 +56,7 @@ security:
     - { path: ^/api/covoiturages, roles: ROLE_USER }
     - { path: ^/api, roles: ROLE_USER }
     - { path: ^/employe, roles: ROLE_EMPLOYE }
+    - { path: ^/admin/utilisateurs, roles: ROLE_ADMIN }
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/mon-compte, roles: ROLE_USER }
     - { path: ^/proposer-trajet, roles: IS_AUTHENTICATED_ANONYMOUSLY }

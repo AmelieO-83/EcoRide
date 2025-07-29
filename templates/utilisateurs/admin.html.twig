@@ -1,23 +1,31 @@
+{# templates/utilisateurs/admin.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Espace Admin | EcoRide{% endblock %}
 
 {% block body %}
-<div class="container mt-5 text-center">
-  <h2 class="mb-4">Le {{ "now"|date("d/m/Y") }}, nous avons gagné :</h2>
-  <h1 class="mb-5 text-success">"xxxxx" crédits</h1>
+  <div class="container mt-5 text-center">
+    <h2 class="mb-4">Le {{ "now"|date("d/m/Y") }}, nous avons gagné :</h2>
+    <h1 class="mb-5 text-success">"xxxxx" crédits</h1>
 
-  <div class="row justify-content-center mb-5">
-    <div class="col-md-6">
-      <h4>Covoiturages créés par jour :</h4>
-      <img src="{{ asset('uploads/graph_covoiturages.png') }}" alt="Graphique covoiturages" class="img-fluid">
+    <div class="row justify-content-center mb-5">
+      <div class="col-md-6">
+        <h4>Covoiturages créés par jour :</h4>
+        <img src="{{ asset('uploads/graph_covoiturages.png') }}"
+             alt="Graphique covoiturages"
+             class="img-fluid">
+      </div>
+      <div class="col-md-6">
+        <h4>Crédits gagnés par jour :</h4>
+        <img src="{{ asset('uploads/graph_credits.png') }}"
+             alt="Graphique crédits"
+             class="img-fluid">
+      </div>
     </div>
-    <div class="col-md-6">
-      <h4>Crédits gagnés par jour :</h4>
-      <img src="{{ asset('uploads/graph_credits.png') }}" alt="Graphique crédits" class="img-fluid">
-    </div>
+
+    <a href="{{ path('admin_utilisateurs') }}"
+       class="btn btn-primary">
+      Gérer les comptes utilisateurs
+    </a>
   </div>
-
-  <a href="{{ path('admin_utilisateurs') }}" class="btn btn-success">Gérer les comptes utilisateurs</a>
-</div>
 {% endblock %}

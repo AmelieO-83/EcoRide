@@ -129,21 +129,19 @@ class UtilisateurController extends AbstractController
      * Profil (GET /api/utilisateurs/profil)
      */
     #[Route('/profil', name:'profil', methods:['GET'])]
-    #[IsGranted('ROLE_USER')]
     public function profil(#[CurrentUser] Utilisateur $user): JsonResponse
     {
-        return $this->json([
-            'id'         => $user->getId(),
-            'nom'           => $user->getNom(),
+        // Récupère les données de base + les rôles
+        $data = [
+            'id'            => $user->getId(),
             'prenom'        => $user->getPrenom(),
+            'nom'           => $user->getNom(),
             'email'         => $user->getEmail(),
             'ville'         => $user->getVille(),
-            'dateNaissance' => $user->getDateNaissance() 
-                                  ? $user->getDateNaissance()->format('Y-m-d') 
-                                  : null,
-            'credit'        => $user->getCredit(),
-            'createdAt' => $user->getCreatedAt()->format(\DateTime::ATOM),
-        ]);
+            'dateNaissance' => $user->getDateNaissance()?->format('Y-m-d'),
+            'roles'         => $user->getRoles(),
+        ];
+        return $this->json($data);
     }
     /**
      * Modifier profil (PUT /api/utilisateurs/profil)

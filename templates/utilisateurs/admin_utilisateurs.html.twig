@@ -1,0 +1,22 @@
+{# templates/utilisateurs/admin_utilisateurs.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}Gérer les utilisateurs | EcoRide{% endblock %}
+{% block body %}
+  <div class="container mt-5">
+    <h2>Liste des utilisateurs</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr><th>ID</th><th>Email</th><th>Rôles</th></tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.roles|join(', ') }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
