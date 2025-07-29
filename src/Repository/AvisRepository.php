@@ -35,8 +35,12 @@ class AvisRepository extends ServiceEntityRepository
      */
     public function findEnAttente(): array
     {
-        return $this->findBy(
-            ['statut' => AvisStatut::EnAttente],
-            ['dateCreation' => 'ASC']
-    );    }
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.statut = :statut')
+            ->setParameter('statut', AvisStatut::EnAttente->value)
+            ->orderBy('a.dateCreation', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

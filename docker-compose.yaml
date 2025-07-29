@@ -17,6 +17,7 @@ services:
         apt-get update &&
         apt-get install -y git unzip libpq-dev libzip-dev libpng-dev libxml2-dev libonig-dev libicu-dev libcurl4-openssl-dev libssl-dev && \
         docker-php-ext-install pdo pdo_mysql intl zip gd && \
+        pecl install mongodb && docker-php-ext-enable mongodb && \
         php-fpm
       "
 

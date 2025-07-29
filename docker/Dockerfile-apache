@@ -1,10 +1,16 @@
 FROM php:8.2-apache
 
-RUN apt-get update && apt-get install -y libicu-dev libzip-dev libpng-dev libxml2-dev libonig-dev libcurl4-openssl-dev git unzip
-RUN docker-php-ext-install intl zip gd pdo pdo_mysql
+RUN apt-get update && apt-get install -y \
+    libicu-dev libzip-dev libpng-dev libxml2-dev libonig-dev libcurl4-openssl-dev \
+    git unzip curl \
+ && docker-php-ext-install intl zip gd pdo pdo_mysql
 
 # Installe l'extension MongoDB
 RUN pecl install mongodb && docker-php-ext-enable mongodb
+
+# Installer Composer de façon fiable
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+ && chmod +x /usr/local/bin/composer
 
 # Active le rewrite mod (utile pour Symfony)
 RUN a2enmod rewrite

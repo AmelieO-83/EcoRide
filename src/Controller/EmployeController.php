@@ -20,9 +20,7 @@ class EmployeController extends AbstractController
     public function reviews(): Response
     {
         // Récupère uniquement les avis en attente
-        $avis = $this->avisRepo->findBy([
-            'statut' => AvisStatut::EnAttente,
-        ]);
+        $avis = $this->avisRepo->findEnAttente();
 
         return $this->render('utilisateurs/employe.html.twig', [
             'avis' => $avis,    // <— on passe ici “avis”
