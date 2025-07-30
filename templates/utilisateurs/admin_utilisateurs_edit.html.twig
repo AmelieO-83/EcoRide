@@ -1,0 +1,58 @@
+{# templates/utilisateurs/admin_utilisateur_edit.html.twig #}
+{% extends 'base.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Modifier utilisateur n°{{ user.id }} | EcoRide{% endblock %}
+
+{% block body %}
+  <div class="container mt-5">
+    <a href="{{ path('admin_utilisateurs') }}" class="btn btn-secondary mb-4">
+      &larr; Retour à la liste
+    </a>
+    <h1>Modifier l’utilisateur n°{{ user.id }}</h1>
+
+    {{ form_start(form, {attr: {class: 'row g-3'}}) }}
+
+      <div class="col-md-6">
+        {{ form_row(form.prenom) }}
+      </div>
+      <div class="col-md-6">
+        {{ form_row(form.nom) }}
+      </div>
+      <div class="col-md-6">
+        {{ form_row(form.email) }}
+      </div>
+
+      <div class="col-md-6">
+        {{ form_label(form.roles) }}
+        <div class="mb-3">
+          {% for choice in form.roles %}
+            <div class="form-check form-check-inline">
+              {{ form_widget(choice, {attr: {'class':'form-check-input'}}) }}
+              {{ form_label(choice, null, {label_attr: {'class':'form-check-label'}}) }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# Nouveau mot de passe facultatif #}
+      <div class="col-md-6">
+        {{ form_row(form.plainPassword) }}
+      </div>
+
+      <div class="col-12 d-flex justify-content-between mt-4">
+        {{ form_widget(form.save) }}
+
+        <form method="post"
+              action="{{ path('admin_utilisateurs_delete', {id: user.id}) }}"
+              onsubmit="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?');"
+        >
+          <input type="hidden" name="_token"
+                 value="{{ csrf_token('delete-user-' ~ user.id) }}">
+          <button class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+
+    {{ form_end(form) }}
+  </div>
+{% endblock %}
