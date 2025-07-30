@@ -34,13 +34,8 @@ class UtilisateurType extends AbstractType
                 'mapped'   => false,
                 'required' => false,
                 'attr'     => ['autocomplete' => 'new-password'],
-            ])
-            ->add('save', SubmitType::class, [
-                'label' => 'Enregistrer',
-                'attr'  => ['class' => 'btn btn-success']
             ]);
     }
-
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

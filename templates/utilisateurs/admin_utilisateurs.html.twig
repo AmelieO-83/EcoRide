@@ -5,13 +5,12 @@
 
 {% block body %}
   <div class="container mt-5">
-    <a href="{{ path('admin') }}" class="btn btn-secondary mb-4">
+    <a href="{{ path('admin') }}" class="btn btn-primary mb-4">
       &larr; Retour aux statistiques
     </a>
 
     <h2>Liste des utilisateurs</h2>
-
-    <table class="table table-striped mt-3">
+    <table class="table table-striped">
       <thead>
         <tr>
           <th>ID</th>
@@ -25,19 +24,15 @@
         {% for u in users %}
           <tr>
             <td>{{ u.id }}</td>
-            <td>{{ u.nom }} {{ u.prenom }}</td>
+            <td>{{ u.prenom }} {{ u.nom }}</td>
             <td>{{ u.email }}</td>
             <td>{{ u.roles|join(', ') }}</td>
             <td>
-              <a href="{{ path('admin_utilisateurs_edit', {id: u.id}) }}"
+              <a href="{{ path('admin_utilisateurs_edit', { id: u.id }) }}"
                  class="btn btn-sm btn-primary">
                 Modifier
               </a>
             </td>
-          </tr>
-        {% else %}
-          <tr>
-            <td colspan="5" class="text-center">Aucun utilisateur trouvé.</td>
           </tr>
         {% endfor %}
       </tbody>

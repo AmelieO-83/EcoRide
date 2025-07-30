@@ -2,6 +2,8 @@
 // src/Entity/Participation.php
 namespace App\Entity;
 
+use App\Entity\Utilisateur;
+use App\Entity\Covoiturage;
 use App\Repository\ParticipationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,7 +18,7 @@ class Participation
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'participations')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Utilisateur $utilisateur = null;
+    private ?Utilisateur $passager = null;
 
     #[ORM\ManyToOne(targetEntity: Covoiturage::class, inversedBy: 'participations')]
     #[ORM\JoinColumn(nullable: true)]
@@ -34,12 +36,12 @@ class Participation
 
     public function getPassager(): ?Utilisateur
     {
-        return $this->utilisateur;
+        return $this->passager;
     }
 
     public function setPassager(?Utilisateur $utilisateur): static
     {
-        $this->utilisateur = $utilisateur;
+        $this->passager = $utilisateur;
         return $this;
     }
 

@@ -62,18 +62,25 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/utilisateurs/{id}', name: 'admin_utilisateurs_delete', methods: ['POST'])]
-    public function deleteUtilisateur(Utilisateur $user, Request $request): Response
+    #[Route('/admin/utilisateurs/{utilisateur}/delete', name: 'admin_utilisateurs_delete', methods: ['POST'])]
+    public function deleteUtilisateur(Utilisateur $utilisateur, Request $request): Response
     {
-        // Vérifie le CSRF token
-        if (!$this->isCsrfTokenValid('delete-user-' . $user->getId(), $request->request->get('_token'))) {
+        // 1- Vérifier le CSRF token
+        if (
+            ! $this->isCsrfTokenValid(
+                'delete-user-' . $utilisateur->getId(),
+                $request->request->get('_token')
+            )
+        ) {
             throw $this->createAccessDeniedException('Token invalide');
         }
 
-        $this->manager->remove($user);
+        // 2- Supprimer et flusher
+        $this->manager->remove($utilisateur);
         $this->manager->flush();
-        $this->addFlash('success', 'Utilisateur supprimé.');
 
+        // 3- Message flash et redirection
+        $this->addFlash('success', 'Utilisateur supprimé.');
         return $this->redirectToRoute('admin_utilisateurs');
     }
 }
