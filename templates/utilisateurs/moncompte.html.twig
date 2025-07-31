@@ -106,7 +106,10 @@
     </div>
 
     <div class="tab-pane fade" id="pane-avis" role="tabpanel">
-      <h2 class="mb-3">Mes avis</h2>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Mes avis</h2>
+        <span id="avisAverage" class="fw-bold text-primary"></span>
+      </div>
       <div id="listeAvis" class="list-group mb-2"></div>
     </div>
   </div>
@@ -249,12 +252,26 @@
   // AVIS LIST & SUBMIT
   document.getElementById('tab-avis').addEventListener('shown.bs.tab', async ()=>{
     const avis=await fetchJson('{{ path("api_avis_list") }}');
-    document.getElementById('listeAvis').innerHTML=avis.length
-      ? avis.map(a=>`<div class="list-group-item">
-          <strong>Note : ${a.note}/5</strong>
-          <div class="small text-muted">${new Date(a.dateCreation).toLocaleDateString()}</div>
-          <p>${a.commentaire}</p>
-        </div>`).join('')
+    // 1️⃣ Calcul et affichage de la moyenne
+    let moyenne = 0;
+    if (avis.length) {
+      const somme = avis.reduce((acc, a) => acc + a.note, 0);
+      moyenne = somme / avis.length;
+    }
+    document.getElementById('avisAverage').textContent =
+      avis.length
+        ? `Moyenne : ${moyenne.toFixed(1)}/5 (${avis.length} avis)`
+        : 'Aucun avis.';
+
+    // 2️⃣ Affichage des avis
+    document.getElementById('listeAvis').innerHTML = avis.length
+      ? avis.map(a => `
+          <div class="list-group-item">
+            <strong>Note : ${a.note}/5</strong>
+            <div class="small text-muted">${new Date(a.dateCreation).toLocaleDateString()}</div>
+            <p>${a.commentaire}</p>
+          </div>
+        `).join('')
       : '<div class="text-muted">Aucun avis.</div>';
   });
   if(document.querySelector('#tab-avis.active'))document.getElementById('tab-avis').dispatchEvent(new Event('shown.bs.tab'));
