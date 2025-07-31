@@ -43,7 +43,7 @@ class ParticipationController extends AbstractController
         }
         
         // Vérifie participation existante
-        if ($this->participationRepository->findOneBy(['utilisateur' => $utilisateur, 'covoiturage' => $covoiturage])) {
+        if ($this->participationRepository->findOneBy(['passager' => $utilisateur, 'covoiturage' => $covoiturage])) {
             return $this->json(['error' => 'Vous participez déjà à ce trajet'], Response::HTTP_CONFLICT);
         }
 
@@ -200,6 +200,7 @@ class ParticipationController extends AbstractController
             return [
                 'id' => $p->getId(),
                 'covoiturage' => [
+                    'id'           => $cov->getId(),
                     'villeDepart'  => $cov->getVilleDepart(),
                     'villeArrivee' => $cov->getVilleArrivee(),
                     'date'         => $cov->getDate()->format('Y-m-d'),

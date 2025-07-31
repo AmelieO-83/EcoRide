@@ -21,7 +21,7 @@ class ParticipationRepository extends ServiceEntityRepository
     public function findByUser(Utilisateur $utilisateur): array
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.utilisateur = :utilisateur')
+            ->andWhere('p.passager = :utilisateur')
             ->setParameter('utilisateur', $utilisateur)
             ->orderBy('p.id', 'DESC')
             ->getQuery()

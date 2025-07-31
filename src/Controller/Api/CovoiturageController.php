@@ -213,7 +213,7 @@ class CovoiturageController extends AbstractController
             return $this->json(['error' => 'Authentification requise'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $proposes = $this->covoiturageRepository->findBy(['utilisateur' => $utilisateur]);
+        $proposes = $this->covoiturageRepository->findBy(['chauffeur' => $utilisateur]);
 
         $json = $this->serializer->serialize($proposes, 'json', ['groups' => ['covoiturage:read']]);
 
