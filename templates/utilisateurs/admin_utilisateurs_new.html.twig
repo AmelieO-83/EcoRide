@@ -11,30 +11,130 @@
     </a>
     <h1>Ajouter un utilisateur</h1>
 
-    {{ form_start(form, {attr: {class: 'row g-3'}}) }}
-      <div class="col-12">{{ form_errors(form) }}</div>
-
-      <div class="col-md-6">{{ form_row(form.prenom) }}</div>
-      <div class="col-md-6">{{ form_row(form.nom) }}</div>
-      <div class="col-md-6">{{ form_row(form.email) }}</div>
-      <div class="col-md-6">
-        {{ form_label(form.roles) }}
-        <div>
-          {% for choice in form.roles %}
-            <div class="form-check form-check-inline">
-              {{ form_widget(choice, {attr: {'class':'form-check-input'}}) }}
-              {{ form_label(choice, null, {label_attr: {'class':'form-check-label'}}) }}
-            </div>
-          {% endfor %}
+    <form id="new-form" novalidate>
+      <div class="mb-3">
+        <label for="nom" class="form-label">Nom</label>
+        <input type="text" class="form-control" id="nom" name="nom" required>
+      </div>
+      <div class="mb-3">
+        <label for="prenom" class="form-label">Prénom</label>
+        <input type="text" class="form-control" id="prenom" name="prenom" required>
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Adresse email</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+      </div>
+      <div class="mb-3">
+        <label for="telephone" class="form-label">Numéro de téléphone</label>
+        <input type="tel" class="form-control" id="telephone" name="telephone" placeholder="01 02 03 04 05" required>
+      </div>
+      <div class="mb-3">
+        <label for="ville" class="form-label">Ville</label>
+        <input type="text" class="form-control" id="ville" name="ville" required>
+      </div>
+      <div class="mb-3">
+        <label for="date" class="form-label">Date de naissance</label>
+        <input type="date" class="form-control" id="date" name="date" required>
+      </div>
+      <div class="mb-3">
+        <label for="plainPassword" class="form-label">Mot de passe</label>
+        <input type="password" class="form-control" id="plainPassword" name="plainPassword" required>
+        <div class="form-text">
+          Au moins 10 car., 1 majuscule, 1 minuscule, 1 chiffre & 1 caractère spécial.
         </div>
       </div>
-      <div class="col-md-6">{{ form_row(form.plainPassword) }}</div>
-
-      {{ form_rest(form) }}
-
-      <div class="col-12 mt-4">
-        <button type="submit" class="btn btn-primary">Créer l'utilisateur</button>
+      <div class="mb-3">
+        <label for="confirmPassword" class="form-label">Confirmez le mot de passe</label>
+        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
       </div>
-    {{ form_end(form) }}
+
+      <div id="error-msg" class="text-danger mb-3"></div>
+      <button type="submit" class="btn btn-primary w-100">Créer l'utilisateur</button>
+    </form>
   </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form     = document.getElementById('new-form');
+  const errBox   = document.getElementById('error-msg');
+
+  // Regex de validation
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRe = /^0[1-9](?:[ .-]?\d{2}){4}$/;
+  const passRe  = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{10,}$/;
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    errBox.textContent = '';
+
+    // Récupère les valeurs
+    const nom     = form.nom.value.trim();
+    const prenom  = form.prenom.value.trim();
+    const email   = form.email.value.trim();
+    const tel     = form.telephone.value.trim();
+    const ville   = form.ville.value.trim();
+    const date    = form.date.value;
+    const pwd     = form.plainPassword.value;
+    const confirm = form.confirmPassword.value;
+
+    // 0) Vérification de l'âge ≥ 18 ans
+    const birth = new Date(date);
+    const diffMs = Date.now() - birth.getTime();
+    const ageDt = new Date(diffMs);
+    const age = Math.abs(ageDt.getUTCFullYear() - 1970);
+    if (age < 18) {
+      return errBox.textContent = 'Vous devez avoir plus de 18 ans.';
+    }
+
+    // 1. Vérifications basiques
+    if (!emailRe.test(email)) {
+      return errBox.textContent = 'Format d\'email invalide.';
+    }
+    if (!phoneRe.test(tel)) {
+      return errBox.textContent = 'Format de téléphone invalide (ex : 01 02 03 04 05).';
+    }
+    if (!passRe.test(pwd)) {
+      return errBox.textContent = 'Le mot de passe doit faire ≥ 10 caractères et inclure maj., min., chiffre, spécial.';
+    }
+    if (pwd !== confirm) {
+      return errBox.textContent = 'Les mots de passe ne correspondent pas.';
+    }
+
+    // 2. Appel API
+    try {
+      const resp = await fetch('{{ path("api_utilisateurs_inscription") }}', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          nom,
+          prenom,
+          email,
+          telephone: tel,
+          ville,
+          dateNaissance: date,
+          password: pwd
+        })
+      });
+      const body = await resp.json();
+
+      // 3. Gestion des erreurs de l’API
+      if (resp.status === 409) {
+        return errBox.textContent = 'Cette adresse email est déjà utilisée.';
+      }
+      if (!resp.ok) {
+        return errBox.textContent = body.errors || body.error || 'Erreur lors de l’inscription.';
+      }
+
+      // 4. Succès : stocke le token et redirige
+      localStorage.setItem('ecoride_token', body.apiToken);
+      window.location.href = '{{ path('admin_utilisateurs') }}';
+    } catch (err) {
+      console.error(err);
+      errBox.textContent = 'Impossible de contacter le serveur.';
+    }
+  });
+});
+</script>
 {% endblock %}
