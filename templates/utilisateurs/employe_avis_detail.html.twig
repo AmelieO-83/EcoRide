@@ -1,0 +1,117 @@
+{# templates/utilisateurs/employe_avis_detail.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}Détail de l’avis #{{ avis.id }}{% endblock %}
+
+{% block body %}
+  <div class="container mt-5">
+    <a href="{{ path('employe') }}" class="btn btn-link mb-4">&larr; Retour à la liste</a>
+    <h1>Avis #{{ avis.id }}</h1>
+    <ul class="list-group">
+      <li class="list-group-item">
+        <strong>Trajet :</strong>
+        {{ avis.covoiturage.villeDepart }} → {{ avis.covoiturage.villeArrivee }}
+        le {{ avis.covoiturage.date|date('d/m/Y') }}
+      </li>
+      <li class="list-group-item">
+        <strong>Chauffeur :</strong>
+        {{ avis.chauffeur.prenom }} {{ avis.chauffeur.nom }}
+      </li>
+      <li class="list-group-item">
+        <strong>Passager :</strong>
+        {{ avis.auteur.prenom }} {{ avis.auteur.nom }}
+      </li>
+      <li class="list-group-item">
+        <strong>Note :</strong>
+        {{ avis.note }}/5
+      </li>
+      <li class="list-group-item">
+        <strong>Commentaire :</strong>
+        {{ avis.commentaire }}
+      </li>
+    </ul>
+
+    <div class="mt-4">
+      <button id="btn-validate" class="btn btn-success me-2">Valider</button>
+      <button id="btn-contact"  class="btn btn-info me-2">Contacter</button>
+      <button id="btn-reject"   class="btn btn-danger">Rejeter</button>
+    </div>
+
+    <div id="contactForm" class="mt-4 d-none">
+      <h5>Contacter {{ avis.auteur.prenom }} {{ avis.auteur.nom }}</h5>
+      <p><strong>Téléphone :</strong> {{ avis.auteur.telephone }}</p>
+      <form id="form-contact">
+        <div class="mb-3">
+          <label for="message" class="form-label">Votre message</label>
+          <textarea id="message" name="message" class="form-control" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Envoyer</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+  // Valider l'avis
+  document.getElementById('btn-validate').addEventListener('click', async () => {
+    const token = localStorage.getItem('ecoride_token');
+    const resp = await fetch(`/api/avis/{{ avis.id }}/valider`, {
+      method: 'PUT',
+      headers: { 'X-AUTH-TOKEN': token }
+    });
+    if (resp.ok) {
+      window.location.href = '{{ path("employe") }}';
+    } else {
+      alert('Erreur de validation');
+    }
+  });
+
+  // Rejeter l'avis
+  document.getElementById('btn-reject').addEventListener('click', async () => {
+    if (!confirm('Rejeter cet avis ?')) return;
+    const token = localStorage.getItem('ecoride_token');
+    const resp = await fetch(`/api/avis/{{ avis.id }}/rejeter`, {
+      method: 'PUT',
+      headers: { 'X-AUTH-TOKEN': token }
+    });
+    if (resp.ok) {
+      window.location.href = '{{ path("employe") }}';
+    } else {
+      alert('Erreur de rejet');
+    }
+  });
+
+  // Afficher/masquer le formulaire de contact
+  document.getElementById('btn-contact').addEventListener('click', () => {
+    document.getElementById('contactForm').classList.toggle('d-none');
+  });
+
+  // Gérer l'envoi du message (à adapter selon ton API ou mailer)
+  document.getElementById('form-contact').addEventListener('submit', async e => {
+    e.preventDefault();
+    const token = localStorage.getItem('ecoride_token');
+    const message = document.getElementById('message').value.trim();
+    if (!message) return alert('Veuillez saisir un message.');
+
+    // Exemple d'appel API fictif, à remplacer si nécessaire
+    try {
+      const resp = await fetch(`/api/avis/{{ avis.id }}/contacter`, {
+        method: 'POST',
+        headers: {
+          'X-AUTH-TOKEN': token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message })
+      });
+      if (resp.ok) {
+        alert('Message envoyé !');
+        document.getElementById('contactForm').classList.add('d-none');
+      } else {
+        alert('Erreur lors de l’envoi du message.');
+      }
+    } catch {
+      alert('Impossible de contacter le serveur.');
+    }
+  });
+</script>
+{% endblock %}

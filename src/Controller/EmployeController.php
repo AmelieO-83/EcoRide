@@ -10,15 +10,25 @@ use Symfony\Component\Routing\Annotation\Route;
 class EmployeController extends AbstractController
 {
     public function __construct(
-        private AvisRepository         $avisRepo
+        private AvisRepository $avisRepo
     ) {}
+
     #[Route('/employe', name: 'employe')]
     public function reviews(): Response
     {
-        // Récupère uniquement les avis en attente
-        $avis = $this->avisRepo->findEnAttente();
+        // pas besoin de passer quoi que ce soit, la liste se fait en JS
+        return $this->render('utilisateurs/employe.html.twig');
+    }
 
-        return $this->render('utilisateurs/employe.html.twig', [
+    #[Route('/employe/avis/{id}', name: 'employe_avis_detail', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function avisDetail(int $id): Response
+    {
+        $avis = $this->avisRepo->find($id);
+        if (!$avis) {
+            throw $this->createNotFoundException("Avis introuvable");
+        }
+
+        return $this->render('utilisateurs/employe_avis_detail.html.twig', [
             'avis' => $avis,
         ]);
     }

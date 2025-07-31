@@ -1,10 +1,10 @@
+{# templates/utilisateurs/employe.html.twig #}
 {% extends 'base.html.twig' %}
-{% block title %}Profil employé - Validation des avis | EcoRide{% endblock %}
+{% block title %}Profil employé – Validation des avis | EcoRide{% endblock %}
 
 {% block body %}
   <div class="container mt-5">
     <h1>Avis à valider</h1>
-    {# on place ici la liste vide, qu’on remplira en JS #}
     <ul id="avisList" class="list-group"></ul>
   </div>
 {% endblock %}
@@ -12,11 +12,12 @@
 {% block javascripts %}
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
-  // 0. On vérifie qu'on est authentifié
   const token = localStorage.getItem('ecoride_token');
-  if (!token) return window.location.href = '{{ path("connexion") }}';
+  if (!token) {
+    return window.location.href = '{{ path("connexion") }}';
+  }
 
-  // 1. Récupération des avis via l'API
+  // 1. Récupère les avis
   let avis;
   try {
     const resp = await fetch('{{ path("api_avis_list") }}', {
@@ -25,23 +26,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         'Accept': 'application/json'
       }
     });
-    if (!resp.ok) throw new Error('API indisponible');
+    if (!resp.ok) throw new Error();
     avis = await resp.json();
-  } catch (e) {
-    document.getElementById('avisList').innerHTML = 
+  } catch {
+    document.getElementById('avisList').innerHTML =
       '<div class="alert alert-danger">Impossible de charger les avis.</div>';
     return;
   }
 
   const container = document.getElementById('avisList');
-  // 2. Si aucun avis
   if (avis.length === 0) {
-    container.innerHTML = 
+    container.innerHTML =
       '<div class="alert alert-info">Aucun avis en attente de validation.</div>';
     return;
   }
 
-  // 3. On génère le HTML de chaque avis
+  // 2. On génère chacun avec un lien /employe/avis/{id}
   container.innerHTML = avis.map(a => `
     <li class="list-group-item d-flex justify-content-between align-items-center">
       <div>
@@ -49,35 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         <small>${a.commentaire}</small>
       </div>
       <div>
-        <button class="btn btn-success btn-sm me-2 js-validate" data-id="${a.id}">
-          Valider
-        </button>
-        <button class="btn btn-danger btn-sm js-reject" data-id="${a.id}">
-          Rejeter
-        </button>
+        <a href="/employe/avis/${a.id}" class="btn btn-primary btn-sm">
+          Détails
+        </a>
       </div>
     </li>
   `).join('');
-
-  // 4. On attache les handlers pour valider/rejeter
-  container.querySelectorAll('.js-validate, .js-reject').forEach(btn => {
-    btn.addEventListener('click', async e => {
-      const id     = e.currentTarget.dataset.id;
-      const action = e.currentTarget.classList.contains('js-validate')
-        ? 'valider'
-        : 'rejeter';
-      const url = `/api/avis/${id}/${action}`;
-      const resp = await fetch(url, {
-        method: 'PUT',
-        headers: { 'X-AUTH-TOKEN': token }
-      });
-      if (resp.ok) {
-        e.currentTarget.closest('li').remove();
-      } else {
-        alert('Erreur lors de la validation/rejet');
-      }
-    });
-  });
 });
 </script>
 {% endblock %}
