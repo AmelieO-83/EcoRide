@@ -83,4 +83,35 @@ class AdminController extends AbstractController
         $this->addFlash('success', 'Utilisateur supprimé.');
         return $this->redirectToRoute('admin_utilisateurs');
     }
+    #[Route('/admin/utilisateurs/new', name: 'admin_utilisateurs_new', methods: ['GET','POST'])]
+    public function newUser(Request $request): Response
+    {
+        $user = new Utilisateur();
+        // on génère un mot de passe vide par défaut pour forcer l’Admin à en saisir un
+        $form = $this->createForm(UtilisateurType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // 1) on encode le mot de passe
+            $plain = $form->get('plainPassword')->getData();
+            if (!$plain) {
+                $this->addFlash('danger', 'Vous devez renseigner un mot de passe.');
+                // on retombe sur le form
+            } else {
+                $hash = $this->passwordHasher->hashPassword($user, $plain);
+                $user->setPassword($hash);
+
+                // 2) persist + flush
+                $this->manager->persist($user);
+                $this->manager->flush();
+
+                $this->addFlash('success', 'Nouvel utilisateur créé.');
+                return $this->redirectToRoute('admin_utilisateurs');
+            }
+        }
+
+        return $this->render('utilisateurs/admin_utilisateurs_new.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
 }

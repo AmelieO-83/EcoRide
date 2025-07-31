@@ -5,11 +5,13 @@
 
 {% block body %}
   <div class="container mt-5">
-    <a href="{{ path('admin') }}" class="btn btn-primary mb-4">
+    <a href="{{ path('admin') }}" class="btn btn-link mb-4">
       &larr; Retour aux statistiques
     </a>
 
-    <h2>Liste des utilisateurs</h2>
+    {# plus d’espace sous le titre grâce à mb-4 #}
+    <h2 class="mb-4">Liste des utilisateurs</h2>
+
     <table class="table table-striped">
       <thead>
         <tr>
@@ -24,12 +26,12 @@
         {% for u in users %}
           <tr>
             <td>{{ u.id }}</td>
-            <td>{{ u.prenom }} {{ u.nom }}</td>
+            <td>{{ u.nom }} {{ u.prenom }}</td>
             <td>{{ u.email }}</td>
             <td>{{ u.roles|join(', ') }}</td>
             <td>
               <a href="{{ path('admin_utilisateurs_edit', { id: u.id }) }}"
-                 class="btn btn-sm btn-primary">
+                 class="btn btn-sm btn-secondary">
                 Modifier
               </a>
             </td>
@@ -37,5 +39,13 @@
         {% endfor %}
       </tbody>
     </table>
+
+    {# bouton placé sous le tableau avec un mt-4 pour l’espacement #}
+    <div class="mt-4">
+      <a href="{{ path('admin_utilisateurs_new') }}"
+         class="btn btn-primary">
+        Ajouter un utilisateur
+      </a>
+    </div>
   </div>
 {% endblock %}
