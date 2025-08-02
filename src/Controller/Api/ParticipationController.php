@@ -42,6 +42,14 @@ class ParticipationController extends AbstractController
             return $this->json(['error'=>'Trajet non trouvé'], Response::HTTP_NOT_FOUND);
         }
         
+        // Empêcher le chauffeur de participer à son propre trajet
+        if ($covoiturage->getChauffeur() === $utilisateur) {
+            return $this->json(
+                ['error' => 'Vous ne pouvez pas participer à votre propre trajet.'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
         // Vérifie participation existante
         if ($this->participationRepository->findOneBy(['passager' => $utilisateur, 'covoiturage' => $covoiturage])) {
             return $this->json(['error' => 'Vous participez déjà à ce trajet'], Response::HTTP_CONFLICT);

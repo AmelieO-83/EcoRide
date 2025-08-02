@@ -74,11 +74,26 @@
       <h2 class="mb-4">Mon profil</h2>
       <div id="message" class="alert d-none"></div>
       <form id="profileForm">
-        <div class="mb-3"><label for="prenom" class="form-label">Prénom</label><input type="text" id="prenom" class="form-control" required></div>
-        <div class="mb-3"><label for="nom" class="form-label">Nom</label><input type="text" id="nom" class="form-control" required></div>
-        <div class="mb-3"><label for="email" class="form-label">Email</label><input type="email" id="email" class="form-control" required></div>
-        <div class="mb-3"><label for="ville" class="form-label">Ville</label><input type="text" id="ville" class="form-control"></div>
-        <div class="mb-3"><label for="dateNaissance" class="form-label">Date de naissance</label><input type="date" id="dateNaissance" class="form-control"></div>
+        <div class="mb-3">
+          <label for="prenom" class="form-label">Prénom</label>
+          <input type="text" id="prenom" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="nom" class="form-label">Nom</label>
+          <input type="text" id="nom" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="ville" class="form-label">Ville</label>
+          <input type="text" id="ville" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label for="dateNaissance" class="form-label">Date de naissance</label>
+          <input type="date" id="dateNaissance" class="form-control">
+        </div>
         <div class="mb-3">
           <label for="password" class="form-label">Nouveau mot de passe</label>
           <input type="password" id="password" class="form-control">
@@ -104,8 +119,10 @@
 
     {# Participations #}
     <div class="tab-pane fade" id="pane-participations" role="tabpanel">
-      <h2 class="mb-3">Mes participations</h2>
-      <div id="listeParticipe" class="list-group mb-2"></div>
+      <h3 class="mt-4">Participations en cours</h3>
+      <div id="listeParticipeEnCours" class="list-group mb-4"></div>
+      <h3>Participations terminées</h3>
+      <div id="listeParticipeTerminees" class="list-group mb-2"></div>
       <a href="{{ path('covoiturages_list') }}" class="btn btn-primary">Rechercher un covoiturage</a>
     </div>
 
@@ -153,21 +170,22 @@
 {% block javascripts %}
 <script>
 (async () => {
+  // Récupération du token et en-têtes de base
   const token = localStorage.getItem('ecoride_token');
   if (!token) return window.location.href = '{{ path("connexion") }}';
   const headers = { 'X-AUTH-TOKEN': token, 'Accept': 'application/json' };
-
-  function fetchJson(url, opts = {}) {
-    opts.headers = { ...headers, ...(opts.headers || {}) };
-    return fetch(url, opts).then(res => res.ok ? res.json() : []);
-  }
+  const fetchJson = (url, opts = {}) =>
+    fetch(url, { ...opts, headers }).then(r => r.ok ? r.json() : []);
 
   // ─ PROFIL ─
   const user = await fetchJson('{{ path("api_utilisateurs_profil") }}');
   if (!user) return window.location.href = '{{ path("connexion") }}';
+  const currentUserId = user.id;
   ['prenom','nom','email','ville','dateNaissance'].forEach(f => {
     const el = document.getElementById(f);
-    el.value = f==='dateNaissance' && user[f] ? user[f].split('T')[0] : (user[f]||'');
+    el.value = f === 'dateNaissance' && user[f]
+      ? user[f].split('T')[0]
+      : (user[f] || '');
   });
   document.getElementById('profileForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -211,21 +229,24 @@
     if (!e.target.matches('.link-delete-car')) return;
     e.preventDefault();
     if (!confirm('Supprimer cette voiture ?')) return;
-    const r = await fetch(`{{ path("api_voitures_delete",{"id":"ID"}) }}`.replace('ID', e.target.dataset.id), { method: 'DELETE', headers });
+    const r = await fetch(
+      `{{ path("api_voitures_delete",{"id":"ID"}) }}`.replace('ID', e.target.dataset.id),
+      { method: 'DELETE', headers }
+    );
     if (r.ok) location.reload(); else alert('Erreur');
   });
 
-  // ─ TRAJETS PROPOSÉS ─
+  // ─ TRAJETS PROPOSÉS (sans ses propres) ─
   async function loadTrajets() {
     const t = await fetchJson('{{ path("api_covoiturages_proposes") }}');
-    document.getElementById('listeProposes').innerHTML = t.length
-      ? t.map(c => `
-          <div class="list-group-item d-flex justify-content-between">
-            <span>${c.villeDepart} → ${c.villeArrivee} le ${c.date}</span>
-            <a href="#" class="text-danger link-annuler-trajet" data-id="${c.id}">Annuler</a>
-          </div>
-        `).join('')
-      : '<div class="text-muted">Aucun covoiturage proposé.</div>';
+    document.getElementById('listeProposes').innerHTML = t
+      .filter(c => c.chauffeur.id !== currentUserId)
+      .map(c => `
+        <div class="list-group-item d-flex justify-content-between">
+          <span>${c.villeDepart} → ${c.villeArrivee} le ${c.date}</span>
+          <a href="#" class="text-danger link-annuler-trajet" data-id="${c.id}">Annuler</a>
+        </div>
+      `).join('') || '<div class="text-muted">Aucun covoiturage proposé.</div>';
   }
   await loadTrajets();
   document.getElementById('listeProposes').addEventListener('click', async e => {
@@ -236,13 +257,20 @@
     if (r.ok) loadTrajets(); else alert('Erreur');
   });
 
-  // ─ PARTICIPATIONS & FIN ─
+  // ─ PARTICIPATIONS & CONFIRMATION ─
   async function loadParticipations() {
     const p = await fetchJson('{{ path("api_participation_list") }}');
-    document.getElementById('listeParticipe').innerHTML = p.length
-      ? p.map(o => `
+    const enCours = p.filter(o => !o.confirme);
+    const terminees = p.filter(o => o.confirme);
+
+    // en cours
+    document.getElementById('listeParticipeEnCours').innerHTML = enCours.length
+      ? enCours.map(o => `
           <div class="list-group-item d-flex justify-content-between">
-            <span>${o.covoiturage.villeDepart} → ${o.covoiturage.villeArrivee} le ${o.covoiturage.date}</span>
+            <div>
+              <strong>${o.covoiturage.villeDepart} → ${o.covoiturage.villeArrivee}</strong>
+              <br><small>le ${o.covoiturage.date}</small>
+            </div>
             <div>
               <a href="#" class="text-danger link-annuler-part" data-id="${o.id}">Annuler</a>
               <a href="#" class="text-success link-termine-part"
@@ -252,12 +280,21 @@
             </div>
           </div>
         `).join('')
-      : '<div class="text-muted">Aucune participation.</div>';
+      : '<div class="text-muted">Aucune participation en cours.</div>';
+
+    // terminées
+    document.getElementById('listeParticipeTerminees').innerHTML = terminees.length
+      ? terminees.map(o => `
+          <div class="list-group-item">
+            <strong>${o.covoiturage.villeDepart} → ${o.covoiturage.villeArrivee}</strong>
+            <br><small>le ${o.covoiturage.date}</small>
+          </div>
+        `).join('')
+      : '<div class="text-muted">Aucune participation terminée.</div>';
   }
   await loadParticipations();
 
-  document.getElementById('listeParticipe').addEventListener('click', async e => {
-    // Annulation
+  document.getElementById('listeParticipeEnCours').addEventListener('click', async e => {
     if (e.target.matches('.link-annuler-part')) {
       e.preventDefault();
       if (!confirm('Annuler cette participation ?')) return;
@@ -265,44 +302,36 @@
       if (r.ok) loadParticipations(); else alert('Erreur');
       return;
     }
-    // Marquer comme terminé + ouvrir modal d'avis
     if (e.target.matches('.link-termine-part')) {
       e.preventDefault();
       const participationId = e.target.dataset.id;
-      // 1. Confirmer côté serveur
       const rc = await fetch(`/api/participations/${participationId}/confirmer`, {
-        method: 'POST', headers
+        method: 'POST',
+        headers
       });
       if (!rc.ok) {
         const err = await rc.json().catch(() => ({}));
         return alert(err.error || 'Impossible de confirmer ce trajet.');
       }
-      // 2. Préparer la modal d’avis
-      const covoiturageId = e.target.dataset.covoiturageId;
-      document.getElementById('avisCovoiturageId').value = covoiturageId;
+      await loadParticipations();
+      document.getElementById('avisCovoiturageId').value = e.target.dataset.covoiturageId;
       document.querySelectorAll('input[name="avisNote"]').forEach(i => i.checked = false);
       document.getElementById('avisCommentaire').value = '';
-      // 3. Recharger la liste (pour retirer cette participation)
-      await loadParticipations();
-      // 4. Afficher la modal
       new bootstrap.Modal(document.getElementById('avisModal')).show();
     }
   });
 
-  // ─ AVIS (TAB) ─
-  document.getElementById('tab-avis').addEventListener('shown.bs.tab', async () => {
-    const avis = await fetchJson('{{ path("api_avis_list") }}');
-    // Moyenne
-    let moyenne = 0;
-    if (avis.length) {
-      const somme = avis.reduce((acc, a) => acc + a.note, 0);
-      moyenne = somme / avis.length;
-    }
+  // ─ AVIS ─
+  async function loadAvisRecus() {
+    console.log('→ chargement des avis…');
+    const avis = await fetchJson('{{ path("api_avis_recus") }}');
+    console.log('réponse avis:', avis);
+    const moyenne = avis.length
+      ? avis.reduce((sum, a) => sum + a.note, 0) / avis.length
+      : 0;
     document.getElementById('avisAverage').textContent = avis.length
       ? `Moyenne : ${moyenne.toFixed(1)}/5 (${avis.length} avis)`
       : 'Aucun avis.';
-
-    // Liste
     document.getElementById('listeAvis').innerHTML = avis.length
       ? avis.map(a => `
           <div class="list-group-item">
@@ -312,10 +341,14 @@
           </div>
         `).join('')
       : '<div class="text-muted">Aucun avis.</div>';
-  });
-  // Si l’onglet Avis est actif au chargement
+  }
+
+  document.getElementById('tab-avis')
+    .addEventListener('shown.bs.tab', loadAvisRecus);
+
+  // si déjà actif au chargement
   if (document.querySelector('#tab-avis.active')) {
-    document.getElementById('tab-avis').dispatchEvent(new Event('shown.bs.tab'));
+    loadAvisRecus();
   }
 
   // Soumission du formulaire d’avis
@@ -326,18 +359,26 @@
     const note = parseInt(noteEl.value, 10);
     const commentaire = document.getElementById('avisCommentaire').value.trim();
     const covoiturageId = document.getElementById('avisCovoiturageId').value;
+
     const r = await fetch('{{ path("api_avis_create") }}', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...headers },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-AUTH-TOKEN': token
+      },
       body: JSON.stringify({ covoiturageId, note, commentaire })
     });
+
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
       return alert(err.error || 'Erreur lors de l’envoi de l’avis.');
     }
+
     bootstrap.Modal.getInstance(document.getElementById('avisModal')).hide();
     alert('Avis envoyé, en attente de validation.');
-    loadParticipations();
+
+    // recharge les participations et bascule sur l’onglet Avis
+    await loadParticipations();
     document.getElementById('tab-avis').click();
   });
 

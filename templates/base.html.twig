@@ -80,15 +80,15 @@
 
               {# Utilisateur simple #}
               <li id="menuMoncompte" class="d-none">
-                <a class="dropdown-item" href="#">Mon compte</a>
+                <a class="dropdown-item" href="{{ path("mon_compte") }}">Mon compte</a>
               </li>
               {# Employé #}
               <li id="menuEmploye" class="d-none">
-                <a class="dropdown-item" href="#">Espace Employé</a>
+                <a class="dropdown-item" href="{{ path("employe_avis") }}">Espace Employé</a>
               </li>
               {# Admin #}
               <li id="menuAdmin" class="d-none">
-                <a class="dropdown-item" href="#">Espace Admin</a>
+                <a class="dropdown-item" href="{{ path("admin") }}">Espace Admin</a>
               </li>
 
               <li id="menuDeconnexion" class="d-none">
@@ -167,7 +167,7 @@
       menuAdm.querySelector('a').href = '{{ path("admin") }}';
       menuAdm.classList.remove('d-none');
     } else if (profile.roles.includes('ROLE_EMPLOYE')) {
-      menuEmp.querySelector('a').href = '{{ path("employe") }}';
+      menuEmp.querySelector('a').href = '{{ path("employe_avis") }}';
       menuEmp.classList.remove('d-none');
     } else {
       menuUser.querySelector('a').href = '{{ path("mon_compte") }}';

@@ -126,23 +126,32 @@ class AvisController extends AbstractController
      * Liste ses avis reçus ou, si employé, tous les avis en attente.
      */
     #[Route('', name:'list', methods:['GET'])]
-    public function list(#[CurrentUser] $utilisateur): JsonResponse
+    public function list(#[CurrentUser] Utilisateur $utilisateur): JsonResponse
     {
-        if ($this->isGranted('ROLE_EMPLOYE')) {
-            $avis = $this->avisRepository->findEnAttente();
-        } else {
+        if (!$this->isGranted('ROLE_EMPLOYE')) {
+            // usage pour passagers / chauffeurs
             $avis = $this->avisRepository->findRecusParUtilisateur($utilisateur);
+            $json = $this->serializer->serialize($avis,'json',['groups'=>['avis:read']]);
+            return new JsonResponse($json,200,[],true);
         }
 
-        $json = $this->serializer->serialize($avis, 'json', ['groups'=>['avis:read']]);
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+        // pour les employés, on retourne un objet groupé
+        $enAttente = $this->avisRepository->findEnAttente();
+        $valides   = $this->avisRepository->findValides();
+        $rejetes   = $this->avisRepository->findRejetes();
+
+        return $this->json([
+            'en_attente' => json_decode($this->serializer->serialize($enAttente, 'json', ['groups'=>['avis:read']]), true),
+            'valides'    => json_decode($this->serializer->serialize($valides,    'json', ['groups'=>['avis:read']]), true),
+            'rejetes'    => json_decode($this->serializer->serialize($rejetes,    'json', ['groups'=>['avis:read']]), true),
+        ], Response::HTTP_OK);
     }
 
     /**
      * GET /api/avis/{id}
      */
-    #[Route('/{id}', name:'show', methods:['GET'])]
-    public function show(int $id, #[CurrentUser] $utilisateur): JsonResponse
+    #[Route('/{id<\d+>}', name:'show', methods:['GET'])]
+    public function show(int $id, #[CurrentUser] Utilisateur $utilisateur): JsonResponse
     {
         $avis = $this->avisRepository->find($id);
         if (!$avis) {
@@ -162,7 +171,7 @@ class AvisController extends AbstractController
      * PUT /api/avis/{id}/valider
      * Valider un avis (seul ROLE_EMPLOYE).
      */
-    #[Route('/{id}/valider', name:'validate', methods:['PUT'])]
+    #[Route('/{id}/valider', name:'validate', methods:['PUT','POST'])]
     #[IsGranted('ROLE_EMPLOYE')]
     public function validate(int $id): JsonResponse
     {
@@ -205,8 +214,8 @@ class AvisController extends AbstractController
      * PUT /api/avis/{id}/rejeter
      * Rejeter un avis (ROLE_ADMIN ou ROLE_EMPLOYE).
      */
-    #[Route('/{id}/rejeter', name:'reject', methods:['PUT'])]
-    public function reject(int $id, #[CurrentUser] $utilisateur): JsonResponse
+    #[Route('/{id}/rejeter', name:'reject', methods:['PUT','POST'])]
+    public function reject(int $id, #[CurrentUser] Utilisateur $utilisateur): JsonResponse
     {
         $avis = $this->avisRepository->find($id);
         if (!$avis) {
@@ -220,9 +229,27 @@ class AvisController extends AbstractController
             return $this->json(['error'=>'Interdit'], Response::HTTP_FORBIDDEN);
         }
 
-        $this->manager->remove($avis);
+        $avis->setStatut(AvisStatut::Rejete);
         $this->manager->flush();
         
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/recus', name: 'recus', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function listRecus(#[CurrentUser] Utilisateur $user): JsonResponse
+    {
+        $avis = $this->avisRepository->findBy([
+            'destinataire' => $user,
+            'statut'       => AvisStatut::Valide
+        ], ['dateCreation'=>'DESC']);
+
+        $data = array_map(fn(Avis $a) => [
+            'note'         => $a->getNote(),
+            'commentaire'  => $a->getCommentaire(),
+            'dateCreation' => $a->getDateCreation()->format(\DateTimeInterface::ATOM),
+        ], $avis);
+
+        return $this->json($data);
     }
 }

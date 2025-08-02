@@ -4,7 +4,7 @@
 
 {% block body %}
   <div class="container mt-5">
-    <a href="{{ path('employe') }}" class="btn btn-link mb-4">&larr; Retour à la liste</a>
+    <a href="{{ path('employe_avis') }}" class="btn btn-link mb-4">&larr; Retour à la liste</a>
     <h1>Avis #{{ avis.id }}</h1>
     <ul class="list-group">
       <li class="list-group-item">
@@ -60,7 +60,7 @@
       headers: { 'X-AUTH-TOKEN': token }
     });
     if (resp.ok) {
-      window.location.href = '{{ path("employe") }}';
+      window.location.href = '{{ path("employe_avis") }}';
     } else {
       alert('Erreur de validation');
     }
@@ -75,7 +75,7 @@
       headers: { 'X-AUTH-TOKEN': token }
     });
     if (resp.ok) {
-      window.location.href = '{{ path("employe") }}';
+      window.location.href = '{{ path("employe_avis") }}';
     } else {
       alert('Erreur de rejet');
     }

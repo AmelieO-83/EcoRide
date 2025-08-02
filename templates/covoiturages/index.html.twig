@@ -7,39 +7,30 @@
 <div class="container mt-5">
   <h1 class="mb-4">Résultats de la recherche</h1>
 
-  {# ===== Un seul formulaire pour recherche + filtres ===== #}
+  {# ===== Formulaire de recherche + filtres ===== #}
   <form id="searchForm" method="get" action="{{ path('covoiturages_list') }}">
-
-    {# --- Bandeau de recherche --- #}
     <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mb-3">
-      <input type="text" name="depart" class="form-control eco-inpt" placeholder="Ville de départ" style="max-width:180px;" value="{{ depart }}">
-      <input type="text" name="arrivee" class="form-control eco-inpt" placeholder="Ville d'arrivée" style="max-width:180px;" value="{{ arrivee }}">
-      <input type="date" name="date" class="form-control eco-inpt" style="max-width:160px;" value="{{ dateStr }}">
+      <input type="text" name="depart"    class="form-control eco-inpt" style="max-width:180px;" placeholder="Ville de départ" value="{{ depart }}">
+      <input type="text" name="arrivee"   class="form-control eco-inpt" style="max-width:180px;" placeholder="Ville d'arrivée" value="{{ arrivee }}">
+      <input type="date" name="date"      class="form-control eco-inpt" style="max-width:160px;" value="{{ dateStr }}">
       <button type="submit" class="btn btn-primary" style="min-width:110px;">Rechercher</button>
     </div>
-
-    {# --- Lien pour masquer/afficher les filtres --- #}
     <div class="text-center mb-3">
       <a href="#" id="toggleFilters" class="text-success">Filtrer la recherche ↓</a>
     </div>
-
-    {# --- Bloc de filtres avancés (caché par défaut) --- #}
     <div id="filtersBlock" class="row g-3 filtres p-3 rounded mb-4 {{ showFilters ? '' : 'd-none' }}">
-      {# Colonne 1 : trajet écologique #}
       <div class="col-md-4 d-flex align-items-center">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" name="ecologique" id="ecologiqueCheckbox" value="1" {{ ecologique ? 'checked' : '' }}>
           <label class="form-check-label" for="ecologiqueCheckbox">Trajet écologique</label>
         </div>
       </div>
-      {# Colonne 2 : fumeur autorisé #}
       <div class="col-md-4 d-flex align-items-center">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" name="fumeur" id="fumeurCheckbox" value="1" {{ fumeur ? 'checked' : '' }}>
           <label class="form-check-label" for="fumeurCheckbox">Fumeur autorisé</label>
         </div>
       </div>
-      {# Colonne 3 : animaux autorisés #}
       <div class="col-md-4 d-flex align-items-center">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" name="animaux" id="animauxCheckbox" value="1" {{ animaux ? 'checked' : '' }}>
@@ -49,18 +40,12 @@
     </div>
   </form>
 
-  {# --- Résultats --- #}
-  {% if covoiturages is empty %}
-    <div class="alert alert-warning">
-      {% if searchPerformed %}
-        Aucun covoiturage ne correspond à vos critères.
-      {% else %}
-        Aucun covoiturage disponible pour l’instant.
-      {% endif %}
-    </div>
-  {% else %}
-    <div class="row g-4">
-      {% for trajet in covoiturages %}
+  {# --- Résultats (on n'affiche que les trajets dont le chauffeur est défini et différent de l'user) --- #}
+  {% set anyDisplayed = false %}
+  <div class="row g-4">
+    {% for trajet in covoiturages %}
+      {% if trajet.chauffeur is not null and (app.user is null or trajet.chauffeur.id != app.user.id) %}
+        {% set anyDisplayed = true %}
         <div class="col-md-4">
           <div class="card h-100">
             <div class="card-body d-flex flex-column">
@@ -73,7 +58,17 @@
             </div>
           </div>
         </div>
-      {% endfor %}
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if not anyDisplayed %}
+    <div class="alert alert-warning mt-4">
+      {% if searchPerformed %}
+        Aucun covoiturage ne correspond à vos critères (ou vous en êtes le chauffeur).
+      {% else %}
+        Aucun covoiturage disponible pour l’instant.
+      {% endif %}
     </div>
   {% endif %}
 </div>
@@ -93,8 +88,8 @@
     });
 
     // auto-submit sur changement des filtres
-    document.getElementById('ecologiqueCheckbox').addEventListener('change', () => document.getElementById('searchForm').submit());
-    document.getElementById('fumeurCheckbox').addEventListener('change', () => document.getElementById('searchForm').submit());
-    document.getElementById('animauxCheckbox').addEventListener('change', () => document.getElementById('searchForm').submit());
+    ['ecologiqueCheckbox','fumeurCheckbox','animauxCheckbox'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => document.getElementById('searchForm').submit());
+    });
   </script>
 {% endblock %}

@@ -23,7 +23,9 @@ class AvisRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('a')
             ->andWhere('a.destinataire = :usr')
+            ->andWhere('a.statut = :statut')
             ->setParameter('usr', $user)
+            ->setParameter('statut', AvisStatut::Valide->value)
             ->orderBy('a.dateCreation', 'DESC')
             ->getQuery()
             ->getResult();
@@ -42,5 +44,25 @@ class AvisRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    public function findValides(): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.statut = :statut')
+            ->setParameter('statut', AvisStatut::Valide->value)
+            ->orderBy('a.dateCreation','DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findRejetes(): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.statut = :statut')
+            ->setParameter('statut', AvisStatut::Rejete->value)
+            ->orderBy('a.dateCreation','DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

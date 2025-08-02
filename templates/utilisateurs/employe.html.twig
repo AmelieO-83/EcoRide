@@ -1,60 +1,80 @@
 {# templates/utilisateurs/employe.html.twig #}
 {% extends 'base.html.twig' %}
-{% block title %}Profil employé – Validation des avis | EcoRide{% endblock %}
+
+{% block title %}Gestion des avis – Employé | EcoRide{% endblock %}
 
 {% block body %}
-  <div class="container mt-5">
-    <h1>Avis à valider</h1>
-    <ul id="avisList" class="list-group"></ul>
-  </div>
-{% endblock %}
+<div class="container py-4">
+  <h1 class="mb-4">Avis à gérer</h1>
 
-{% block javascripts %}
-<script>
-document.addEventListener('DOMContentLoaded', async () => {
-  const token = localStorage.getItem('ecoride_token');
-  if (!token) {
-    return window.location.href = '{{ path("connexion") }}';
-  }
-
-  // 1. Récupère les avis
-  let avis;
-  try {
-    const resp = await fetch('{{ path("api_avis_list") }}', {
-      headers: {
-        'X-AUTH-TOKEN': token,
-        'Accept': 'application/json'
-      }
-    });
-    if (!resp.ok) throw new Error();
-    avis = await resp.json();
-  } catch {
-    document.getElementById('avisList').innerHTML =
-      '<div class="alert alert-danger">Impossible de charger les avis.</div>';
-    return;
-  }
-
-  const container = document.getElementById('avisList');
-  if (avis.length === 0) {
-    container.innerHTML =
-      '<div class="alert alert-info">Aucun avis en attente de validation.</div>';
-    return;
-  }
-
-  // 2. On génère chacun avec un lien /employe/avis/{id}
-  container.innerHTML = avis.map(a => `
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <div>
-        <strong>${a.note}/5</strong> par ${a.auteur.prenom}<br>
-        <small>${a.commentaire}</small>
+  {# Affichage des messages flash #}
+  {% for label, messages in app.flashes %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
-      <div>
-        <a href="/employe/avis/${a.id}" class="btn btn-primary btn-sm">
-          Détails
-        </a>
-      </div>
-    </li>
-  `).join('');
-});
-</script>
+    {% endfor %}
+  {% endfor %}
+
+  {# Avis en attente #}
+  <section class="mb-5">
+    <h2>En attente de validation</h2>
+    {% if data.en_attente is empty %}
+      <p class="text-muted">Aucun avis en attente.</p>
+    {% else %}
+      <ul class="list-group">
+        {% for avis in data.en_attente %}
+          <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div>
+              <strong>{{ avis.auteur.prenom }} {{ avis.auteur.nom }}</strong>
+              – {{ avis.note }}/5<br>
+              <blockquote class="mb-1">{{ avis.commentaire }}</blockquote>
+            </div>
+            <div class="btn-group">
+              <a href="{{ path('employe_avis_detail', {id: avis.id}) }}"
+                 class="btn btn-sm btn-secondary">Détails</a>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+
+  {# Avis validés #}
+  <section class="mb-5">
+    <h2>Avis validés</h2>
+    {% if data.valides is empty %}
+      <p class="text-muted">Aucun avis validé.</p>
+    {% else %}
+      <ul class="list-group">
+        {% for avis in data.valides %}
+          <li class="list-group-item">
+            <strong>{{ avis.auteur.prenom }} {{ avis.auteur.nom }}</strong>
+            – {{ avis.note }}/5
+            <blockquote class="mb-0">{{ avis.commentaire }}</blockquote>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+
+  {# Avis rejetés #}
+  <section>
+    <h2>Avis rejetés</h2>
+    {% if data.rejetes is empty %}
+      <p class="text-muted">Aucun avis rejeté.</p>
+    {% else %}
+      <ul class="list-group">
+        {% for avis in data.rejetes %}
+          <li class="list-group-item">
+            <strong>{{ avis.auteur.prenom }} {{ avis.auteur.nom }}</strong>
+            – {{ avis.note }}/5
+            <blockquote class="mb-0">{{ avis.commentaire }}</blockquote>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+</div>
 {% endblock %}
