@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a32fc2f1de1e5fc3ccf875a57bfcc54",
+    "content-hash": "ac2386201cd599c6d46945a4daa4e31f",
     "packages": [
         {
             "name": "doctrine/cache",
@@ -988,16 +988,16 @@
         },
         {
             "name": "doctrine/mongodb-odm",
-            "version": "2.11.2",
+            "version": "2.12.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/mongodb-odm.git",
-                "reference": "9cc829197581df02c227f00cfa789b077949dffa"
+                "reference": "7abdc70f9cabbc44dae0771467dc603acad2797e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/mongodb-odm/zipball/9cc829197581df02c227f00cfa789b077949dffa",
-                "reference": "9cc829197581df02c227f00cfa789b077949dffa",
+                "url": "https://api.github.com/repos/doctrine/mongodb-odm/zipball/7abdc70f9cabbc44dae0771467dc603acad2797e",
+                "reference": "7abdc70f9cabbc44dae0771467dc603acad2797e",
                 "shasum": ""
             },
             "require": {
@@ -1009,7 +1009,7 @@
                 "ext-mongodb": "^1.21 || ^2.0",
                 "friendsofphp/proxy-manager-lts": "^1.0",
                 "jean85/pretty-package-versions": "^1.3.0 || ^2.0.1",
-                "mongodb/mongodb": "^1.21 || ^2.0@dev",
+                "mongodb/mongodb": "^1.21.2 || ^2.1.1",
                 "php": "^8.1",
                 "psr/cache": "^1.0 || ^2.0 || ^3.0",
                 "symfony/console": "^5.4 || ^6.0 || ^7.0",
@@ -1027,8 +1027,9 @@
                 "ext-bcmath": "*",
                 "jmikola/geojson": "^1.0",
                 "phpbench/phpbench": "^1.0.0",
-                "phpstan/phpstan": "~1.10.67",
-                "phpstan/phpstan-phpunit": "^1.0",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
                 "phpunit/phpunit": "^10.4",
                 "squizlabs/php_codesniffer": "^3.5",
                 "symfony/cache": "^5.4 || ^6.0 || ^7.0"
@@ -1082,7 +1083,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/mongodb-odm/issues",
-                "source": "https://github.com/doctrine/mongodb-odm/tree/2.11.2"
+                "source": "https://github.com/doctrine/mongodb-odm/tree/2.12.2"
             },
             "funding": [
                 {
@@ -1098,27 +1099,27 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-05-23T07:27:12+00:00"
+            "time": "2025-09-26T07:35:47+00:00"
         },
         {
             "name": "doctrine/mongodb-odm-bundle",
-            "version": "5.3.1",
+            "version": "5.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/DoctrineMongoDBBundle.git",
-                "reference": "af0fe776facb5a1761d2dc55f4902e0c40cd763d"
+                "reference": "739c432ca8bdd10892a7df65602a8b79d7205bbd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/DoctrineMongoDBBundle/zipball/af0fe776facb5a1761d2dc55f4902e0c40cd763d",
-                "reference": "af0fe776facb5a1761d2dc55f4902e0c40cd763d",
+                "url": "https://api.github.com/repos/doctrine/DoctrineMongoDBBundle/zipball/739c432ca8bdd10892a7df65602a8b79d7205bbd",
+                "reference": "739c432ca8bdd10892a7df65602a8b79d7205bbd",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.0",
                 "doctrine/mongodb-odm": "^2.6",
                 "doctrine/persistence": "^3.0 || ^4.0",
-                "ext-mongodb": "^1.16 || ^2",
+                "ext-mongodb": "^1.21 || ^2",
                 "php": "^8.1",
                 "psr/log": "^1.0 || ^2.0 || ^3.0",
                 "symfony/config": "^6.4 || ^7.0",
@@ -1136,8 +1137,8 @@
                 "composer/semver": "^3.4",
                 "doctrine/coding-standard": "^11.0",
                 "doctrine/data-fixtures": "^1.8 || ^2.0",
-                "phpstan/phpstan": "^2.0",
-                "phpunit/phpunit": "^9.5.5",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^10.5",
                 "symfony/browser-kit": "^6.4 || ^7.0",
                 "symfony/form": "^6.4 || ^7.0",
                 "symfony/phpunit-bridge": "^6.4.1 || ^7.0.1",
@@ -1182,9 +1183,9 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/DoctrineMongoDBBundle/issues",
-                "source": "https://github.com/doctrine/DoctrineMongoDBBundle/tree/5.3.1"
+                "source": "https://github.com/doctrine/DoctrineMongoDBBundle/tree/5.4.1"
             },
-            "time": "2025-06-12T22:11:53+00:00"
+            "time": "2025-09-04T21:46:29+00:00"
         },
         {
             "name": "doctrine/orm",
@@ -1700,16 +1701,16 @@
         },
         {
             "name": "mongodb/mongodb",
-            "version": "2.1.0",
+            "version": "2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mongodb/mongo-php-library.git",
-                "reference": "3bbe7ba9578724c7e1f47fcd17c881c0995baaad"
+                "reference": "f399d24905dd42f97dfe0af9706129743ef247ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/3bbe7ba9578724c7e1f47fcd17c881c0995baaad",
-                "reference": "3bbe7ba9578724c7e1f47fcd17c881c0995baaad",
+                "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/f399d24905dd42f97dfe0af9706129743ef247ac",
+                "reference": "f399d24905dd42f97dfe0af9706129743ef247ac",
                 "shasum": ""
             },
             "require": {
@@ -1771,9 +1772,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mongodb/mongo-php-library/issues",
-                "source": "https://github.com/mongodb/mongo-php-library/tree/2.1.0"
+                "source": "https://github.com/mongodb/mongo-php-library/tree/2.1.1"
             },
-            "time": "2025-05-23T10:48:05+00:00"
+            "time": "2025-08-13T20:50:05+00:00"
         },
         {
             "name": "nelmio/cors-bundle",
@@ -1836,6 +1837,99 @@
                 "source": "https://github.com/nelmio/NelmioCorsBundle/tree/2.5.0"
             },
             "time": "2024-06-24T21:25:28+00:00"
+        },
+        {
+            "name": "platformsh/config-reader",
+            "version": "2.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/platformsh/config-reader-php.git",
+                "reference": "dc08f50f5a40a767457668ad154116c8ea89cfc6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/platformsh/config-reader-php/zipball/dc08f50f5a40a767457668ad154116c8ea89cfc6",
+                "reference": "dc08f50f5a40a767457668ad154116c8ea89cfc6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Platformsh\\ConfigReader\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Larry Garfield",
+                    "email": "larry@platform.sh"
+                }
+            ],
+            "description": "Small helper to access Platform.sh environment variables",
+            "support": {
+                "issues": "https://github.com/platformsh/config-reader-php/issues",
+                "source": "https://github.com/platformsh/config-reader-php/tree/2.4.1"
+            },
+            "time": "2023-09-14T17:07:00+00:00"
+        },
+        {
+            "name": "platformsh/symfonyflex-bridge",
+            "version": "2.7.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/platformsh/symfonyflex-bridge.git",
+                "reference": "47812e13f25a9bb88e530c5d5f37b4a4f1cc2cf5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/platformsh/symfonyflex-bridge/zipball/47812e13f25a9bb88e530c5d5f37b4a4f1cc2cf5",
+                "reference": "47812e13f25a9bb88e530c5d5f37b4a4f1cc2cf5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2",
+                "platformsh/config-reader": "^2.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "platformsh-flex-env.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Larry Garfield",
+                    "email": "larry@platform.sh"
+                }
+            ],
+            "description": "Bridge library for running Symfony Flex on Platform.sh",
+            "support": {
+                "issues": "https://github.com/platformsh/symfonyflex-bridge/issues",
+                "source": "https://github.com/platformsh/symfonyflex-bridge/tree/2.7.2"
+            },
+            "abandoned": true,
+            "time": "2022-10-14T12:34:58+00:00"
         },
         {
             "name": "psr/cache",
