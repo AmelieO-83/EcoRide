@@ -28,8 +28,8 @@ dependencies:
 
 hooks:
   build: |
-    printf "APP_ENV=prod\nAPP_DEBUG=0\n" > .env
-    composer install --no-dev --prefer-dist --no-interaction --no-progres
+    set -e
+    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
 
 mounts:
   "/var": "shared:files"
