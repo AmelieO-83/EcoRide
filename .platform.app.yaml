@@ -27,7 +27,7 @@ web:
 hooks:
   build: |
     set -e
-    composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
+    composer install --no-dev --prefer-dist --no-progress --optimize-autoloader --ignore-platform-req=ext-mongodb
     php bin/console cache:warmup --env=prod
   deploy: |
     set -e
