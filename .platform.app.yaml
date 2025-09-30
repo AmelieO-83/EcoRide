@@ -28,14 +28,8 @@ dependencies:
 
 hooks:
   build: |
-    set -e
-    export APP_ENV=prod APP_DEBUG=0 COMPOSER_SKIP_AUTOSCRIPTS=1
-    composer install --no-dev --no-scripts --prefer-dist --no-progress --optimize-autoloader --ignore-platform-req=ext-mongodb
-  deploy: |
-    set -e
-    export APP_ENV=prod APP_DEBUG=0
-    php bin/console doctrine:migrations:migrate --no-interaction --env=prod
-    php bin/console cache:clear --env=prod
+    printf "APP_ENV=prod\nAPP_DEBUG=0\n" > .env
+    composer install --no-dev --prefer-dist --no-interaction --no-progres
 
 mounts:
   "/var": "shared:files"
