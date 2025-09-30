@@ -1,0 +1,33 @@
+name: app
+type: "php:8.2"
+build:
+  flavor: composer
+
+variables:
+  env:
+    APP_ENV: "prod"
+
+runtime:
+  extensions:
+    - pdo_mysql
+    - sodium
+    - intl
+
+relationships:
+  database: "db:mysql"
+
+web:
+  locations:
+    "/":
+      root: "public"
+      passthru: "/index.php"
+
+hooks:
+  build: |
+    set -e
+    composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
+    php bin/console cache:warmup --env=prod
+  deploy: |
+    set -e
+    php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+    php bin/console cache:clear --env=prod
