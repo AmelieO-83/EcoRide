@@ -10,7 +10,6 @@ variables:
   env:
     APP_ENV: "prod"
     APP_DEBUG: "0"
-    APP_RUNTIME_OPTIONS: "disable_dotenv=1"
 
 web:
   locations:
