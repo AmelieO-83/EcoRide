@@ -28,7 +28,6 @@ class NotificationService
         $this->fromEmail = $fromEmail;
         $this->replyTo = $replyTo;
     }
-
     /**
      * Envoie un e-mail basé sur le modèle de Notification (template) et le contexte fourni.
      *

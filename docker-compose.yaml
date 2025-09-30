@@ -1,0 +1,106 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-phpfpm
+    container_name: ecoride-php
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    environment:
+      COMPOSER_ALLOW_SUPERUSER: 1
+      # Symfony -> DB MySQL (utilise le port INTERNE 3306 et le service "db")
+      DATABASE_URL: "mysql://ecoride:ecoride@db:3306/ecoride?serverVersion=8.0&charset=utf8mb4"
+      # Mongo (auth admin par défaut sur l’image officielle)
+      MONGODB_URL: "mongodb://root:example@mongo:27017/?authSource=admin"
+      MONGODB_DB: "${MONGODB_DB:-ecoride}"
+    ports:
+      - "9000:9000"
+
+  db:
+    image: mysql:8.0
+    container_name: db-1
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ecoride
+      MYSQL_USER: ecoride
+      MYSQL_PASSWORD: ecoride
+    # ❌ on ne publie plus 3306 sur l’hôte pour éviter le conflit
+    # ports:
+    #   - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: ecoride
+      PMA_PASSWORD: ecoride
+    depends_on:
+      db:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:6
+    container_name: mongo-1
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    # Pas besoin d’exposer si tu n’y accèdes pas depuis l’hôte :
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--eval",
+          "db.adminCommand('ping')",
+          "--username",
+          "root",
+          "--password",
+          "example",
+          "--host",
+          "127.0.0.1",
+          "--quiet",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  apache:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-apache
+    container_name: ecoride-apache
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8082:80"
+    depends_on:
+      php:
+        condition: service_started
+      db:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+volumes:
+  db_data:
+  mongo_data:

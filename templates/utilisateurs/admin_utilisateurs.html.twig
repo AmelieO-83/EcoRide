@@ -1,0 +1,51 @@
+{# templates/utilisateurs/admin_utilisateurs.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Gérer les utilisateurs | EcoRide{% endblock %}
+
+{% block body %}
+  <div class="container mt-5">
+    <a href="{{ path('admin') }}" class="btn btn-link mb-4">
+      &larr; Retour aux statistiques
+    </a>
+
+    {# plus d’espace sous le titre grâce à mb-4 #}
+    <h1 class="mb-4">Liste des utilisateurs</h1>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom / Prénom</th>
+          <th>Email</th>
+          <th>Rôles</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.nom }} {{ u.prenom }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.roles|join(', ') }}</td>
+            <td>
+              <a href="{{ path('admin_utilisateurs_edit', { id: u.id }) }}"
+                 class="btn btn-sm btn-secondary">
+                Modifier
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {# bouton placé sous le tableau avec un mt-4 pour l’espacement #}
+    <div class="mt-4">
+      <a href="{{ path('admin_utilisateurs_new') }}"
+         class="btn btn-primary">
+        Ajouter un utilisateur
+      </a>
+    </div>
+  </div>
+{% endblock %}

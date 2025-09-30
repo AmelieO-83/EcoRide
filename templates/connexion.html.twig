@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
         if (data.roles.includes('ROLE_EMPLOYE')) {
-          window.location.href = '{{ path("employe") }}';
+          window.location.href = '{{ path("employe_avis") }}';
           return;
         }
         window.location.href = '{{ path("mon_compte") }}';

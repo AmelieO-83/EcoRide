@@ -80,15 +80,15 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private string $apiToken;
 
     /** @var Collection<int, Voiture> */
-    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Voiture::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'proprietaire', targetEntity: Voiture::class, orphanRemoval: true)]
     private Collection $voitures;
 
     /** @var Collection<int, Covoiturage> */
-    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Covoiturage::class)]
+    #[ORM\OneToMany(mappedBy: 'chauffeur', targetEntity: Covoiturage::class)]
     private Collection $covoiturages;
 
     /** @var Collection<int, Participation> */
-    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Participation::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'passager', targetEntity: Participation::class, orphanRemoval: true)]
     private Collection $participations;
 
     /** @var Collection<int, Avis> */

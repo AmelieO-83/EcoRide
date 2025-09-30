@@ -4,14 +4,15 @@ namespace App\Repository;
 
 use App\Entity\Avis;
 use App\Entity\Utilisateur;
+use App\Enum\AvisStatut;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 class AvisRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $r)
+    public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($r, Avis::class);
+        parent::__construct($registry, Avis::class);
     }
 
     /**
@@ -22,7 +23,9 @@ class AvisRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('a')
             ->andWhere('a.destinataire = :usr')
+            ->andWhere('a.statut = :statut')
             ->setParameter('usr', $user)
+            ->setParameter('statut', AvisStatut::Valide->value)
             ->orderBy('a.dateCreation', 'DESC')
             ->getQuery()
             ->getResult();
@@ -34,6 +37,32 @@ class AvisRepository extends ServiceEntityRepository
      */
     public function findEnAttente(): array
     {
-        return $this->findBy(['statut' => \App\Enum\AvisStatut::EnAttente], ['dateCreation'=>'ASC']);
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.statut = :statut')
+            ->setParameter('statut', AvisStatut::EnAttente->value)
+            ->orderBy('a.dateCreation', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function findValides(): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.statut = :statut')
+            ->setParameter('statut', AvisStatut::Valide->value)
+            ->orderBy('a.dateCreation','DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findRejetes(): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.statut = :statut')
+            ->setParameter('statut', AvisStatut::Rejete->value)
+            ->orderBy('a.dateCreation','DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

@@ -1,0 +1,71 @@
+{# templates/utilisateurs/admin_utilisateurs_edit.html.twig #}
+{% extends 'base.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Modifier utilisateur n°{{ user.id }} | EcoRide{% endblock %}
+
+{% block body %}
+  <div class="container mt-5">
+    <a href="{{ path('admin_utilisateurs') }}" class="btn btn-link mb-4">
+      &larr; Retour à la liste
+    </a>
+    <h1>Modifier l’utilisateur n°{{ user.id }}</h1>
+
+    {# ——— Formulaire d’édition ——— #}
+    {{ form_start(form, {
+        action: path('admin_utilisateurs_edit', { id: user.id }),
+        method: 'POST',
+        attr: { class: 'row g-3' }
+    }) }}
+
+      {# Affichage des erreurs globales #}
+      <div class="col-12">{{ form_errors(form) }}</div>
+
+      <div class="col-md-6">{{ form_row(form.prenom) }}</div>
+      <div class="col-md-6">{{ form_row(form.nom) }}</div>
+      <div class="col-md-6">{{ form_row(form.email) }}</div>
+
+      <div class="col-md-6">
+        {{ form_label(form.roles) }}
+        <div class="mb-3">
+          {% for choice in form.roles %}
+            <div class="form-check form-check-inline">
+              {{ form_widget(choice, { attr: {'class':'form-check-input'} }) }}
+              {{ form_label(choice, null, { label_attr: {'class':'form-check-label'} }) }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="col-md-6">{{ form_row(form.plainPassword) }}</div>
+
+      {# Tous les champs cachés (CSRF, etc.) #}
+      {{ form_rest(form) }}
+
+      <div class="col-12 mt-4">
+        <button type="submit" class="btn btn-success">Enregistrer</button>
+      </div>
+
+    {{ form_end(form) }}
+    {# ← fin du formulaire d’édition ——— #}
+
+    {# ——— Formulaire de suppression ——— #}
+    <form
+      method="POST"
+      action="{{ path('admin_utilisateurs_delete', { utilisateur: user.id }) }}"
+      onsubmit="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?');"
+      class="mt-4"
+    >
+      <input
+        type="hidden"
+        name="_token"
+        value="{{ csrf_token('delete-user-' ~ user.id) }}"
+      >
+      <button type="submit" class="btn btn-danger">
+        Supprimer cet utilisateur
+      </button>
+    </form>
+    {# ← fin du formulaire de suppression ——— #}
+
+  </div>
+{% endblock %}

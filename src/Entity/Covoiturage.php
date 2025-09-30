@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CovoiturageRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\collections\Collection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Utilisateur;
@@ -65,7 +65,7 @@ class Covoiturage
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([self::GROUP_PARTICIPATION_READ, self::GROUP_COVOITURAGE_READ, self::GROUP_COVOITURAGE_WRITE])]
     #[SerializedName('chauffeur')]
-    private ?Utilisateur $utilisateur = null;
+    private ?Utilisateur $chauffeur = null;
 
     #[ORM\ManyToOne(targetEntity: Voiture::class, inversedBy: "covoiturages")]
     #[ORM\JoinColumn(nullable: true)]
@@ -112,8 +112,8 @@ class Covoiturage
     public function isEcologique(): bool { return $this->ecologique; }
     public function setEcologique(bool $eco): self { $this->ecologique = $eco; return $this; }
 
-    public function getChauffeur(): ?Utilisateur { return $this->utilisateur; }
-    public function setChauffeur(?Utilisateur $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
+    public function getChauffeur(): ?Utilisateur { return $this->chauffeur; }
+    public function setChauffeur(?Utilisateur $utilisateur): self { $this->chauffeur = $utilisateur; return $this; }
 
     public function getVoiture(): ?Voiture { return $this->voiture; }
     public function setVoiture(?Voiture $voiture): self { $this->voiture = $voiture; return $this; }

@@ -2,6 +2,8 @@
 // src/Entity/Avis.php
 namespace App\Entity;
 
+use App\Entity\Utilisateur;
+use App\Entity\Covoiturage;
 use App\Repository\AvisRepository;
 use App\Enum\AvisStatut;
 use Doctrine\DBAL\Types\Types;
@@ -38,11 +40,13 @@ class Avis
     #[Groups(['avis:read'])]
     private AvisStatut $statut = AvisStatut::EnAttente;
 
-    #[ORM\ManyToOne(inversedBy: 'avis')]
+    #[ORM\ManyToOne(targetEntity: Covoiturage::class, inversedBy: 'avis')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['avis:read'])]
     private ?Covoiturage $covoiturage = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['avis:read'])]
     private ?\DateTimeImmutable $dateCreation = null;
 
     public function getId(): ?int

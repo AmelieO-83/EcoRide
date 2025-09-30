@@ -1,3 +1,4 @@
+{# templates/base.html.twig #}
 <!DOCTYPE html>
 <html lang="fr" xml:lang="fr">
 <head>
@@ -19,6 +20,8 @@
 
   {# Style global #}
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+  {% block stylesheets %}{% endblock %}
 
   {# Google Fonts #}
   <link
@@ -67,27 +70,29 @@
             >
               <i class="bi bi-person-lines-fill"></i>
             </button>
-            <ul
-              class="dropdown-menu dropdown-menu-end"
-              aria-labelledby="authDropdown"
-              id="authMenu"
-            >
+            <ul class="dropdown-menu dropdown-menu-end" id="authMenu" aria-labelledby="authDropdown">
               <li id="menuConnexion">
-                <a class="dropdown-item"
-                   href="{{ path('connexion') }}">Connexion</a>
+                <a class="dropdown-item" href="{{ path('connexion') }}">Connexion</a>
               </li>
               <li id="menuInscription">
-                <a class="dropdown-item"
-                   href="{{ path('inscription') }}">Inscription</a>
+                <a class="dropdown-item" href="{{ path('inscription') }}">Inscription</a>
               </li>
+
+              {# Utilisateur simple #}
               <li id="menuMoncompte" class="d-none">
-                <a class="dropdown-item"
-                   href="{{ path('mon_compte') }}">Mon compte</a>
+                <a class="dropdown-item" href="{{ path("mon_compte") }}">Mon compte</a>
               </li>
+              {# Employé #}
+              <li id="menuEmploye" class="d-none">
+                <a class="dropdown-item" href="{{ path("employe_avis") }}">Espace Employé</a>
+              </li>
+              {# Admin #}
+              <li id="menuAdmin" class="d-none">
+                <a class="dropdown-item" href="{{ path("admin") }}">Espace Admin</a>
+              </li>
+
               <li id="menuDeconnexion" class="d-none">
-                <a class="dropdown-item" href="#" id="logoutLink">
-                  Déconnexion
-                </a>
+                <a class="dropdown-item" href="#" id="logoutLink">Déconnexion</a>
               </li>
             </ul>
           </li>
@@ -121,40 +126,68 @@
 
   {# ======= AUTH DROPDOWN SCRIPT ======= #}
   <script>
-    (function(){
-      window.addEventListener('DOMContentLoaded', () => {
-        const token        = localStorage.getItem('ecoride_token');
-        const menuConn     = document.getElementById('menuConnexion');
-        const menuInscr    = document.getElementById('menuInscription');
-        const menuMoncompte = document.getElementById('menuMoncompte');
-        const menuDeconn   = document.getElementById('menuDeconnexion');
-        const logoutLink   = document.getElementById('logoutLink');
+  document.addEventListener('DOMContentLoaded', async () => {
+    const token       = localStorage.getItem('ecoride_token');
+    const menuConn    = document.getElementById('menuConnexion');
+    const menuInscr   = document.getElementById('menuInscription');
+    const menuUser    = document.getElementById('menuMoncompte');
+    const menuEmp     = document.getElementById('menuEmploye');
+    const menuAdm     = document.getElementById('menuAdmin');
+    const menuLogout  = document.getElementById('menuDeconnexion');
+    const logoutLink  = document.getElementById('logoutLink');
 
-        if (token) {
-          menuConn?.classList.add('d-none');
-          menuInscr?.classList.add('d-none');
-          menuMoncompte?.classList.remove('d-none');
-          menuDeconn?.classList.remove('d-none');
-        } else {
-          menuConn?.classList.remove('d-none');
-          menuInscr?.classList.remove('d-none');
-          menuMoncompte?.classList.add('d-none');
-          menuDeconn?.classList.add('d-none');
+    if (!token) {
+      // pas connecté : on laisse Connexion + Inscription visibles
+      return;
+    }
+
+    // 1. Masquer les liens publics
+    menuConn.classList.add('d-none');
+    menuInscr.classList.add('d-none');
+
+    // 2. Récupérer le profil pour connaître ses rôles
+    let profile;
+    try {
+      const resp = await fetch('{{ path("api_utilisateurs_profil") }}', {
+        headers: { 
+          'X-AUTH-TOKEN': token,
+          'Accept': 'application/json'
         }
-
-        logoutLink?.addEventListener('click', async e => {
-          e.preventDefault();
-          try {
-            await fetch('{{ path("api_utilisateurs_deconnexion") }}', {
-              method: 'POST',
-              headers: { 'X-AUTH-TOKEN': token }
-            });
-          } catch (_) {}
-          localStorage.removeItem('ecoride_token');
-          location.href = '{{ path("accueil") }}';
-        });
       });
-    })();
+      if (!resp.ok) throw new Error();
+      profile = await resp.json();
+    } catch {
+      // token invalide => déconnexion forcée
+      localStorage.removeItem('ecoride_token');
+      return location.reload();
+    }
+
+    // 3. Selon les rôles, on affiche le bon lien
+    if (profile.roles.includes('ROLE_ADMIN')) {
+      menuAdm.querySelector('a').href = '{{ path("admin") }}';
+      menuAdm.classList.remove('d-none');
+    } else if (profile.roles.includes('ROLE_EMPLOYE')) {
+      menuEmp.querySelector('a').href = '{{ path("employe_avis") }}';
+      menuEmp.classList.remove('d-none');
+    } else {
+      menuUser.querySelector('a').href = '{{ path("mon_compte") }}';
+      menuUser.classList.remove('d-none');
+    }
+
+    // 4. Afficher “Déconnexion”
+    menuLogout.classList.remove('d-none');
+    logoutLink.addEventListener('click', async e => {
+      e.preventDefault();
+      try {
+        await fetch('{{ path("api_utilisateurs_deconnexion") }}', {
+          method: 'POST',
+          headers: { 'X-AUTH-TOKEN': token }
+        });
+      } catch {}
+      localStorage.removeItem('ecoride_token');
+      window.location.href = '{{ path("accueil") }}';
+    });
+  });
   </script>
   {# ======================================= #}
 
