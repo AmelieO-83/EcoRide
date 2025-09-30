@@ -1,42 +1,46 @@
+# .platform.app.yaml
 name: app
-type: "php:8.2"
+type: php:8.2
 build:
   flavor: none
 
 variables:
   env:
     APP_ENV: "prod"
-    COMPOSER_NO_DEV: "1"
-
-runtime:
-  extensions:
-    - pdo_mysql
-    - sodium
-    - intl
-
-relationships:
-  database: "db:mysql"
+    APP_DEBUG: "0"
 
 web:
   locations:
     "/":
       root: "public"
       passthru: "/index.php"
+      scripts: true
+      allow: true
 
+relationships:
+  database: "db:mysql"
+  redismq: "redismq:redis"
+
+dependencies:
+  php:
+    composer/composer: "^2"
+
+# IMPORTANT : pas de 'composer scripts' en build
 hooks:
   build: |
     set -e
-    # Forcer l'env prod pendant tout le build
-    export APP_ENV=prod APP_DEBUG=0
-
-    # Installer les deps sans les scripts, et ignorer l’extension Mongo
+    export APP_ENV=prod APP_DEBUG=0 COMPOSER_SKIP_AUTOSCRIPTS=1
     composer install --no-dev --no-scripts --prefer-dist --no-progress --optimize-autoloader --ignore-platform-req=ext-mongodb
-
-    # Notre cycle de cache en prod
-    php bin/console cache:clear --env=prod
-    php bin/console cache:warmup --env=prod
-
   deploy: |
     set -e
+    export APP_ENV=prod APP_DEBUG=0
     php bin/console doctrine:migrations:migrate --no-interaction --env=prod
     php bin/console cache:clear --env=prod
+
+mounts:
+  "/var": "shared:files"
+
+crons:
+  clear-cache:
+    spec: "0 3 * * *"
+    cmd: "php bin/console cache:clear --env=prod || true"
