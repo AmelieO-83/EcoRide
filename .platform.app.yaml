@@ -6,10 +6,12 @@ build:
 variables:
   env:
     APP_ENV: "prod"
+    COMPOSER_NO_DEV: "1"
 
 runtime:
   extensions:
     - pdo_mysql
+    - mongodb
     - sodium
     - intl
 
