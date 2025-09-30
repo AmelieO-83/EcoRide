@@ -21,7 +21,12 @@ class Participation
     private ?Utilisateur $passager = null;
 
     #[ORM\ManyToOne(targetEntity: Covoiturage::class, inversedBy: 'participations')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(
+        name: 'covoiturage_id',           // 👈 force le nom exact de la colonne
+        referencedColumnName: 'id',
+        nullable: false,                  // 👈 NOT NULL (aligné BDD)
+        onDelete: 'CASCADE'               // 👈 pratique, au cas où
+    )]
     #[Groups(['participation:read'])]
     private ?Covoiturage $covoiturage = null;
 

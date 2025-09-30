@@ -1,10 +1,10 @@
 <?php
-
+// src/Document/Statistique.php
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
-#[MongoDB\Document]
+#[MongoDB\Document(collection: "statistiques")]
 class Statistique
 {
     #[MongoDB\Id]

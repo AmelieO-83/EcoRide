@@ -16,12 +16,12 @@ class CovoiturageRepository extends ServiceEntityRepository
     /**
      * Recherche des covoiturages disponibles selon les filtres.
      *
-     * @param string|null             $villeDepart  Ville de départ
-     * @param string|null             $villeArrivee Ville d'arrivée
-     * @param \DateTimeImmutable|null $date         Date du trajet
-     * @param string                  $energie      ""|"hybride"|"electrique"
-     * @param bool                    $fumeur       true si fumeur autorisé
-     * @param bool                    $animaux      true si animaux autorisés
+     * @param string|null             $villeDepart   Ville de départ
+     * @param string|null             $villeArrivee  Ville d'arrivée
+     * @param \DateTimeImmutable|null $date          Date du trajet
+     * @param string                  $energie       "" | "hybride" | "electrique" | "essence"...
+     * @param bool                    $fumeur        true si fumeur autorisé
+     * @param bool                    $animaux       true si animaux autorisés
      *
      * @return Covoiturage[]
      */
@@ -33,45 +33,36 @@ class CovoiturageRepository extends ServiceEntityRepository
         bool   $fumeur   = false,
         bool   $animaux  = false
     ): array {
-        $qb = $this->createQueryBuilder('c');
+        // Eager-load de la voiture pour (1) le badge éco dans la liste et (2) éviter N+1
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.voiture', 'v')->addSelect('v');
 
-        // Jointure véhicule si nécessaire pour les filtres liés à la voiture
-        if ('' !== $energie || $fumeur || $animaux) {
-            $qb->join('c.voiture', 'v');
-        }
+        $qb->andWhere('c.placesDisponibles > 0');
 
-        // Filtre ville de départ
         if ($villeDepart) {
             $qb->andWhere('c.villeDepart = :dep')
                ->setParameter('dep', $villeDepart);
         }
 
-        // Filtre ville d'arrivée
         if ($villeArrivee) {
             $qb->andWhere('c.villeArrivee = :arr')
                ->setParameter('arr', $villeArrivee);
         }
 
-        // Filtre date (date-only)
         if ($date) {
             $qb->andWhere('c.date = :dt')
                ->setParameter('dt', $date);
         }
 
-        // Filtre énergie (hybride / électrique)
         if ('' !== $energie) {
-            $qb->andWhere('v.energie = :energie')
-               ->setParameter('energie', $energie);
+            $qb->andWhere('LOWER(v.energie) = :energie')
+               ->setParameter('energie', strtolower($energie));
         }
-
-        // Filtre fumeur autorisé
         if ($fumeur) {
-            $qb->andWhere('v.fumeur = true');
+            $qb->andWhere('v.fumeur = 1');
         }
-
-        // Filtre animaux autorisés
         if ($animaux) {
-            $qb->andWhere('v.animaux = true');
+            $qb->andWhere('v.animaux = 1');
         }
 
         return $qb
