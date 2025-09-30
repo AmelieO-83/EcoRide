@@ -2,6 +2,7 @@
 name: app
 type: php:8.2
 disk: 1024
+
 build:
   flavor: none
 
@@ -20,13 +21,11 @@ web:
 
 relationships:
   database: "db:mysql"
-  redismq: "redismq:redis"
 
 dependencies:
   php:
     composer/composer: "^2"
 
-# IMPORTANT : pas de 'composer scripts' en build
 hooks:
   build: |
     set -e
@@ -40,8 +39,3 @@ hooks:
 
 mounts:
   "/var": "shared:files"
-
-crons:
-  clear-cache:
-    spec: "0 3 * * *"
-    cmd: "php bin/console cache:clear --env=prod || true"
