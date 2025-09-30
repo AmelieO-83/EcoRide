@@ -26,8 +26,16 @@ web:
 hooks:
   build: |
     set -e
-    composer install --no-dev --prefer-dist --no-progress --optimize-autoloader --ignore-platform-req=ext-mongodb
+    # Forcer l'env prod pendant tout le build
+    export APP_ENV=prod APP_DEBUG=0
+
+    # Installer les deps sans les scripts, et ignorer l’extension Mongo
+    composer install --no-dev --no-scripts --prefer-dist --no-progress --optimize-autoloader --ignore-platform-req=ext-mongodb
+
+    # Notre cycle de cache en prod
+    php bin/console cache:clear --env=prod
     php bin/console cache:warmup --env=prod
+
   deploy: |
     set -e
     php bin/console doctrine:migrations:migrate --no-interaction --env=prod
