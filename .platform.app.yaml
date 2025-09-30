@@ -1,7 +1,7 @@
 name: app
 type: "php:8.2"
 build:
-  flavor: composer
+  flavor: none
 
 variables:
   env:
@@ -11,7 +11,6 @@ variables:
 runtime:
   extensions:
     - pdo_mysql
-    - mongodb
     - sodium
     - intl
 
