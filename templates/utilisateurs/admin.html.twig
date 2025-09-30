@@ -1,31 +1,51 @@
-{# templates/utilisateurs/admin.html.twig #}
 {% extends 'base.html.twig' %}
-
 {% block title %}Espace Admin | EcoRide{% endblock %}
 
 {% block body %}
-  <div class="container mt-5 text-center">
-    <h2 class="mb-4">Le {{ "now"|date("d/m/Y") }}, nous avons gagné :</h2>
-    <h1 class="mb-5 text-success">"xxxxx" crédits</h1>
+  <div class="container mt-5">
+    <div class="text-center">
+      <h2 class="mb-2">Le {{ "now"|date("d/m/Y") }}, nous avons gagné :</h2>
+      <h1 class="text-success mb-4">{{ gagne_aujourdhui }} crédits</h1>
+    </div>
 
-    <div class="row justify-content-center mb-5">
+    <div class="row g-4 mb-5">
       <div class="col-md-6">
-        <h4>Covoiturages créés par jour :</h4>
-        <img src="{{ asset('uploads/graph_covoiturages.png') }}"
-             alt="Graphique covoiturages"
-             class="img-fluid">
+        <div class="card"><div class="card-body">
+          <h4 class="card-title mb-3">Covoiturages créés par jour</h4>
+          <canvas id="chartRides"></canvas>
+        </div></div>
       </div>
       <div class="col-md-6">
-        <h4>Crédits gagnés par jour :</h4>
-        <img src="{{ asset('uploads/graph_credits.png') }}"
-             alt="Graphique crédits"
-             class="img-fluid">
+        <div class="card"><div class="card-body">
+          <h4 class="card-title mb-3">Crédits gagnés par jour</h4>
+          <canvas id="chartCredits"></canvas>
+        </div></div>
       </div>
     </div>
 
-    <a href="{{ path('admin_utilisateurs') }}"
-       class="btn btn-primary">
-      Gérer les comptes utilisateurs
-    </a>
+    <div class="text-center">
+      <a href="{{ path('admin_utilisateurs') }}" class="btn btn-primary">
+        Gérer les comptes utilisateurs
+      </a>
+    </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ridesPerDay   = {{ rides_per_day|json_encode|raw }};
+    const creditsPerDay = {{ credits_per_day|json_encode|raw }};
+    const labels = Array.from(new Set([...Object.keys(ridesPerDay), ...Object.keys(creditsPerDay)])).sort();
+    const ridesData   = labels.map(d => ridesPerDay[d]   ?? 0);
+    const creditsData = labels.map(d => creditsPerDay[d] ?? 0);
+
+    new Chart(document.getElementById('chartRides'), {
+      type: 'line',
+      data: { labels, datasets: [{ label: 'Rides / jour', data: ridesData, tension: .25 }] }
+    });
+
+    new Chart(document.getElementById('chartCredits'), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Crédits / jour', data: creditsData }] }
+    });
+  </script>
 {% endblock %}

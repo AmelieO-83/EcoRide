@@ -1,42 +1,46 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+# config/services.yaml
 parameters:
   credit_initial: 20
   frais_plateforme: 2
   mail_from: "no-reply@ecoride.fr"
   mail_reply_to: "contact@ecoride.fr"
+  mongodb_db: "%env(string:MONGODB_DB)%" # 👈 on expose le nom de DB en paramètre
 
 services:
-  # default configuration for services in *this* file
   _defaults:
-    autowire: true # Automatically injects dependencies in your services.
-    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+    autowire: true
+    autoconfigure: true
 
-  # makes classes in src/ available to be used as services
-  # this creates a service per class whose id is the fully-qualified class name
   App\:
     resource: "../src/"
     exclude:
       - "../src/DependencyInjection/"
       - "../src/Entity/"
       - "../src/Kernel.php"
+
+  # 👇 Service Mongo : l'ID est le FQCN et "arguments" est SOUS ce service
+  MongoDB\Client:
+    arguments:
+      - "%env(MONGODB_URL)%"
+
   App\Service\NotificationService:
     arguments:
       $fromEmail: "%mail_from%"
       $replyTo: "%mail_reply_to%"
+
   App\Service\Frais:
     arguments:
       $fraisPlateforme: "%frais_plateforme%"
+
   App\Controller\Api\UtilisateurController:
     arguments:
       $creditInitial: "%credit_initial%"
+
   App\Controller\ContactController:
     arguments:
       $mailFrom: "%mail_from%"
       $mailReplyTo: "%mail_reply_to%"
+
   App\EventListener\LoginSuccessListener:
     tags:
       - {
@@ -44,6 +48,3 @@ services:
           event: security.interactive_login,
           method: onSecurityInteractiveLogin,
         }
-
-  # add more service definitions when explicit configuration is needed
-  # please note that last definitions always *replace* previous ones
