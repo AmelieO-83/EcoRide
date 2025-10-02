@@ -30,6 +30,7 @@ dependencies:
 mounts:
   "/var": "shared:files"
 
+hooks:
   build: |
     set -e
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
