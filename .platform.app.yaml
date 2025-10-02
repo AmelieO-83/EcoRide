@@ -33,9 +33,16 @@ hooks:
   build: |
     set -e
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
+
   deploy: |
     set -e
-    # Créer les répertoires nécessaires (cache, logs) DANS LE VOLUME MONTÉ (/var) 
-    # ou à la racine de l'application SI VOTRE FRAMEWORK l'attend (souvent 'var/')
+    # IMPORTANT: Suppression du cache généré lors de la phase de 'build'
+    # Cela permet à la phase 'chown' de s'exécuter et à l'utilisateur www-data de recréer le cache.
+    rm -rf var/cache/*
+
+    # S'assurer que les dossiers de base existent (et sont vides)
     mkdir -p var/cache var/log
+
+    # Changer la propriété du répertoire MONTÉ pour l'utilisateur web
+    # Cela est maintenant possible car 'var' n'est plus rempli de fichiers orphelins.
     chown -R www-data:www-data var
