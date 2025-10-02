@@ -30,18 +30,16 @@ dependencies:
 mounts:
   "/var": "shared:files"
 
-hooks:
   build: |
     set -e
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
 
   deploy: |
     set -e
-    # 1. Supprime le contenu du cache généré pendant le build
-    #    (Le fait de vider le dossier est plus sûr que de tenter de changer les permissions)
+    # Nettoyage du cache et des logs
     rm -rf var/cache/* var/log/*
-
-    # 2. S'assure que les dossiers existent.
-    #    Platform.sh garantit que l'utilisateur www-data a accès en écriture 
-    #    à l'intérieur du volume /var (grâce au mount).
     mkdir -p var/cache var/log
+
+    # NOUVELLE ÉTAPE : EXÉCUTER LES MIGRATIONS DE DOCTRINE
+    # L'option --no-interaction permet d'exécuter sans demander confirmation
+    php bin/console doctrine:migrations:migrate --no-interaction
