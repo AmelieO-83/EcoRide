@@ -40,7 +40,3 @@ hooks:
     # Nettoyage du cache et des logs
     rm -rf var/cache/* var/log/*
     mkdir -p var/cache var/log
-
-    # NOUVELLE ÉTAPE : EXÉCUTER LES MIGRATIONS DE DOCTRINE
-    # L'option --no-interaction permet d'exécuter sans demander confirmation
-    php bin/console doctrine:migrations:migrate --no-interaction
