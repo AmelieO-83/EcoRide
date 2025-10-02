@@ -30,6 +30,14 @@ hooks:
   build: |
     set -e
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
+  deploy: |
+    # 1. Vérifie si le répertoire var/cache existe, sinon le crée
+    #    et s'assure qu'il est accessible en écriture
+    if [ ! -d web/var/cache ]; then
+        mkdir -p web/var/cache
+    fi
+    setfacl -R -m u:www-data:rwX -m u:$(whoami):rwX var
+    setfacl -dR -m u:www-data:rwX -m u:$(whoami):rwX var
 
 mounts:
   "/var": "shared:files"
