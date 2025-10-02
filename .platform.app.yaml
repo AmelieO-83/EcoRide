@@ -36,13 +36,11 @@ hooks:
 
   deploy: |
     set -e
-    # IMPORTANT: Suppression du cache généré lors de la phase de 'build'
-    # Cela permet à la phase 'chown' de s'exécuter et à l'utilisateur www-data de recréer le cache.
-    rm -rf var/cache/*
+    # 1. Supprime le contenu du cache généré pendant le build
+    #    (Le fait de vider le dossier est plus sûr que de tenter de changer les permissions)
+    rm -rf var/cache/* var/log/*
 
-    # S'assurer que les dossiers de base existent (et sont vides)
+    # 2. S'assure que les dossiers existent.
+    #    Platform.sh garantit que l'utilisateur www-data a accès en écriture 
+    #    à l'intérieur du volume /var (grâce au mount).
     mkdir -p var/cache var/log
-
-    # Changer la propriété du répertoire MONTÉ pour l'utilisateur web
-    # Cela est maintenant possible car 'var' n'est plus rempli de fichiers orphelins.
-    chown -R www-data:www-data var
