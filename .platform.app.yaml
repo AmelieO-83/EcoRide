@@ -26,18 +26,16 @@ dependencies:
   php:
     composer/composer: "^2"
 
+mounts:
+  "/var": "shared:files"
+
 hooks:
   build: |
     set -e
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
   deploy: |
-    # 1. Vérifie si le répertoire var/cache existe, sinon le crée
-    #    et s'assure qu'il est accessible en écriture
-    if [ ! -d web/var/cache ]; then
-        mkdir -p web/var/cache
-    fi
-    setfacl -R -m u:www-data:rwX -m u:$(whoami):rwX var
-    setfacl -dR -m u:www-data:rwX -m u:$(whoami):rwX var
-
-mounts:
-  "/var": "shared:files"
+    set -e
+    # Créer les répertoires nécessaires (cache, logs) DANS LE VOLUME MONTÉ (/var) 
+    # ou à la racine de l'application SI VOTRE FRAMEWORK l'attend (souvent 'var/')
+    mkdir -p var/cache var/log
+    chown -R www-data:www-data var
