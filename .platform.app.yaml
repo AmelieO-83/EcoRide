@@ -1,4 +1,3 @@
-# .platform.app.yaml
 name: app
 type: php:8.2
 disk: 1024
@@ -39,7 +38,9 @@ mounts:
 hooks:
   build: |
     set -e
-    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --ignore-platform-req=ext-mongodb
+    # 🚨 CORRECTION CRITIQUE 🚨: Ajout de --no-scripts pour contourner l'échec de cache:clear/warmup
+    # automatique de Composer, causé par la configuration doctrine_mongodb qui n'est pas chargée.
+    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --ignore-platform-req=ext-mongodb --no-scripts
 
     # 💥 COMMANDE CRITIQUE : Génère un fichier var/cache/.env.local.php au build 
     # avec les valeurs réelles de MONGODB_URL, garantissant leur persistance au runtime.
@@ -47,8 +48,8 @@ hooks:
 
   deploy: |
     set -e
-    # Le cache clear s'exécute MAINTENANT que le fichier .env.local.php est présent
-    # et que la variable MONGODB_URL est donc disponible.
+    # Le cache clear s'exécute ici. Le MONGODB_URL est maintenant disponible 
+    # grâce au fichier .env.local.php généré dans le hook build.
     php bin/console cache:clear --env=prod --no-debug
     php bin/console cache:warmup --env=prod
     rm -rf var/log/*
