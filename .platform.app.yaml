@@ -9,12 +9,7 @@ variables:
   env:
     APP_ENV: "prod"
     APP_DEBUG: "0"
-    # Conserver la variable CORS, bien qu'elle ne soit pas la cause de l'erreur 500
     CORS_ALLOW_ORIGIN: "^https?://([^/]+\\.)?main-bvxea6i-rm5gtsnixyao4\\.fr-3\\.platformsh\\.site$"
-    # Définition de la relation persistante. Le build hook va forcer sa lecture.
-    MONGODB_URL: "value-from-relation:mongodb.url"
-    MONGODB_AUTH_SOURCE: "value-from-relation:mongodb.auth_source"
-    MONGODB_DB: "value-from-relation:mongodb.database"
 
 web:
   locations:
@@ -31,6 +26,7 @@ relationships:
 dependencies:
   php:
     composer/composer: "^2"
+    platformsh/config-reader: "^2"
 
 mounts:
   "/var": "shared:files"
@@ -38,12 +34,7 @@ mounts:
 hooks:
   build: |
     set -e
-    # 🚨 CORRECTION CRITIQUE 🚨: Ajout de --no-scripts pour contourner l'échec de cache:clear/warmup
-    # automatique de Composer, causé par la configuration doctrine_mongodb qui n'est pas chargée.
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --ignore-platform-req=ext-mongodb --no-scripts
-
-    # 💥 COMMANDE CRITIQUE : Génère un fichier var/cache/.env.local.php au build 
-    # avec les valeurs réelles de MONGODB_URL, garantissant leur persistance au runtime.
     php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --output-file=var/cache/.env.local.php
 
   deploy: |
