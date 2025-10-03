@@ -43,7 +43,6 @@ hooks:
 
 runtime:
   extensions:
-    - common
     - gd
     - intl
     - pdo
