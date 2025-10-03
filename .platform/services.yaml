@@ -3,5 +3,5 @@ db:
   disk: 1024
 
 mongodb:
-  type: mongodb:6.0
+  type: mongodb:4.0
   disk: 1024
