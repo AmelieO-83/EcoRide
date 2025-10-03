@@ -11,6 +11,9 @@ variables:
     APP_ENV: "prod"
     APP_DEBUG: "0"
     CORS_ALLOW_ORIGIN: "^https?://([^/]+\\.)?main-bvxea6i-rm5gtsnixyao4\\.fr-3\\.platformsh\\.site$"
+    MONGODB_URL: "value-from-relation:mongodb.url"
+    MONGODB_AUTH_SOURCE: "value-from-relation:mongodb.auth_source"
+    MONGODB_DB: "value-from-relation:mongodb.database"
 
 web:
   locations:
@@ -38,9 +41,6 @@ hooks:
 
   deploy: |
     set -e
-    export MONGODB_URL=$(php vendor/bin/platformsh-config dump-url --relation=mongodb --database=mongodb)
-    export MONGODB_AUTH_SOURCE=$(php vendor/bin/platformsh-config get auth_source --relation=mongodb)
-    export MONGODB_DB=$(php vendor/bin/platformsh-config get database --relation=mongodb)
     php bin/console cache:clear --env=prod --no-debug
     php bin/console cache:warmup --env=prod
     rm -rf var/log/*
