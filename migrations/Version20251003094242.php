@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20251002141812 extends AbstractMigration
+final class Version20251003094242 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -25,6 +25,7 @@ final class Version20251002141812 extends AbstractMigration
         $this->addSql('CREATE TABLE marque (id INT AUTO_INCREMENT NOT NULL, libelle VARCHAR(100) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE notification (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(255) NOT NULL, titre VARCHAR(255) NOT NULL, contenu LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE participation (id INT AUTO_INCREMENT NOT NULL, passager_id INT NOT NULL, covoiturage_id INT NOT NULL, confirme TINYINT(1) NOT NULL, INDEX IDX_AB55E24F71A51189 (passager_id), INDEX IDX_AB55E24F62671590 (covoiturage_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE utilisateur (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, nom VARCHAR(64) NOT NULL, prenom VARCHAR(64) NOT NULL, telephone VARCHAR(10) NOT NULL, ville VARCHAR(64) NOT NULL, date_naissance DATE NOT NULL, note DOUBLE PRECISION DEFAULT NULL, credit INT DEFAULT 20 NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', updated_at DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', api_token VARCHAR(64) NOT NULL, UNIQUE INDEX UNIQ_1D1C63B37BA2F5EB (api_token), UNIQUE INDEX UNIQ_UTILISATEUR_EMAIL (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE voiture (id INT AUTO_INCREMENT NOT NULL, marque_id INT NOT NULL, proprietaire_id INT NOT NULL, modele VARCHAR(255) NOT NULL, immatriculation VARCHAR(10) NOT NULL, energie VARCHAR(255) NOT NULL, couleur VARCHAR(64) NOT NULL, date_premiere_immatriculation DATE NOT NULL, fumeur TINYINT(1) NOT NULL, animaux TINYINT(1) NOT NULL, INDEX IDX_E9E2810F4827B9B2 (marque_id), INDEX IDX_E9E2810F76C50E4A (proprietaire_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE avis ADD CONSTRAINT FK_8F91ABF060BB6FE6 FOREIGN KEY (auteur_id) REFERENCES utilisateur (id)');
         $this->addSql('ALTER TABLE avis ADD CONSTRAINT FK_8F91ABF0A4F84F6E FOREIGN KEY (destinataire_id) REFERENCES utilisateur (id)');
@@ -54,6 +55,7 @@ final class Version20251002141812 extends AbstractMigration
         $this->addSql('DROP TABLE marque');
         $this->addSql('DROP TABLE notification');
         $this->addSql('DROP TABLE participation');
+        $this->addSql('DROP TABLE utilisateur');
         $this->addSql('DROP TABLE voiture');
     }
 }
