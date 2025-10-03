@@ -4,7 +4,8 @@
   "minimum-stability": "stable",
   "prefer-stable": true,
   "require": {
-    "php": ">=8.1",
+    "php": ">=8.2",
+    "fakerphp/faker": "^1.23",
     "ext-ctype": "*",
     "ext-iconv": "*",
     "doctrine/dbal": "^3",
@@ -79,7 +80,6 @@
     }
   },
   "require-dev": {
-    "fakerphp/faker": "^1.24",
     "symfony/maker-bundle": "^1.64",
     "symfony/web-profiler-bundle": "6.4.*"
   }
