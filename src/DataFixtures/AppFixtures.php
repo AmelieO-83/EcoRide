@@ -25,6 +25,7 @@ final class AppFixtures extends Fixture
         // Unicité "maison"
         $usedPhones = [];
         $usedPlates = [];
+        $users = [];
 
         // Villes
         $citiesUser = [
@@ -38,9 +39,40 @@ final class AppFixtures extends Fixture
         }
         $conn = $em->getConnection();
 
+        // ————————————— NOUVEAUX UTILISATEURS SPÉCIFIQUES —————————————
+        $specificUsersData = [
+            ['tintin@test.com',      ['ROLE_USER'],      'Tintin2025*',   'Tintin',   'Hergé',    '0601010101', 'Bruxelles'],
+            ['milou@test.com',       ['ROLE_USER'],      'Milou2025*',    'Milou',    'Chien',    '0601010102', 'Bruxelles'],
+            ['employe@ecoride.com',  ['ROLE_EMPLOYE'],   'Employe2025*',  'Employé',  'Eco',      '0601010103', 'Paris'],
+            ['admin@ecoride.com',    ['ROLE_ADMIN'],     'Admin2025*',    'Admin',    'Chef',     '0601010104', 'Paris'],
+        ];
+
+        foreach ($specificUsersData as $data) {
+            $u = (new Utilisateur())
+                ->setEmail($data[0])
+                ->setRoles($data[1])
+                ->setPrenom($data[3])
+                ->setNom($data[4]);
+
+            // Assurez-vous d'utiliser un numéro de téléphone unique (pour éviter les conflits avec le Faker)
+            $phone = $data[5];
+            $u->setTelephone($phone);
+            $usedPhones[$phone] = true; // Marquer comme utilisé
+            
+            $u->setVille($data[6]);
+            // Date de naissance arbitraire pour éviter l'erreur si le champ est NOT NULL
+            $u->setDateNaissance(new \DateTimeImmutable('1990-01-01')); 
+            
+            // Hachage du mot de passe
+            $u->setPassword($this->hasher->hashPassword($u, $data[2]));
+            
+            $em->persist($u);
+            $users[] = $u; // Ajout à la liste $users pour être utilisés par les covoiturages/voitures
+        }
+        // ————————————— FIN NOUVEAUX UTILISATEURS SPÉCIFIQUES —————————————
+
         // ————————————— 1) UTILISATEURS —————————————
-        $users = [];
-        for ($i = 1; $i <= 16; $i++) {
+        for ($i = 5; $i <= 16; $i++) {
             $u = (new Utilisateur())
                 ->setEmail(sprintf('user%02d@ecoride.test', $i))
                 ->setRoles(['ROLE_USER'])
@@ -185,7 +217,7 @@ final class AppFixtures extends Fixture
                     $author = $faker->randomElement($users);
                     if ($author === $ride->getChauffeur()) { continue; }
                     $avis = (new Avis())
-                        ->setChauffeur($ride->getChauffeur())
+                        ->setDestinataire($ride->getChauffeur())
                         ->setAuteur($author)
                         ->setNote($faker->numberBetween(3,5))
                         ->setCommentaire($faker->sentence(10));
