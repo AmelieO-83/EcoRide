@@ -38,7 +38,9 @@ hooks:
 
   deploy: |
     set -e
-    php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb
+    export MONGODB_URL=$(php vendor/bin/platformsh-config dump-url --relation=mongodb --database=mongodb)
+    export MONGODB_AUTH_SOURCE=$(php vendor/bin/platformsh-config get auth_source --relation=mongodb)
+    export MONGODB_DB=$(php vendor/bin/platformsh-config get database --relation=mongodb)
     php bin/console cache:clear --env=prod --no-debug
     php bin/console cache:warmup --env=prod
     rm -rf var/log/*
