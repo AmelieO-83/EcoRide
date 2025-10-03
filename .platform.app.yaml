@@ -40,3 +40,13 @@ hooks:
     # Nettoyage du cache et des logs
     rm -rf var/cache/* var/log/*
     mkdir -p var/cache var/log
+
+runtime:
+  extensions:
+    - common
+    - gd
+    - intl
+    - pdo
+    - pdo_mysql
+    - opcache
+    - mongodb
