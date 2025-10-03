@@ -33,7 +33,7 @@ mounts:
 hooks:
   build: |
     set -e
-    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
+    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --ignore-platform-req=ext-mongodb
 
   deploy: |
     set -e
