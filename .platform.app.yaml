@@ -11,7 +11,6 @@ variables:
     APP_ENV: "prod"
     APP_DEBUG: "0"
     CORS_ALLOW_ORIGIN: "^https?://([^/]+\\.)?main-bvxea6i-rm5gtsnixyao4\\.fr-3\\.platformsh\\.site$"
-    MONGODB_URL: "value-from-relation:mongodb.url"
 
 web:
   locations:
@@ -39,9 +38,10 @@ hooks:
 
   deploy: |
     set -e
-    # Nettoyage du cache et des logs
-    rm -rf var/cache/* var/log/*
-    mkdir -p var/cache var/log
+    php vendor/bin/platformsh-config:inject-env --prefix=MONGODB_ --relation=mongodb
+    php bin/console cache:clear --env=prod --no-debug
+    php bin/console cache:warmup --env=prod
+    rm -rf var/log/*
 
 runtime:
   extensions:
