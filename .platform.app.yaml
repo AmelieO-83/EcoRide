@@ -38,7 +38,7 @@ hooks:
 
   deploy: |
     set -e
-    php vendor/bin/platformsh-config:inject-env --prefix=MONGODB_ --relation=mongodb
+    php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb
     php bin/console cache:clear --env=prod --no-debug
     php bin/console cache:warmup --env=prod
     rm -rf var/log/*
