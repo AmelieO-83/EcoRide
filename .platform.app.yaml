@@ -35,12 +35,9 @@ hooks:
   build: |
     set -e
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --ignore-platform-req=ext-mongodb --no-scripts
-    php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --output-file=var/cache/.env.local.php
 
   deploy: |
     set -e
-    # Le cache clear s'exécute ici. Le MONGODB_URL est maintenant disponible 
-    # grâce au fichier .env.local.php généré dans le hook build.
     php bin/console cache:clear --env=prod --no-debug
     php bin/console cache:warmup --env=prod
     rm -rf var/log/*
