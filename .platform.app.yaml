@@ -34,10 +34,10 @@ mounts:
 hooks:
   build: |
     set -e
-    # 1) Installer les deps (sans ignorer ext-mongodb !)
+    # 1) Installer les deps
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --no-scripts
-    # 2) Injecter MONGODB_URL et MONGODB_DB depuis la relation "mongodb"
-    php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
+    # 2) Injecter les variables d'environnement
+    platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
 
   deploy: |
     set -e
