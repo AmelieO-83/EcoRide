@@ -26,7 +26,6 @@ relationships:
 dependencies:
   php:
     composer/composer: "^2"
-    platformsh/config-reader: "^2"
 
 mounts:
   "/var": "shared:files"
@@ -37,7 +36,7 @@ hooks:
     # 1) Installer les deps (sans ignorer ext-mongodb !)
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --no-scripts
     # 2) Injecter les variables d'environnement.
-    platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
+    vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
 
   deploy: |
     set -e
