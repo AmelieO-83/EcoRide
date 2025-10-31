@@ -5,7 +5,7 @@ doctrine_mongodb:
       server: "%env(MONGODB_URL)%"
       options: {}
 
-  default_database: "%env(MONGODB_DATABASE)%"
+  default_database: "%env(MONGODB_DB)%"
 
   document_managers:
     default:
