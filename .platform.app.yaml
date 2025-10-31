@@ -26,7 +26,7 @@ relationships:
 dependencies:
   php:
     composer/composer: "^2"
-    platformsh/config-reader: "^2"
+    platformsh/config-reader: "^3" # ok avec ^2 aussi ; ^3 recommandé
 
 mounts:
   "/var": "shared:files"
@@ -34,7 +34,10 @@ mounts:
 hooks:
   build: |
     set -e
-    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --ignore-platform-req=ext-mongodb --no-scripts
+    # 1) Installer les deps (sans ignorer ext-mongodb !)
+    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --no-scripts
+    # 2) Injecter MONGODB_URL et MONGODB_DB depuis la relation "mongodb"
+    php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
 
   deploy: |
     set -e
