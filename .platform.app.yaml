@@ -33,11 +33,14 @@ mounts:
 hooks:
   build: |
     set -e
-    # 1. INJECTION GARANTIE DES VARIABLES D'ENVIRONNEMENT (AVANT COMPOSER)
+    # 1. Première installation : Télécharger les dépendances MAIS SANS exécuter les scripts.
+    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --no-scripts
+
+    # 2. Injection : Le binaire existe maintenant, on injecte les variables.
     php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
 
-    # 2. INSTALLATION DES DÉPENDANCES (maintenant que les variables sont là)
-    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
+    # 3. Deuxième installation : Exécuter UNIQUEMENT les scripts post-install (comme cache:clear).
+    composer run-script --no-dev post-install-cmd
 
   deploy: |
     set -e
