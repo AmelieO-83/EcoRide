@@ -173,20 +173,44 @@
   // Récupération du token et en-têtes de base
   const token = localStorage.getItem('ecoride_token');
   if (!token) return window.location.href = '{{ path("connexion") }}';
+
   const headers = { 'X-AUTH-TOKEN': token, 'Accept': 'application/json' };
-  const fetchJson = (url, opts = {}) =>
-    fetch(url, { ...opts, headers }).then(r => r.ok ? r.json() : []);
+
+  // fetchJson robuste : retourne null si non-OK
+  const fetchJson = async (url, opts = {}) => {
+    const r = await fetch(url, { ...opts, headers });
+    if (!r.ok) return null;
+    try { return await r.json(); } catch { return null; }
+  };
+
+  // ─ Auto-ouvrir l’onglet "Mes participations" si ?participation=...
+  {
+    const p = new URLSearchParams(location.search).get('participation');
+    if (p) {
+      const tabBtn = document.getElementById('tab-participations');
+      if (tabBtn) {
+        const t = new bootstrap.Tab(tabBtn);
+        t.show();
+        setTimeout(() => {
+          document.getElementById('pane-participations')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+      }
+    }
+  }
 
   // ─ PROFIL ─
   const user = await fetchJson('{{ path("api_utilisateurs_profil") }}');
-  if (!user) return window.location.href = '{{ path("connexion") }}';
+  if (!user || !user.id) return window.location.href = '{{ path("connexion") }}';
   const currentUserId = user.id;
+
   ['prenom','nom','email','ville','dateNaissance'].forEach(f => {
     const el = document.getElementById(f);
     el.value = f === 'dateNaissance' && user[f]
       ? user[f].split('T')[0]
       : (user[f] || '');
   });
+
   document.getElementById('profileForm').addEventListener('submit', async e => {
     e.preventDefault();
     const payload = {
@@ -198,11 +222,13 @@
     };
     const pwd = document.getElementById('password').value;
     if (pwd) payload.password = pwd;
+
     const res = await fetch('{{ path("api_utilisateurs_modifier") }}', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(payload)
     });
+
     const msg = document.getElementById('message');
     if (res.ok) {
       msg.className = 'alert alert-success';
@@ -210,21 +236,22 @@
     } else {
       const err = await res.json().catch(() => ({}));
       msg.className = 'alert alert-danger';
-      msg.textContent = err.error || 'Erreur lors de la mise à jour.';
+      msg.textContent = err?.error || 'Erreur lors de la mise à jour.';
     }
     msg.classList.remove('d-none');
   });
 
   // ─ VOITURES ─
-  const cars = await fetchJson('{{ path("api_voitures_list") }}');
+  const cars = await fetchJson('{{ path("api_voitures_list") }}') || [];
   document.getElementById('carList').innerHTML = cars.length
     ? cars.map(v => `
         <div class="list-group-item d-flex justify-content-between">
-          <span>${v.marque.libelle} ${v.modele} – ${v.couleur}</span>
+          <span>${v.marque?.libelle ?? ''} ${v.modele ?? ''} – ${v.couleur ?? ''}</span>
           <a href="#" class="text-danger link-delete-car" data-id="${v.id}">Supprimer</a>
         </div>
       `).join('')
     : '<div class="text-muted">Aucune voiture.</div>';
+
   document.getElementById('carList').addEventListener('click', async e => {
     if (!e.target.matches('.link-delete-car')) return;
     e.preventDefault();
@@ -236,11 +263,11 @@
     if (r.ok) location.reload(); else alert('Erreur');
   });
 
-  // ─ TRAJETS PROPOSÉS (sans ses propres) ─
+  // ─ TRAJETS PROPOSÉS (mes trajets où JE suis chauffeur) ─
   async function loadTrajets() {
-    const t = await fetchJson('{{ path("api_covoiturages_proposes") }}');
+    const t = await fetchJson('{{ path("api_covoiturages_proposes") }}') || [];
     document.getElementById('listeProposes').innerHTML = t
-      .filter(c => c.chauffeur.id !== currentUserId)
+      .filter(c => c.chauffeur && c.chauffeur.id === currentUserId)
       .map(c => `
         <div class="list-group-item d-flex justify-content-between">
           <span>${c.villeDepart} → ${c.villeArrivee} le ${c.date}</span>
@@ -249,6 +276,7 @@
       `).join('') || '<div class="text-muted">Aucun covoiturage proposé.</div>';
   }
   await loadTrajets();
+
   document.getElementById('listeProposes').addEventListener('click', async e => {
     if (!e.target.matches('.link-annuler-trajet')) return;
     e.preventDefault();
@@ -259,7 +287,7 @@
 
   // ─ PARTICIPATIONS & CONFIRMATION ─
   async function loadParticipations() {
-    const p = await fetchJson('{{ path("api_participation_list") }}');
+    const p = await fetchJson('{{ path("api_participation_list") }}') || [];
     const enCours = p.filter(o => !o.confirme);
     const terminees = p.filter(o => o.confirme);
 
@@ -271,7 +299,7 @@
               <strong>${o.covoiturage.villeDepart} → ${o.covoiturage.villeArrivee}</strong>
               <br><small>le ${o.covoiturage.date}</small>
             </div>
-            <div>
+            <div class="d-flex gap-3">
               <a href="#" class="text-danger link-annuler-part" data-id="${o.id}">Annuler</a>
               <a href="#" class="text-success link-termine-part"
                  data-id="${o.id}" data-covoiturage-id="${o.covoiturage.id}">
@@ -311,7 +339,7 @@
       });
       if (!rc.ok) {
         const err = await rc.json().catch(() => ({}));
-        return alert(err.error || 'Impossible de confirmer ce trajet.');
+        return alert(err?.error || 'Impossible de confirmer ce trajet.');
       }
       await loadParticipations();
       document.getElementById('avisCovoiturageId').value = e.target.dataset.covoiturageId;
@@ -323,9 +351,7 @@
 
   // ─ AVIS ─
   async function loadAvisRecus() {
-    console.log('→ chargement des avis…');
-    const avis = await fetchJson('{{ path("api_avis_recus") }}');
-    console.log('réponse avis:', avis);
+    const avis = await fetchJson('{{ path("api_avis_recus") }}') || [];
     const moyenne = avis.length
       ? avis.reduce((sum, a) => sum + a.note, 0) / avis.length
       : 0;
@@ -343,10 +369,7 @@
       : '<div class="text-muted">Aucun avis.</div>';
   }
 
-  document.getElementById('tab-avis')
-    .addEventListener('shown.bs.tab', loadAvisRecus);
-
-  // si déjà actif au chargement
+  document.getElementById('tab-avis')?.addEventListener('shown.bs.tab', loadAvisRecus);
   if (document.querySelector('#tab-avis.active')) {
     loadAvisRecus();
   }
@@ -371,7 +394,7 @@
 
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
-      return alert(err.error || 'Erreur lors de l’envoi de l’avis.');
+      return alert(err?.error || 'Erreur lors de l’envoi de l’avis.');
     }
 
     bootstrap.Modal.getInstance(document.getElementById('avisModal')).hide();
@@ -381,7 +404,6 @@
     await loadParticipations();
     document.getElementById('tab-avis').click();
   });
-
 })();
 </script>
 {% endblock %}

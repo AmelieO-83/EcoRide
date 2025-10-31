@@ -22,7 +22,11 @@
   </ul>
 
   {# Bouton "Participer" qui ouvre le modal #}
-  <button type="button" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#participationModal">
+  <button type="button"
+          class="btn btn-primary mt-4"
+          data-bs-toggle="modal"
+          data-bs-target="#participationModal"
+          {% if trajet.placesDisponibles < 1 %}disabled title="Plus de places disponibles"{% endif %}>
     Participer à ce covoiturage
   </button>
 
@@ -31,23 +35,12 @@
 </div>
 
 {# ======= Modal de confirmation ======= #}
-<div 
-  class="modal fade" 
-  id="participationModal" 
-  tabindex="-1" 
-  aria-labelledby="participationModalLabel" 
-  aria-hidden="true"
->
+<div class="modal fade" id="participationModal" tabindex="-1" aria-labelledby="participationModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="participationModalLabel">Confirmer votre participation</h5>
-        <button 
-          type="button" 
-          class="btn-close" 
-          data-bs-dismiss="modal" 
-          aria-label="Fermer"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
       <div class="modal-body">
         <p>Confirmez que vous voulez participer au covoiturage suivant :</p>
@@ -61,16 +54,9 @@
         <div id="participationError" class="alert alert-danger d-none"></div>
       </div>
       <div class="modal-footer">
-        <button 
-          type="button" 
-          class="btn btn-secondary" 
-          data-bs-dismiss="modal"
-        >Annuler</button>
-        <button 
-          type="button" 
-          class="btn btn-primary" 
-          id="confirmParticipationBtn"
-        >
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary" id="confirmParticipationBtn"
+                {% if trajet.placesDisponibles < 1 %}disabled title="Plus de places disponibles"{% endif %}>
           Je confirme et paye {{ trajet.prix }} crédits
         </button>
       </div>
@@ -85,38 +71,46 @@
     document.addEventListener('DOMContentLoaded', () => {
       const confirmBtn = document.getElementById('confirmParticipationBtn');
       const errorBox   = document.getElementById('participationError');
+
       confirmBtn?.addEventListener('click', async () => {
         errorBox.classList.add('d-none');
+
         const token = localStorage.getItem('ecoride_token');
         if (!token) {
           window.location.href = '{{ path("connexion") }}';
           return;
         }
+
         try {
-          const resp = await fetch(
-            '{{ path("api_participation_participer", {"id": trajet.id}) }}',
-            {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-AUTH-TOKEN': token
-              }
+          const resp = await fetch('{{ path("api_participation_participer", {"id": trajet.id}) }}', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'X-AUTH-TOKEN': token
             }
-          );
-          let data;
-          try {
-            data = await resp.json();
-          } catch {
-            data = { error: resp.statusText || `Erreur ${resp.status}` };
-          }
+          });
+
+          // On tente de lire le JSON (utile pour le nouveauCredit), sinon objet vide
+          let data = {};
+          try { data = await resp.json(); } catch { data = {}; }
+
           if (resp.ok) {
-            localStorage.setItem('ecoride_credit', data.nouveauCredit);
-            bootstrap.Modal.getInstance(
-              document.getElementById('participationModal')
-            ).hide();
+            if (typeof data.nouveauCredit !== 'undefined') {
+              localStorage.setItem('ecoride_credit', data.nouveauCredit);
+            }
+            const modal = bootstrap.Modal.getInstance(document.getElementById('participationModal'));
+            modal?.hide();
             window.location.href = '{{ path("mon_compte") }}?participation=success';
-          } else {
+            return;
+          }
+
+          // Mapping simple des erreurs de l'API → paramètre participation
+          const err = (data.error || '').toLowerCase();
+          if (err.includes('déjà'))        window.location.href = '{{ path("mon_compte") }}?participation=conflict';
+          else if (err.includes('place'))  window.location.href = '{{ path("mon_compte") }}?participation=noplaces';
+          else if (err.includes('crédit')) window.location.href = '{{ path("mon_compte") }}?participation=nocredit';
+          else {
+            // Erreur inconnue: on affiche dans le modal sans rediriger
             errorBox.textContent = data.error || `Erreur ${resp.status}`;
             errorBox.classList.remove('d-none');
           }

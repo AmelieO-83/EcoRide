@@ -78,6 +78,8 @@ class ParticipationController extends AbstractController
         $this->manager->persist($participation);
         $this->manager->flush();
 
+        $this->addFlash('success', 'Votre participation a bien été enregistrée.');
+
         // Notifie le chauffeur d'un nouveau passager
         try {
             $this->notificationService->trigger(

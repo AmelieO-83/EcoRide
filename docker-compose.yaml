@@ -30,7 +30,6 @@ services:
       MYSQL_DATABASE: ecoride
       MYSQL_USER: ecoride
       MYSQL_PASSWORD: ecoride
-    # ❌ on ne publie plus 3306 sur l’hôte pour éviter le conflit
     # ports:
     #   - "3306:3306"
     volumes:
@@ -60,7 +59,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-    # Pas besoin d’exposer si tu n’y accèdes pas depuis l’hôte :
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
