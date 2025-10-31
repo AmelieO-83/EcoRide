@@ -36,6 +36,8 @@ hooks:
     set -e
     # 1) Installer les deps (sans ignorer ext-mongodb !)
     composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --no-scripts
+    # 2) Rétablissez cette ligne, en utilisant le chemin correct (via vendor/bin/)
+    vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
 
   deploy: |
     set -e
