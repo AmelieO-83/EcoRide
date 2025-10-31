@@ -52,7 +52,10 @@
 <div class="container mt-5" style="max-width:900px;">
   <ul class="nav nav-tabs mb-3" id="profilTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="tab-profil" data-bs-toggle="tab" data-bs-target="#pane-profil" type="button" role="tab">Mon profil</button>
+      <button class="nav-link active" id="tab-profil" data-bs-toggle="tab" data-bs-target="#pane-profil" type="button" role="tab">
+        Mon profil
+        <span class="badge bg-success ms-2" id="creditsBadge" style="vertical-align:text-top; display:none;"></span>
+      </button>
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="tab-voitures" data-bs-toggle="tab" data-bs-target="#pane-voitures" type="button" role="tab">Mes voitures</button>
@@ -72,6 +75,20 @@
     {# Profil #}
     <div class="tab-pane fade show active" id="pane-profil" role="tabpanel">
       <h2 class="mb-4">Mon profil</h2>
+
+      {# --- Carte Crédits restants --- #}
+      <div class="mb-4">
+        <div class="card shadow-sm">
+          <div class="card-body d-flex align-items-center justify-content-between">
+            <div>
+              <h5 class="card-title mb-1">Crédits restants</h5>
+              <div class="text-muted small">Utilisés pour participer aux covoiturages</div>
+            </div>
+            <div class="display-6 fw-bold text-primary" id="creditsValue">—</div>
+          </div>
+        </div>
+      </div>
+
       <div id="message" class="alert d-none"></div>
       <form id="profileForm">
         <div class="mb-3">
@@ -204,10 +221,31 @@
   if (!user || !user.id) return window.location.href = '{{ path("connexion") }}';
   const currentUserId = user.id;
 
+  // Affichage des crédits + badge
+  const showCredits = (u) => {
+    const n = (u && typeof u.credit === 'number') ? u.credit : null;
+    const valueEl = document.getElementById('creditsValue');
+    if (valueEl) valueEl.textContent = (n ?? '—');
+
+    const badge = document.getElementById('creditsBadge');
+    if (badge) {
+      if (n !== null) { badge.textContent = String(n); badge.style.display = 'inline-block'; }
+      else { badge.style.display = 'none'; }
+    }
+  };
+  showCredits(user);
+
+  // Fonction de rafraîchissement des crédits (à rappeler après actions)
+  async function refreshCredits() {
+    const u = await fetchJson('{{ path("api_utilisateurs_profil") }}');
+    if (u) showCredits(u);
+  }
+
+  // Formulaires profil
   ['prenom','nom','email','ville','dateNaissance'].forEach(f => {
     const el = document.getElementById(f);
     el.value = f === 'dateNaissance' && user[f]
-      ? user[f].split('T')[0]
+      ? user[f].split('T')[0] // compat format ISO si backend renvoie 2025-10-31T00:00:00
       : (user[f] || '');
   });
 
@@ -327,7 +365,12 @@
       e.preventDefault();
       if (!confirm('Annuler cette participation ?')) return;
       const r = await fetch(`/api/participations/${e.target.dataset.id}`, { method: 'DELETE', headers });
-      if (r.ok) loadParticipations(); else alert('Erreur');
+      if (r.ok) {
+        await loadParticipations();
+        await refreshCredits(); // <-- REFRESH CRÉDITS après annulation (si ta règle métier le modifie)
+      } else {
+        alert('Erreur');
+      }
       return;
     }
     if (e.target.matches('.link-termine-part')) {
@@ -342,6 +385,8 @@
         return alert(err?.error || 'Impossible de confirmer ce trajet.');
       }
       await loadParticipations();
+      await refreshCredits(); // <-- REFRESH CRÉDITS après confirmation
+
       document.getElementById('avisCovoiturageId').value = e.target.dataset.covoiturageId;
       document.querySelectorAll('input[name="avisNote"]').forEach(i => i.checked = false);
       document.getElementById('avisCommentaire').value = '';
