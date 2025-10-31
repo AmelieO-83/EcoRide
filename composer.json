@@ -17,7 +17,7 @@
     "fakerphp/faker": "^1.23",
     "mongodb/mongodb": "^1.19",
     "nelmio/cors-bundle": "^2.5",
-    "platformsh/config-reader": "^3",
+    "platformsh/config-reader": "^2",
     "symfony/asset": "6.4.*",
     "symfony/console": "6.4.*",
     "symfony/dotenv": "6.4.*",
