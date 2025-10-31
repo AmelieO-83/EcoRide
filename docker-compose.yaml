@@ -14,9 +14,9 @@ services:
         condition: service_healthy
     environment:
       COMPOSER_ALLOW_SUPERUSER: 1
-      # Symfony -> DB MySQL (utilise le port INTERNE 3306 et le service "db")
+      # Symfony -> MySQL via le nom de service "db" (port interne 3306)
       DATABASE_URL: "mysql://ecoride:ecoride@db:3306/ecoride?serverVersion=8.0&charset=utf8mb4"
-      # Mongo (auth admin par défaut sur l’image officielle)
+      # Symfony -> Mongo via le nom de service "mongo"
       MONGODB_URL: "mongodb://root:example@mongo:27017/?authSource=admin"
       MONGODB_DB: "${MONGODB_DB:-ecoride}"
     ports:
@@ -30,8 +30,6 @@ services:
       MYSQL_DATABASE: ecoride
       MYSQL_USER: ecoride
       MYSQL_PASSWORD: ecoride
-    # ports:
-    #   - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -54,7 +52,7 @@ services:
         condition: service_healthy
 
   mongo:
-    image: mongo:6
+    image: mongo:8.0
     container_name: mongo-1
     environment:
       MONGO_INITDB_ROOT_USERNAME: root

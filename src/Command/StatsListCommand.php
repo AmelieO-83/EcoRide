@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'stats:list',
+    name: 'ecoride:stats:list',
     description: 'Affiche toutes les statistiques stockées en MongoDB',
 )]
 class StatsListCommand extends Command

@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'stats:delete',
+    name: 'ecoride:stats:delete',
     description: 'Supprime une statistique MongoDB par son nom',
 )]
 class StatsDeleteCommand extends Command

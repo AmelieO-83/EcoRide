@@ -140,6 +140,7 @@ class UtilisateurController extends AbstractController
             'ville'         => $user->getVille(),
             'dateNaissance' => $user->getDateNaissance()?->format('Y-m-d'),
             'roles'         => $user->getRoles(),
+            'credit'        => $user->getCredit(),
         ];
         return $this->json($data);
     }

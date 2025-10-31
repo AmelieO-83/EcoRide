@@ -4,7 +4,11 @@ parameters:
   frais_plateforme: 2
   mail_from: "no-reply@ecoride.fr"
   mail_reply_to: "contact@ecoride.fr"
-  mongodb_db: "%env(string:MONGODB_DB)%" # 👈 on expose le nom de DB en paramètre
+  mongodb_db: "%env(string:MONGODB_DB)%"
+
+  # Valeurs locales par défaut si besoin (tu peux aussi les mettre dans .env.local)
+  env(MONGODB_URL): "mongodb://127.0.0.1:27017"
+  env(MONGODB_DB): "ecoride"
 
 services:
   _defaults:
@@ -18,10 +22,10 @@ services:
       - "../src/Entity/"
       - "../src/Kernel.php"
 
-  # 👇 Service Mongo : l'ID est le FQCN et "arguments" est SOUS ce service
+  # Client natif MongoDB
   MongoDB\Client:
     arguments:
-      - "%env(MONGODB_URL)%"
+      - "%env(resolve:MONGODB_URL)%"
 
   App\Service\NotificationService:
     arguments:
@@ -48,3 +52,21 @@ services:
           event: security.interactive_login,
           method: onSecurityInteractiveLogin,
         }
+
+  App\Command\InsertStatistiqueCommand:
+    autowire: true
+    autoconfigure: true
+    tags:
+      - { name: "console.command", command: "ecoride:stats:insert" }
+
+  App\Command\StatsListCommand:
+    autowire: true
+    autoconfigure: true
+    tags:
+      - { name: "console.command", command: "ecoride:stats:list" }
+
+  App\Command\StatsDeleteCommand:
+    autowire: true
+    autoconfigure: true
+    tags:
+      - { name: "console.command", command: "ecoride:stats:delete" }

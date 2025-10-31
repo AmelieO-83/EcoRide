@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'stats:insert',
+    name: 'ecoride:stats:insert',
     description: 'Insère une nouvelle statistique dans MongoDB',
 )]
 class InsertStatistiqueCommand extends Command

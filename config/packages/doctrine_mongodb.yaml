@@ -1,12 +1,15 @@
+# config/packages/doctrine_mongodb.yaml
 doctrine_mongodb:
   auto_generate_proxy_classes: true
   auto_generate_hydrator_classes: true
+
   connections:
     default:
       server: "%env(MONGODB_URL)%"
-      options:
-        authSource: "%env(MONGODB_AUTH_SOURCE)%"
+      options: {} # pas d'authSource si tu n'en as pas besoin
+
   default_database: "%env(MONGODB_DB)%"
+
   document_managers:
     default:
       auto_mapping: true

@@ -1,5 +1,5 @@
 <?php
-// src/Document/Statistique.php
+
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
@@ -8,23 +8,26 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 class Statistique
 {
     #[MongoDB\Id]
-    protected $id;
+    protected ?string $id = null;
 
     #[MongoDB\Field(type: 'string')]
-    protected $nom;
+    protected string $nom;
 
     #[MongoDB\Field(type: 'int')]
-    protected $valeur;
+    protected int $valeur;
 
-    #[MongoDB\Field(type: 'date')]
-    protected $dateCreation;
+    // 👇 important : immutable car tu utilises DateTimeImmutable
+    #[MongoDB\Field(type: 'date_immutable')]
+    protected \DateTimeImmutable $dateCreation;
 
-    // getters & setters...
     public function getId(): ?string { return $this->id; }
-    public function getNom(): ?string { return $this->nom; }
+
+    public function getNom(): string { return $this->nom; }
     public function setNom(string $nom): self { $this->nom = $nom; return $this; }
-    public function getValeur(): ?int { return $this->valeur; }
+
+    public function getValeur(): int { return $this->valeur; }
     public function setValeur(int $valeur): self { $this->valeur = $valeur; return $this; }
-    public function getDateCreation(): ?\DateTimeInterface { return $this->dateCreation; }
-    public function setDateCreation(\DateTimeInterface $date): self { $this->dateCreation = $date; return $this; }
+
+    public function getDateCreation(): \DateTimeImmutable { return $this->dateCreation; }
+    public function setDateCreation(\DateTimeImmutable $date): self { $this->dateCreation = $date; return $this; }
 }
