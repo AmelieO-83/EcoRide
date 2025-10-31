@@ -70,11 +70,3 @@ services:
     autoconfigure: true
     tags:
       - { name: "console.command", command: "ecoride:stats:delete" }
-
-  doctrine_mongodb:
-    alias: "doctrine_mongodb.odm.manager_registry"
-    public: true
-
-  Doctrine\ODM\MongoDB\DocumentManager:
-    alias: "doctrine_mongodb.odm.document_manager"
-    public: true
