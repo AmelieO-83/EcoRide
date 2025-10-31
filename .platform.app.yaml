@@ -33,10 +33,11 @@ mounts:
 hooks:
   build: |
     set -e
-    # Installer les dépendances (y compris platformsh/config-reader qui est dans 'require')
-    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
-    # Appel direct: l'outil devrait être trouvé dans le PATH de l'environnement
+    # 1. INJECTION GARANTIE DES VARIABLES D'ENVIRONNEMENT (AVANT COMPOSER)
     php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
+
+    # 2. INSTALLATION DES DÉPENDANCES (maintenant que les variables sont là)
+    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
 
   deploy: |
     set -e
