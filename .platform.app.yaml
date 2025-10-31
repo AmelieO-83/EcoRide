@@ -33,14 +33,17 @@ mounts:
 hooks:
   build: |
     set -e
-    # 1. Première installation : Télécharger les dépendances MAIS SANS exécuter les scripts.
-    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --no-scripts
-
-    # 2. Injection : Le binaire existe maintenant, on injecte les variables.
-    php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb
-
-    # 3. Deuxième installation : Exécuter UNIQUEMENT les scripts post-install (comme cache:clear).
-    composer run-script --no-dev post-install-cmd
+      # 1. Première installation: Installer toutes les dépendances SANS exécuter les scripts.
+      # Ceci crée le répertoire 'vendor/'.
+      composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --no-scripts
+      
+      # 2. Injection: Injecter les variables d'environnement Platform.sh.
+      # Le binaire 'platformsh-config' existe maintenant.
+      php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb
+      
+      # 3. Exécution des scripts: Exécuter les scripts automatiques de Symfony (y compris cache:clear).
+      # Les scripts ont maintenant accès à MONGODB_URL.
+      composer run-script --no-dev post-install-cmd
 
   deploy: |
     set -e
