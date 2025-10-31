@@ -34,7 +34,7 @@ mounts:
 hooks:
   build: |
     set -e
-    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --no-scripts
+    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
 
   deploy: |
     set -e

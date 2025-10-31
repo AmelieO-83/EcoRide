@@ -67,8 +67,7 @@
   },
   "scripts": {
     "auto-scripts": {
-      "cache:clear": "symfony-cmd",
-      "assets:install %PUBLIC_DIR%": "symfony-cmd"
+      "cache:clear": "echo 'Cache clear skipped in composer build. See .platform.app.yaml'"
     },
     "post-install-cmd": [
       "@auto-scripts"
