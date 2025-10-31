@@ -34,9 +34,9 @@ hooks:
   build: |
     set -e
     # Installer les dépendances (y compris platformsh/config-reader qui est dans 'require')
-    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader --no-scripts
+    composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
     # Appel direct: l'outil devrait être trouvé dans le PATH de l'environnement
-    php vendor/platformsh/config-reader/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
+    php vendor/bin/platformsh-config inject-env --prefix=MONGODB_ --relation=mongodb --debug
 
   deploy: |
     set -e
