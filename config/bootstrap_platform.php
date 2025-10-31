@@ -1,49 +1,60 @@
 <?php
 // config/bootstrap_platform.php
-// Mappe PLATFORM_RELATIONSHIPS -> MONGODB_URL / MONGODB_DB pour Symfony (Platform.sh)
 
-$rels = getenv('PLATFORM_RELATIONSHIPS');
-if (!$rels) {
-    // Pas sur Platform.sh : ne rien faire
+declare(strict_types=1);
+
+/**
+ * Lorsqu'on tourne sur Platform.sh, PLATFORMSH_* sont présents.
+ * On lit les relations et on expose DATABASE_URL, MONGODB_URL, MONGODB_DB
+ * pour que Symfony/Doctrine les trouvent pendant cache:clear.
+ */
+if (!getenv('PLATFORM_RELATIONSHIPS')) {
+    return; // pas sur Platform.sh -> on ne fait rien
+}
+
+$relationships = json_decode(base64_decode(getenv('PLATFORM_RELATIONSHIPS')), true);
+if (!is_array($relationships)) {
     return;
 }
 
-$data = json_decode(base64_decode($rels), true);
-if (!is_array($data) || empty($data['mongodb'][0])) {
-    return;
+$setEnv = static function (string $key, string $value): void {
+    $_ENV[$key] = $value;
+    $_SERVER[$key] = $value;
+    putenv($key.'='.$value);
+};
+
+// ----- MySQL (relation: database) -----
+if (!empty($relationships['database'][0])) {
+    $db = $relationships['database'][0];
+    // Ex: scheme=mysql, username, password, host, port, path (dbname)
+    $scheme = $db['scheme'] ?? 'mysql';
+    $user   = $db['username'] ?? '';
+    $pass   = $db['password'] ?? '';
+    $host   = $db['host'] ?? '127.0.0.1';
+    $port   = $db['port'] ?? 3306;
+    $dbname = ltrim($db['path'] ?? '', '/');
+
+    // Charset recommandé pour Doctrine/Symfony
+    $databaseUrl = sprintf('%s://%s:%s@%s:%s/%s?charset=utf8mb4', $scheme, $user, $pass, $host, $port, $dbname);
+    $setEnv('DATABASE_URL', $databaseUrl);
 }
 
-$mongo = $data['mongodb'][0];
+// ----- MongoDB (relation: mongodb) -----
+if (!empty($relationships['mongodb'][0])) {
+    $mongo = $relationships['mongodb'][0];
+    $user   = $mongo['username'] ?? null;
+    $pass   = $mongo['password'] ?? null;
+    $host   = $mongo['host'] ?? '127.0.0.1';
+    $port   = $mongo['port'] ?? 27017;
+    $dbName = ltrim($mongo['path'] ?? 'ecoride', '/');
 
-$username = $mongo['username'] ?? null;
-$password = $mongo['password'] ?? null;
-$host     = $mongo['host']     ?? 'localhost';
-$port     = $mongo['port']     ?? 27017;
-$path     = $mongo['path']     ?? '';
-$authDb   = ltrim($path, '/') ?: 'admin';
+    // Construire une URL standard MongoDB
+    if ($user !== null && $pass !== null) {
+        $mongoUrl = sprintf('mongodb://%s:%s@%s:%s/%s', rawurlencode($user), rawurlencode($pass), $host, $port, $dbName);
+    } else {
+        $mongoUrl = sprintf('mongodb://%s:%s', $host, $port);
+    }
 
-// Construit l’URI Mongo
-if ($username && $password) {
-    $uri = sprintf(
-        'mongodb://%s:%s@%s:%d/?authSource=%s',
-        rawurlencode($username),
-        rawurlencode($password),
-        $host,
-        $port,
-        $authDb
-    );
-} else {
-    $uri = sprintf('mongodb://%s:%d', $host, $port);
+    $setEnv('MONGODB_URL', $mongoUrl);
+    $setEnv('MONGODB_DB', $dbName);
 }
-
-// Base par défaut = path sans le "/" (fallback)
-$db = ltrim($path, '/') ?: 'ecoride';
-
-// Expose pour doctrine_mongodb.yaml
-putenv('MONGODB_URL=' . $uri);
-$_ENV['MONGODB_URL'] = $uri;
-$_SERVER['MONGODB_URL'] = $uri;
-
-putenv('MONGODB_DB=' . $db);
-$_ENV['MONGODB_DB'] = $db;
-$_SERVER['MONGODB_DB'] = $db;
