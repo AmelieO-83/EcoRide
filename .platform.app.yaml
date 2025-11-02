@@ -10,7 +10,7 @@ variables:
     APP_ENV: "prod"
     APP_DEBUG: "0"
     CORS_ALLOW_ORIGIN: "^https?://([^/]+\\.)?main-bvxea6i-rm5gtsnixyao4\\.fr-3\\.platformsh\\.site$"
-    DATABASE_URL: "mysql://user:pass@127.0.0.1:3306/dummy?charset=utf8mb4"
+    DATABASE_URL: "sqlite:///%kernel.project_dir%/var/build.sqlite"
     MONGODB_URL: "mongodb://127.0.0.1:27017"
     MONGODB_DB: "dummy"
 
@@ -52,5 +52,6 @@ runtime:
     - intl
     - pdo
     - pdo_mysql
+    - pdo_sqlite
     - opcache
     - mongodb
