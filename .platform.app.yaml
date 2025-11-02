@@ -39,7 +39,6 @@ hooks:
     set -e
     rm -rf var/cache/*
     php bin/console doctrine:mongodb:generate:proxies
-    php bin/console doctrine:generate:proxies
     php bin/console cache:warmup --env=prod
     php bin/console assets:install public --symlink --relative
     rm -rf var/log/*
