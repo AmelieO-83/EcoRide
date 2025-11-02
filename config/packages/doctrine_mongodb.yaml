@@ -2,9 +2,9 @@
 doctrine_mongodb:
   connections:
     default:
-      url: "%env(resolve:MONGODB_URL)%"
+      server: "%env(MONGODB_URL)%"
 
-  default_database: "%env(resolve:MONGODB_DB)%"
+  default_database: "%env(MONGODB_DB)%"
 
   document_managers:
     default:
