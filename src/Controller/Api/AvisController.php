@@ -89,7 +89,7 @@ class AvisController extends AbstractController
         $avis
             ->setCovoiturage($covoiturage)
             ->setAuteur($passager)
-            ->setChauffeur($chauffeur)
+            ->setDestinataire($chauffeur)
             ->setNote($note)
             ->setCommentaire($commentaire)
             ->setStatut(AvisStatut::EnAttente);
@@ -99,23 +99,20 @@ class AvisController extends AbstractController
         $this->manager->flush();
 
         // 7. Prévenir tous les employés qu’un avis est en attente de validation
-        $urlValider = $this->urlGenerator->generate(
-            'api_avis_validate',
-            ['id' => $avis->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
-        
-        $employes = $this->utilisateurRepository->findByRole('ROLE_EMPLOYE');
-        foreach ($employes as $employe) {
-            $this->notificationService->trigger(
-                NotificationType::AvisAValider,
-                $employe,
-                [
-                    'avis'             => $avis,
-                    'url_valider_avis' => $urlValider,
-                ]
+        try {
+            $urlValider = $this->urlGenerator->generate(
+                'api_avis_validate',
+                ['id' => $avis->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL
             );
-        }
+            foreach ($this->utilisateurRepository->findByRole('ROLE_EMPLOYE') as $employe) {
+                $this->notificationService->trigger(
+                    NotificationType::AvisAValider,
+                    $employe,
+                    ['avis'=>$avis, 'url_valider_avis'=>$urlValider]
+                );
+            }
+        } catch (\Throwable $e) { /* log si besoin */ }
 
         $json = $this->serializer->serialize($avis, 'json', ['groups'=>['avis:read']]);
         return new JsonResponse($json, Response::HTTP_CREATED, [], true);
@@ -179,12 +176,22 @@ class AvisController extends AbstractController
         if (!$avis) {
             return $this->json(['error'=>'Avis Introuvable'], Response::HTTP_NOT_FOUND);
         }
-        if ($avis->getStatut() !== AvisStatut::EnAttente) {
-            return $this->json(['error'=>'Statut invalide'], Response::HTTP_BAD_REQUEST);
-        }
+        switch ($avis->getStatut()) {
+            case AvisStatut::Valide:
+                // Déjà validé → OK idempotent
+                $json = $this->serializer->serialize($avis, 'json', ['groups' => ['avis:read']]);
+                return new JsonResponse($json, Response::HTTP_OK, [], true);
 
-        $avis->setStatut(AvisStatut::Valide);
-        $this->manager->flush();
+            case AvisStatut::Rejete:
+                // Incohérent de “valider” un avis déjà rejeté
+                return $this->json(['error' => 'Avis déjà rejeté'], Response::HTTP_CONFLICT);
+
+            case AvisStatut::EnAttente:
+                // Chemin nominal : on valide maintenant
+                $avis->setStatut(AvisStatut::Valide);
+                $this->manager->flush();
+                break;
+        }
 
         $urlAvis = $this->urlGenerator->generate(
             'api_avis_show',
@@ -192,19 +199,22 @@ class AvisController extends AbstractController
             UrlGeneratorInterface::ABSOLUTE_URL
         );
         // Prévenir le chauffeur qu’un **nouvel avis** lui a été laissé
-        $this->notificationService->trigger(
-            NotificationType::NouvelAvis,
-            $avis->getchauffeur(),
-            [
-                'chauffeur' => $avis->getChauffeur(),
-                'passager'  => $avis->getAuteur(),
-                'trajet'    => sprintf('%s → %s',
-                    $avis->getCovoiturage()->getVilleDepart(),
-                    $avis->getCovoiturage()->getVilleArrivee()
-                ),
-                'url_avis'  => $urlAvis,
-            ]
-        );
+        try {
+            $chauffeur = $avis->getDestinataire();   // ← correct
+            $this->notificationService->trigger(
+                NotificationType::NouvelAvis,
+                $chauffeur,
+                [
+                    'chauffeur' => $chauffeur,
+                    'passager'  => $avis->getAuteur(),
+                    'trajet'    => sprintf('%s → %s',
+                        $avis->getCovoiturage()->getVilleDepart(),
+                        $avis->getCovoiturage()->getVilleArrivee()
+                    ),
+                    'url_avis'  => $urlAvis,
+                ]
+            );
+        } catch (\Throwable $e) { /* log si besoin */ }
 
         $json = $this->serializer->serialize($avis, 'json', ['groups'=>['avis:read']]);
         return new JsonResponse($json, Response::HTTP_OK, [], true);

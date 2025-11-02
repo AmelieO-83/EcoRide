@@ -23,3 +23,9 @@ RUN pecl install mongodb-2.1.1 \
 
 WORKDIR /var/www/html
 COPY --chown=www-data:www-data . /var/www/html
+
+# Garder les variables d'env dans FPM (APP_ENV, APP_DEBUG, DATABASE_URL, ...)
+RUN printf "clear_env = no\ncatch_workers_output = yes\n" > /usr/local/etc/php-fpm.d/zz-clear-env.conf
+
+# (Optionnel) Forcer l'affichage d'erreurs en dev (utile pour debug rapide)
+RUN printf "display_errors = On\nerror_reporting = E_ALL\n" > /usr/local/etc/php/conf.d/zz-dev-errors.ini

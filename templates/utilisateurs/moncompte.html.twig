@@ -304,14 +304,22 @@
   // ─ TRAJETS PROPOSÉS (mes trajets où JE suis chauffeur) ─
   async function loadTrajets() {
     const t = await fetchJson('{{ path("api_covoiturages_proposes") }}') || [];
-    document.getElementById('listeProposes').innerHTML = t
-      .filter(c => c.chauffeur && c.chauffeur.id === currentUserId)
+
+    const me = Number(currentUserId);
+    const mine = t.filter(c => c.chauffeur && Number(c.chauffeur.id) === me);
+
+    const html = (mine.length ? mine : t) // si l'API filtre déjà, mine==t
       .map(c => `
-        <div class="list-group-item d-flex justify-content-between">
-          <span>${c.villeDepart} → ${c.villeArrivee} le ${c.date}</span>
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <span>
+            ${c.villeDepart ?? c.ville_depart} → ${c.villeArrivee ?? c.ville_arrivee}
+            <small class="text-muted">le ${c.date}</small>
+          </span>
           <a href="#" class="text-danger link-annuler-trajet" data-id="${c.id}">Annuler</a>
         </div>
       `).join('') || '<div class="text-muted">Aucun covoiturage proposé.</div>';
+
+    document.getElementById('listeProposes').innerHTML = html;
   }
   await loadTrajets();
 
