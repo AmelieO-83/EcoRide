@@ -5,6 +5,16 @@ parameters:
   mail_from: "no-reply@ecoride.fr"
   mail_reply_to: "contact@ecoride.fr"
 
+  # MongoDB (ODM)
+  mongodb_db: "%env(string:MONGODB_DB)%"
+
+  # Valeurs locales par défaut (override dans .env.local)
+  env(MONGODB_URL): "mongodb://127.0.0.1:27017"
+  env(MONGODB_DB): "ecoride"
+
+  # Alias optionnel pour certaines recettes qui attendent MONGODB_URI
+  env(MONGODB_URI): "%env(resolve:MONGODB_URL)%"
+
 services:
   _defaults:
     autowire: true

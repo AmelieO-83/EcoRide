@@ -32,7 +32,7 @@
         ]
     },
     "doctrine/doctrine-fixtures-bundle": {
-        "version": "4.1",
+        "version": "3.7",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -57,12 +57,12 @@
         ]
     },
     "doctrine/mongodb-odm-bundle": {
-        "version": "5.4",
+        "version": "4.7",
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",
-            "version": "5.0",
-            "ref": "e84b128ea886f70a430eb88de7ac8217611542cc"
+            "version": "4.4",
+            "ref": "a5f2b2a828b6a6b2967b65f71a7b3091c2bd6b37"
         },
         "files": [
             "config/packages/doctrine_mongodb.yaml",
@@ -145,6 +145,18 @@
             "version": "1.0",
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
+    },
+    "symfony/property-info": {
+        "version": "7.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.3",
+            "ref": "dae70df71978ae9226ae915ffd5fad817f5ca1f7"
+        },
+        "files": [
+            "config/packages/property_info.yaml"
+        ]
     },
     "symfony/routing": {
         "version": "6.4",

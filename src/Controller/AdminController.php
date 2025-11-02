@@ -6,10 +6,9 @@ use App\Entity\Utilisateur;
 use App\Form\UtilisateurType;
 use App\Repository\UtilisateurRepository;
 use App\Service\Frais;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ORM\EntityManagerInterface;
-use MongoDB\Client as MongoClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,7 +19,7 @@ class AdminController extends AbstractController
         private EntityManagerInterface        $manager,
         private UtilisateurRepository         $utilisateurRepo,
         private UserPasswordHasherInterface   $passwordHasher,
-        private MongoClient                   $mongo,      // 👈 Mongo
+        private DocumentManager               $dm,      // 👈 Mongo
         private Frais                         $frais,      // 👈 frais plateforme
     ) {}
 
@@ -29,7 +28,8 @@ class AdminController extends AbstractController
     {
         // ---------- 1) Rides / jour (MongoDB) ----------
         $mongoDbName = $this->getParameter('mongodb_db') ?? 'ecoride';
-        $events = $this->mongo->selectCollection($mongoDbName, 'events');
+        $client = $this->dm->getClient();
+        $events = $client->selectDatabase($mongoDbName)->selectCollection('events');
 
         $pipeline = [
             ['$match' => ['type' => 'ride_created']],

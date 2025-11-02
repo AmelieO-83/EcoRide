@@ -1,60 +1,57 @@
 <?php
 // config/bootstrap_platform.php
-
 declare(strict_types=1);
 
-/**
- * Lorsqu'on tourne sur Platform.sh, PLATFORMSH_* sont présents.
- * On lit les relations et on expose DATABASE_URL, MONGODB_URL, MONGODB_DB
- * pour que Symfony/Doctrine les trouvent pendant cache:clear.
- */
-if (!getenv('PLATFORM_RELATIONSHIPS')) {
-    return; // pas sur Platform.sh -> on ne fait rien
+use Platformsh\ConfigReader\Config;
+
+if (!class_exists(Config::class)) {
+    return; // lib non installée en local ? on sort
 }
 
-$relationships = json_decode(base64_decode(getenv('PLATFORM_RELATIONSHIPS')), true);
-if (!is_array($relationships)) {
-    return;
+$config = new Config();
+if (!$config->isValidPlatform()) {
+    return; // pas sur Platform.sh
 }
 
-$setEnv = static function (string $key, string $value): void {
-    $_ENV[$key] = $value;
-    $_SERVER[$key] = $value;
-    putenv($key.'='.$value);
+$set = static function (string $k, string $v): void {
+    $_ENV[$k] = $_SERVER[$k] = $v;
+    putenv("$k=$v");
 };
 
-// ----- MySQL (relation: database) -----
-if (!empty($relationships['database'][0])) {
-    $db = $relationships['database'][0];
-    // Ex: scheme=mysql, username, password, host, port, path (dbname)
-    $scheme = $db['scheme'] ?? 'mysql';
-    $user   = $db['username'] ?? '';
-    $pass   = $db['password'] ?? '';
-    $host   = $db['host'] ?? '127.0.0.1';
-    $port   = $db['port'] ?? 3306;
-    $dbname = ltrim($db['path'] ?? '', '/');
-
-    // Charset recommandé pour Doctrine/Symfony
-    $databaseUrl = sprintf('%s://%s:%s@%s:%s/%s?charset=utf8mb4', $scheme, $user, $pass, $host, $port, $dbname);
-    $setEnv('DATABASE_URL', $databaseUrl);
+/** MySQL via relation "database" */
+if ($config->hasRelationship('database')) {
+    $db = $config->credentials('database');
+    $set('DATABASE_URL', sprintf(
+        '%s://%s:%s@%s:%d/%s?charset=utf8mb4',
+        $db['scheme'] ?? 'mysql',
+        $db['username'] ?? '',
+        $db['password'] ?? '',
+        $db['host'] ?? '127.0.0.1',
+        $db['port'] ?? 3306,
+        ltrim($db['path'] ?? '', '/')
+    ));
 }
 
-// ----- MongoDB (relation: mongodb) -----
-if (!empty($relationships['mongodb'][0])) {
-    $mongo = $relationships['mongodb'][0];
-    $user   = $mongo['username'] ?? null;
-    $pass   = $mongo['password'] ?? null;
-    $host   = $mongo['host'] ?? '127.0.0.1';
-    $port   = $mongo['port'] ?? 27017;
-    $dbName = ltrim($mongo['path'] ?? 'ecoride', '/');
+/** MongoDB via relation "mongodb" */
+if ($config->hasRelationship('mongodb')) {
+    $m = $config->credentials('mongodb');
+    $dbName = ltrim($m['path'] ?? 'ecoride', '/');
 
-    // Construire une URL standard MongoDB
-    if ($user !== null && $pass !== null) {
-        $mongoUrl = sprintf('mongodb://%s:%s@%s:%s/%s', rawurlencode($user), rawurlencode($pass), $host, $port, $dbName);
-    } else {
-        $mongoUrl = sprintf('mongodb://%s:%s', $host, $port);
-    }
+    $mongoUrl = isset($m['username'], $m['password'])
+        ? sprintf('mongodb://%s:%s@%s:%d/%s',
+            rawurlencode($m['username']),
+            rawurlencode($m['password']),
+            $m['host'] ?? '127.0.0.1',
+            $m['port'] ?? 27017,
+            $dbName
+        )
+        : sprintf('mongodb://%s:%d',
+            $m['host'] ?? '127.0.0.1',
+            $m['port'] ?? 27017
+        );
 
-    $setEnv('MONGODB_URL', $mongoUrl);
-    $setEnv('MONGODB_DB', $dbName);
+    $set('MONGODB_URL', $mongoUrl);
+    $set('MONGODB_DB',  $dbName);
+    // Optionnel : certaines recettes lisent MONGODB_URI
+    $set('MONGODB_URI', $mongoUrl);
 }
