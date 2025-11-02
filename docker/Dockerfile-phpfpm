@@ -9,16 +9,17 @@ RUN apt-get update \
     libonig-dev \
     libcurl4-openssl-dev \
     git unzip curl \
-    # ===== paquets MongoDB natif =====
     pkg-config \
     libssl-dev \
     libsasl2-dev \
-    libmongoc-dev \
-    libbson-dev \
+ # (facultatif) les headers libmongoc/libbson ne sont pas requis par PECL
+ #  libmongoc-dev libbson-dev \
  && docker-php-ext-install intl zip gd pdo pdo_mysql
 
-# Maintenant, on a tout ce qu’il faut pour compiler mongodb avec SSL, SASL, APM…
-RUN pecl install mongodb-2.1.1 \
+# --- MongoDB PECL 1.19.1 (au lieu de 2.x) ---
+# on désinstalle silencieusement si déjà présent, puis on épingle 1.19.1
+RUN printf "\n" | pecl uninstall mongodb || true \
+ && pecl install mongodb-1.19.1 \
  && docker-php-ext-enable mongodb
 
 WORKDIR /var/www/html
@@ -27,5 +28,5 @@ COPY --chown=www-data:www-data . /var/www/html
 # Garder les variables d'env dans FPM (APP_ENV, APP_DEBUG, DATABASE_URL, ...)
 RUN printf "clear_env = no\ncatch_workers_output = yes\n" > /usr/local/etc/php-fpm.d/zz-clear-env.conf
 
-# (Optionnel) Forcer l'affichage d'erreurs en dev (utile pour debug rapide)
+# (Optionnel) Forcer l'affichage d'erreurs en dev
 RUN printf "display_errors = On\nerror_reporting = E_ALL\n" > /usr/local/etc/php/conf.d/zz-dev-errors.ini
