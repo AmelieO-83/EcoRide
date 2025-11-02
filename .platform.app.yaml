@@ -1,12 +1,15 @@
+# .platform.app.yaml
 name: app
 type: php:8.2
 disk: 2048
+
+build:
+  flavor: none
 
 variables:
   env:
     APP_ENV: "prod"
     APP_DEBUG: "0"
-    # Garde ton CORS si utile, mais surtout NE PAS définir DATABASE_URL / MONGODB_URL en dur
     CORS_ALLOW_ORIGIN: "^https?://([^/]+\\.)?main-bvxea6i-rm5gtsnixyao4\\.fr-3\\.platformsh\\.site$"
 
 web:
@@ -29,16 +32,25 @@ dependencies:
 mounts:
   "/var": "shared:files"
 
-build:
-  flavor: none
-
 hooks:
   build: |
     set -e
-    composer install --no-progress --prefer-dist --optimize-autoloader
-
+    # ⚠️ Pas de scripts Composer en build (sinon cache:clear casse)
+    composer install --no-progress --prefer-dist --optimize-autoloader --no-scripts
   deploy: |
     set -e
+    # Génère .env.local.php avec DATABASE_URL depuis la relation "database"
+    php -r '
+      require "vendor/autoload.php";
+      $cfg = new Platformsh\\ConfigReader\\Config();
+      if (!$cfg->isValidPlatform()) { exit(0); }
+      $c = $cfg->credentials("database");
+      $scheme = $c["scheme"] ?? "mysql";
+      $path = ltrim($c["path"] ?? $c["dbname"] ?? "", "/");
+      $url = sprintf("%s://%s:%s@%s:%d/%s", $scheme, $c["username"], $c["password"], $c["host"], $c["port"], $path);
+      $out = "<?php\nreturn [\n  \"env\" => [\n    \"DATABASE_URL\" => \"$url\",\n  ],\n];\n";
+      file_put_contents(__DIR__."/.env.local.php", $out);
+    '
     rm -rf var/cache/*
     php bin/console cache:warmup --env=prod
     php bin/console assets:install public --symlink --relative
