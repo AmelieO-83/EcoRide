@@ -4,9 +4,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile-phpfpm
     container_name: ecoride-php
+    working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
-    working_dir: /var/www/html
     depends_on:
       db:
         condition: service_healthy
@@ -14,9 +14,9 @@ services:
         condition: service_healthy
     environment:
       COMPOSER_ALLOW_SUPERUSER: 1
-      # Symfony -> DB MySQL (utilise le port INTERNE 3306 et le service "db")
+      APP_ENV: dev
+      APP_DEBUG: 1
       DATABASE_URL: "mysql://ecoride:ecoride@db:3306/ecoride?serverVersion=8.0&charset=utf8mb4"
-      # Mongo (auth admin par défaut sur l’image officielle)
       MONGODB_URL: "mongodb://root:example@mongo:27017/?authSource=admin"
       MONGODB_DB: "${MONGODB_DB:-ecoride}"
     ports:
@@ -30,9 +30,6 @@ services:
       MYSQL_DATABASE: ecoride
       MYSQL_USER: ecoride
       MYSQL_PASSWORD: ecoride
-    # ❌ on ne publie plus 3306 sur l’hôte pour éviter le conflit
-    # ports:
-    #   - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -43,6 +40,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    container_name: ecoride-phpmyadmin-1
     ports:
       - "8080:80"
     environment:
@@ -55,12 +53,11 @@ services:
         condition: service_healthy
 
   mongo:
-    image: mongo:6
+    image: mongo:8.0
     container_name: mongo-1
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-    # Pas besoin d’exposer si tu n’y accèdes pas depuis l’hôte :
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
@@ -89,6 +86,13 @@ services:
       context: .
       dockerfile: docker/Dockerfile-apache
     container_name: ecoride-apache
+    environment:
+      APACHE_DOCUMENT_ROOT: /var/www/html/public
+      APP_ENV: dev
+      APP_DEBUG: "1"
+      DATABASE_URL: "mysql://ecoride:ecoride@db:3306/ecoride?serverVersion=8.0&charset=utf8mb4"
+      MONGODB_URL: "mongodb://root:example@mongo:27017/?authSource=admin"
+      MONGODB_DB: "ecoride"
     volumes:
       - ./:/var/www/html
     ports:

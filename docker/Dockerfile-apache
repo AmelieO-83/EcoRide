@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Installer les dépendances système et PHP ext.
+# Dépendances système + extensions PHP
 RUN apt-get update \
   && apt-get install -y \
     libicu-dev \
@@ -11,16 +11,15 @@ RUN apt-get update \
     libcurl4-openssl-dev \
     libssl-dev \
     pkg-config \
-    git \
-    unzip \
-    curl \
+    git unzip curl \
   && docker-php-ext-install intl zip gd pdo pdo_mysql
 
-# Installer et activer MongoDB
-RUN pecl install mongodb-2.1.1 \
+# --- MongoDB PECL 1.19.1 (compatible avec tes helpers BSON attendus) ---
+RUN printf "\n" | pecl uninstall mongodb || true \
+ && pecl install mongodb-1.19.1 \
  && docker-php-ext-enable mongodb
 
-# Activer mod_rewrite et ajuster DocumentRoot
+# Apache
 RUN a2enmod rewrite
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf

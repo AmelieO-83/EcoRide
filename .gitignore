@@ -10,10 +10,10 @@ logs/
 *.log
 
 # Environnement (fichiers sensibles)
-.env
 .env.local
 .env.test.local
 .env.prod.local
+.env.dev
 
 # Fichiers système
 .DS_Store
@@ -39,3 +39,7 @@ phpmyadmin/
 # Dossiers/fichiers temporaires
 tmp/
 temp/
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

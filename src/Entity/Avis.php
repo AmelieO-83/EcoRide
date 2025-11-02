@@ -65,12 +65,12 @@ class Avis
         return $this;
     }
 
-    public function getChauffeur(): Utilisateur
+    public function getDestinataire(): Utilisateur
     {
         return $this->destinataire;
     }
 
-    public function setChauffeur(Utilisateur $destinataire): static
+    public function setDestinataire(Utilisateur $destinataire): static
     {
         $this->destinataire = $destinataire;
         return $this;

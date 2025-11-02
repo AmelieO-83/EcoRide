@@ -1,4 +1,13 @@
 {
+    "doctrine/annotations": {
+        "version": "2.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.10",
+            "ref": "64d8583af5ea57b7afa4aba4b159907f3a148b05"
+        }
+    },
     "doctrine/deprecations": {
         "version": "1.1",
         "recipe": {
@@ -23,7 +32,7 @@
         ]
     },
     "doctrine/doctrine-fixtures-bundle": {
-        "version": "4.1",
+        "version": "3.7",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -48,12 +57,12 @@
         ]
     },
     "doctrine/mongodb-odm-bundle": {
-        "version": "5.3",
+        "version": "4.7",
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",
-            "version": "5.0",
-            "ref": "873fc0ba74e93e1b9712b732b7d580e418558d2e"
+            "version": "4.4",
+            "ref": "a5f2b2a828b6a6b2967b65f71a7b3091c2bd6b37"
         },
         "files": [
             "config/packages/doctrine_mongodb.yaml",
@@ -136,6 +145,18 @@
             "version": "1.0",
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
+    },
+    "symfony/property-info": {
+        "version": "7.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.3",
+            "ref": "dae70df71978ae9226ae915ffd5fad817f5ca1f7"
+        },
+        "files": [
+            "config/packages/property_info.yaml"
+        ]
     },
     "symfony/routing": {
         "version": "6.4",

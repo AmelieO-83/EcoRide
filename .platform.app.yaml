@@ -1,0 +1,82 @@
+# .platform.app.yaml
+name: app
+type: php:8.2
+disk: 2048
+
+build:
+  flavor: none
+
+variables:
+  env:
+    APP_ENV: "prod"
+    APP_DEBUG: "0"
+    CORS_ALLOW_ORIGIN: "^https?://([^/]+\\.)?main-bvxea6i-rm5gtsnixyao4\\.fr-3\\.platformsh\\.site$"
+
+web:
+  locations:
+    "/":
+      root: "public"
+      passthru: "/index.php"
+      scripts: true
+      allow: true
+
+relationships:
+  database: "db:mysql"
+  mongodb: "mongodb:mongodb"
+
+dependencies:
+  php:
+    composer/composer: "^2"
+    platformsh/config-reader: "^2"
+
+mounts:
+  "/var": "shared:files"
+
+hooks:
+  build: |
+    set -e
+    # ⚠️ Pas de scripts Composer en build (sinon cache:clear casse)
+    composer install --no-progress --prefer-dist --optimize-autoloader --no-scripts
+  deploy: |
+    set -e
+    php <<'PHP'
+    <?php
+    require 'vendor/autoload.php';
+
+    if (!class_exists(\Platformsh\ConfigReader\Config::class)) {
+        // Not running on Platform.sh (local/review) → skip.
+        exit(0);
+    }
+
+    $cfg = new \Platformsh\ConfigReader\Config();
+    if (!$cfg->isValidPlatform()) {
+        exit(0);
+    }
+
+    // Build DATABASE_URL from the "database" relationship.
+    $c = $cfg->credentials('database');
+    $scheme = $c['scheme'] ?? 'mysql';
+    $db     = ltrim($c['path'] ?? ($c['dbname'] ?? ''), '/');
+    $url    = sprintf('%s://%s:%s@%s:%d/%s',
+        $scheme, $c['username'], $c['password'], $c['host'], $c['port'], $db
+    );
+
+    $envLocalPhp = __DIR__.'/.env.local.php';
+    $contents = "<?php\nreturn [\n  'env' => [\n    'DATABASE_URL' => '{$url}',\n  ],\n];\n";
+    file_put_contents($envLocalPhp, $contents);
+    PHP
+
+    rm -rf var/cache/*
+    php bin/console cache:warmup --env=prod
+    php bin/console assets:install public --symlink --relative
+    rm -rf var/log/*
+
+runtime:
+  extensions:
+    - gd
+    - intl
+    - pdo
+    - pdo_mysql
+    - pdo_sqlite
+    - opcache
+    - mongodb

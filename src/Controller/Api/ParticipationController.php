@@ -102,7 +102,7 @@ class ParticipationController extends AbstractController
      */
     #[Route('/participations/{id}', name: 'participation_annuler', methods: ['DELETE'])]
     #[IsGranted('ROLE_USER')]
-    public function annuler(int $id, #[CurrentUser] $utilisateur): JsonResponse
+    public function annuler(int $id, #[CurrentUser] Utilisateur $utilisateur): JsonResponse
     {
         $participation = $this->participationRepository->find($id);
         if (!$participation || $participation->getPassager() !== $utilisateur) {
@@ -118,20 +118,20 @@ class ParticipationController extends AbstractController
         $this->manager->flush();
 
         // Notifie le chauffeur de l'annulation
-        $this->notificationService->trigger(
-            NotificationType::AnnulationPassager,
-            $covoiturage->getChauffeur(),
-            [
-                'passager' => $utilisateur,
-                'trajet'   => sprintf(
-                    '%s → %s',
-                    $covoiturage->getVilleDepart(),
-                    $covoiturage->getVilleArrivee()
-                ),
-            ]
-        );
+        try {
+            $this->notificationService->trigger(
+                NotificationType::AnnulationPassager,
+                $covoiturage->getChauffeur(),
+                [
+                    'passager' => $utilisateur,
+                    'trajet'   => sprintf('%s → %s', $covoiturage->getVilleDepart(), $covoiturage->getVilleArrivee()),
+                ]
+            );
+        } catch (\Throwable $e) {
+            // TODO: logger si tu veux
+        }
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(['success' => true], Response::HTTP_OK);
     }
 
     /**
@@ -173,18 +173,22 @@ class ParticipationController extends AbstractController
         );
 
         // 4) Envoyer la notification “avis_a_donner” au passager
-        $this->notificationService->trigger(
-            NotificationType::AvisADonner,
-            $utilisateur, // passager authentifié, jamais null
-            [
-                'chauffeur' => $chauffeur,
-                'trajet'    => sprintf('%s → %s',
-                    $participation->getCovoiturage()->getVilleDepart(),
-                    $participation->getCovoiturage()->getVilleArrivee()
-                ),
-                'url_avis'  => $urlAvis,
-            ]
-        );
+        try {
+            $this->notificationService->trigger(
+                NotificationType::AvisADonner,
+                $utilisateur,
+                [
+                    'chauffeur' => $chauffeur,
+                    'trajet'    => sprintf('%s → %s',
+                        $participation->getCovoiturage()->getVilleDepart(),
+                        $participation->getCovoiturage()->getVilleArrivee()
+                    ),
+                    'url_avis'  => $urlAvis,
+                ]
+            );
+        } catch (\Throwable $e) {
+            // logger()->error('Notification failed: '.$e->getMessage());
+        }
 
         return $this->json([
             'message'          => 'Participation confirmée et chauffeur crédité',
