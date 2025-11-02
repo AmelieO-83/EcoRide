@@ -39,37 +39,23 @@ hooks:
     composer install --no-progress --prefer-dist --optimize-autoloader --no-scripts
   deploy: |
     set -e
-    php <<'PHP'
-    <?php
-    require 'vendor/autoload.php';
+    # Exporte DATABASE_URL depuis la relation "database"
+    export DATABASE_URL=$(php -r '
+      require "/app/vendor/autoload.php";
+      if (!class_exists(\Platformsh\ConfigReader\Config::class)) { exit(0); }
+      $c = new \Platformsh\ConfigReader\Config();
+      if (!$c->isValidPlatform()) { exit(0); }
+      $db = $c->credentials("database");
+      printf("%s://%s:%s@%s:%s/%s",
+        $db["scheme"] ?? "mysql",
+        $db["username"], $db["password"],
+        $db["host"], $db["port"], ltrim($db["path"] ?? ($db["dbname"] ?? ""), "/")
+      );
+    ')
 
-    if (!class_exists(\Platformsh\ConfigReader\Config::class)) {
-        // Not running on Platform.sh (local/review) → skip.
-        exit(0);
-    }
-
-    $cfg = new \Platformsh\ConfigReader\Config();
-    if (!$cfg->isValidPlatform()) {
-        exit(0);
-    }
-
-    // Build DATABASE_URL from the "database" relationship.
-    $c = $cfg->credentials('database');
-    $scheme = $c['scheme'] ?? 'mysql';
-    $db     = ltrim($c['path'] ?? ($c['dbname'] ?? ''), '/');
-    $url    = sprintf('%s://%s:%s@%s:%d/%s',
-        $scheme, $c['username'], $c['password'], $c['host'], $c['port'], $db
-    );
-
-    $envLocalPhp = __DIR__.'/.env.local.php';
-    $contents = "<?php\nreturn [\n  'env' => [\n    'DATABASE_URL' => '{$url}',\n  ],\n];\n";
-    file_put_contents($envLocalPhp, $contents);
-    PHP
-
-    rm -rf var/cache/*
+    # Cache + assets (aucune écriture hors var/)
     php bin/console cache:warmup --env=prod
     php bin/console assets:install public --symlink --relative
-    rm -rf var/log/*
 
 runtime:
   extensions:
