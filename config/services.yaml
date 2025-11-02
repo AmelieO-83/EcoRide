@@ -4,11 +4,6 @@ parameters:
   frais_plateforme: 2
   mail_from: "no-reply@ecoride.fr"
   mail_reply_to: "contact@ecoride.fr"
-  mongodb_db: "%env(string:MONGODB_DB)%"
-
-  # Valeurs locales par défaut si besoin (tu peux aussi les mettre dans .env.local)
-  env(MONGODB_URL): "mongodb://127.0.0.1:27017"
-  env(MONGODB_DB): "ecoride"
 
 services:
   _defaults:
@@ -21,11 +16,6 @@ services:
       - "../src/DependencyInjection/"
       - "../src/Entity/"
       - "../src/Kernel.php"
-
-  # Client natif MongoDB
-  MongoDB\Client:
-    arguments:
-      - "%env(resolve:MONGODB_URL)%"
 
   App\Service\NotificationService:
     arguments:
@@ -70,11 +60,3 @@ services:
     autoconfigure: true
     tags:
       - { name: "console.command", command: "ecoride:stats:delete" }
-
-  doctrine_mongodb:
-    alias: "doctrine_mongodb.odm.manager_registry"
-    public: true
-
-  Doctrine\ODM\MongoDB\DocumentManager:
-    alias: "doctrine_mongodb.odm.document_manager"
-    public: true
