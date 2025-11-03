@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Document\Statistique;
 
 class AdminController extends AbstractController
 {
@@ -26,52 +27,49 @@ class AdminController extends AbstractController
     #[Route('/admin', name: 'admin')]
     public function index(): Response
     {
-        // ---------- 1) Rides / jour (MongoDB) ----------
-        $mongoDbName = $this->getParameter('mongodb_db') ?? 'ecoride';
-        $client = $this->dm->getClient();
-        $events = $client->selectDatabase($mongoDbName)->selectCollection('events');
+        // ---------- 1) Récupération des stats MongoDB (collection "statistiques") ----------
+        $coll = $this->dm->getDocumentCollection(Statistique::class);
 
-        $pipeline = [
-            ['$match' => ['type' => 'ride_created']],
-            ['$addFields' => [
-                'day' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$createdAt']]
-            ]],
-            ['$group' => ['_id' => '$day', 'count' => ['$sum' => 1]]],
-            ['$sort'  => ['_id' => 1]],
-        ];
+        $buildSeries = function (string $nom) use ($coll): array {
+            $pipeline = [
+                ['$match' => ['nom' => $nom]],
+                ['$addFields' => ['day' => ['$dateToString' => ['format'=> '%Y-%m-%d', 'date'=> '$dateCreation','timezone' => 'UTC',]]]],
+                ['$group' => ['_id'   => '$day', 'total' => ['$sum' => '$valeur']]],
+                ['$sort' => ['_id' => 1]],
+            ];
+            $cursor = $coll->aggregate($pipeline, ['typeMap' => ['root' => 'array', 'document' => 'array'],]);
 
-        $ridesPerDay = [];
-        foreach ($events->aggregate($pipeline) as $doc) {
-            $ridesPerDay[$doc->_id] = (int)$doc->count;
+            $series = [];
+            foreach ($cursor as $doc) {
+                // $doc est un array: ['_id' => 'YYYY-MM-DD', 'total' => <int>]
+                if (!isset($doc['_id'])) { continue; }
+                $series[$doc['_id']] = (int) ($doc['total'] ?? 0);
+            }
+            return $series;
+        };
+
+        // covoiturages créés / jour
+        $ridesPerDay   = $buildSeries('rides_created');
+        // Crédits gagnés / jour (déjà cumulés dans les docs)
+        $creditsPerDay = $buildSeries('credits_earned');
+
+        // --- Total cumulé des crédits plateforme ---
+        $cursor = $coll->aggregate([
+            ['$match' => ['nom' => 'credits_earned']],
+            ['$group' => ['_id' => null, 'sum' => ['$sum' => '$valeur']]],
+        ], [
+            'typeMap' => ['root' => 'array', 'document' => 'array'],
+        ]);
+
+        $creditsTotal = 0;
+        foreach ($cursor as $doc) {
+            $creditsTotal = (int) ($doc['sum'] ?? 0);
         }
-
-        // ---------- 2) Crédits / jour (MySQL) ----------
-        // Ici on considère que la plateforme gagne 'fraisPlateforme' par participation confirmée
-        $fee = $this->frais->getPlateforme(); // = 2 d'après ton services.yaml
-
-        $conn = $this->manager->getConnection();
-        $rows = $conn->fetchAllAssociative(<<<SQL
-            SELECT DATE(c.date) AS day, COUNT(*) AS confirmed_count
-            FROM participation p
-            JOIN covoiturage c ON c.id = p.covoiturage_id
-            WHERE p.confirme = 1
-            GROUP BY day
-            ORDER BY day
-        SQL);
-
-        $creditsPerDay = [];
-        foreach ($rows as $r) {
-            $creditsPerDay[$r['day']] = (int)$r['confirmed_count'] * $fee;
-        }
-
-        // ---------- 3) Chiffre du jour ----------
-        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
-        $gagneAujourdhui = $creditsPerDay[$today] ?? 0;
 
         return $this->render('utilisateurs/admin.html.twig', [
-            'gagne_aujourdhui' => $gagneAujourdhui,
             'rides_per_day'    => $ridesPerDay,
             'credits_per_day'  => $creditsPerDay,
+            'credits_total'    => $creditsTotal,
         ]);
     }
 
