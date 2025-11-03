@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 #[AsCommand(
     name: 'ecoride:stats:insert',
@@ -20,7 +21,8 @@ class InsertStatistiqueCommand extends Command
     {
         $this
             ->addArgument('nom', InputArgument::REQUIRED, 'Nom de la statistique')
-            ->addArgument('valeur', InputArgument::REQUIRED, 'Valeur numérique');
+            ->addArgument('valeur', InputArgument::REQUIRED, 'Valeur numérique')
+            ->addOption('date', null, InputOption::VALUE_REQUIRED, 'Date (YYYY-MM-DD) pour dateCreation');
     }
 
     public function __construct(private DocumentManager $dm)
@@ -32,11 +34,13 @@ class InsertStatistiqueCommand extends Command
     {
         $nom    = $input->getArgument('nom');
         $valeur = (int)$input->getArgument('valeur');
+        $dateOpt = $input->getOption('date');
+        $dt = $dateOpt ? new \DateTimeImmutable($dateOpt, new \DateTimeZone('UTC')) : new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
 
         $stat = new Statistique();
         $stat->setNom($nom)
              ->setValeur($valeur)
-             ->setDateCreation(new \DateTimeImmutable());
+             ->setDateCreation($dt);
 
         $this->dm->persist($stat);
         $this->dm->flush();

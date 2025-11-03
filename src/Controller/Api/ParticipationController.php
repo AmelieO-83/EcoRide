@@ -26,7 +26,8 @@ class ParticipationController extends AbstractController
         private ParticipationRepository     $participationRepository,
         private CovoiturageRepository       $covoiturageRepository,
         private NotificationService         $notificationService,
-        private \App\Service\Frais           $fraisService
+        private \App\Service\Frais          $fraisService,
+        private \App\Service\StatsService   $statsService
     ){}
 
     /**
@@ -154,7 +155,7 @@ class ParticipationController extends AbstractController
         // 2) Calculer le montant net à créditer
         $prix = $participation->getCovoiturage()->getPrix();
         $fraisPlateforme = $this->fraisService->getPlateforme();
-        $montantNet = $prix - $fraisPlateforme;
+        $montantNet = max(0, $prix - $fraisPlateforme);
 
         // 3) Créditer le chauffeur
         $chauffeur = $participation->getCovoiturage()->getChauffeur();
@@ -164,6 +165,8 @@ class ParticipationController extends AbstractController
         $participation->setConfirme(true);
 
         $this->manager->flush();
+        $this->statsService->inc('rides_confirmed', 1);
+        $this->statsService->inc('credits_earned', (int) $montantNet);
 
         // 1) Générer l’URL absolue vers la création d’un avis
         $urlAvis = $this->generateUrl(

@@ -27,7 +27,8 @@ class CovoiturageController extends AbstractController
         private ValidatorInterface      $validator,
         private CovoiturageRepository   $covoiturageRepository,
         private VoitureRepository       $voitureRepository,
-        private NotificationService     $notificationService
+        private NotificationService     $notificationService,
+        private \App\Service\StatsService $statsService
     ){}
     /**
      * GET /api/covoiturages
@@ -94,6 +95,7 @@ class CovoiturageController extends AbstractController
         // 6. Persistence
         $this->manager->persist($covoiturage);
         $this->manager->flush();
+        $this->statsService->inc('rides_created', 1);
 
         // 7. Retour
         $json = $this->serializer->serialize($covoiturage, 'json', ['groups'=>['covoiturage:read']]);
@@ -109,7 +111,7 @@ class CovoiturageController extends AbstractController
      * GET /api/covoiturages/{id}
      * Affiche un trajet.
      */
-    #[Route('/{id}<\d+>', name:'show', methods:['GET'])]
+    #[Route('/{id<\d+>}', name:'show', methods:['GET'])]
     public function show($id): JsonResponse
     {
         if (!ctype_digit((string) $id)) {
